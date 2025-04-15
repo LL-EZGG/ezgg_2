@@ -29,6 +29,8 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+.gradle/
+.idea/
 
 ### macOS Patch ###
 # iCloud generated files
