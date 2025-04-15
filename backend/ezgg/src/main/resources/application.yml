@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: ezgg
+  profiles:
+    default: local
+
+server:
+  port: 8888
