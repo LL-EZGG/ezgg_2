@@ -1,10 +1,10 @@
-package com.matching.ezgg.menber.repository;
+package com.matching.ezgg.member.repository;
 
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.matching.ezgg.menber.entity.Member;
+import com.matching.ezgg.member.entity.Member;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 

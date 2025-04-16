@@ -14,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.matching.ezgg.global.jwt.filter.JWTFilter;
 import com.matching.ezgg.global.jwt.filter.JWTUtil;
@@ -60,7 +61,7 @@ public class SecurityConfig {
 
 		// URL 접근 권한 설정
 		http.authorizeHttpRequests((auth) -> auth
-			.requestMatchers("/**").permitAll() // 모든 요청 허용 임시로
+			.requestMatchers("/auth/**", "/login").permitAll() // 모든 요청 허용 임시로
 			.anyRequest().hasAnyAuthority("ROLE_USER"));
 
 		// 세션 관리 설정
@@ -69,7 +70,7 @@ public class SecurityConfig {
 
 		// JWT 필터 적용
 		http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
-			.addFilterAt(new LoginFilter(jwtUtil, authenticationManager(authenticationConfiguration), refreshRepository),
+			.addFilterBefore(new LoginFilter(jwtUtil, authenticationManager(authenticationConfiguration), refreshRepository),
 				UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();

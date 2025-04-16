@@ -17,7 +17,7 @@ public class JWTUtil {
 
 	private final SecretKey key;
 
-	public JWTUtil(@Value("{jwt.secret}") String key) {
+	public JWTUtil(@Value("${jwt.secret}") String key) {
 		this.key = new SecretKeySpec(key.getBytes(UTF_8), HS256.key().build().getAlgorithm());
 	}
 

@@ -1,17 +1,19 @@
 package com.matching.ezgg.global.jwt.filter;
 
 import java.io.IOException;
+import java.io.NotActiveException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.global.jwt.dto.CustomUserDetails;
 import com.matching.ezgg.global.response.ErrorResponse;
-import com.matching.ezgg.menber.entity.Member;
+import com.matching.ezgg.member.entity.Member;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

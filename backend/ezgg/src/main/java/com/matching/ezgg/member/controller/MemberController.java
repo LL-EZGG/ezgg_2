@@ -1,4 +1,4 @@
-package com.matching.ezgg.menber.controller;
+package com.matching.ezgg.member.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.matching.ezgg.global.response.SuccessResponse;
-import com.matching.ezgg.menber.dto.SignupRequest;
-import com.matching.ezgg.menber.dto.SignupResponse;
-import com.matching.ezgg.menber.service.MemberService;
+import com.matching.ezgg.member.dto.SignupRequest;
+import com.matching.ezgg.member.dto.SignupResponse;
+import com.matching.ezgg.member.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
 

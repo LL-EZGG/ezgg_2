@@ -1,4 +1,4 @@
-package com.matching.ezgg.menber.dto;
+package com.matching.ezgg.member.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

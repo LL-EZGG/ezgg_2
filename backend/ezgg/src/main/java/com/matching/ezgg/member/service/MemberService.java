@@ -1,13 +1,13 @@
-package com.matching.ezgg.menber.service;
+package com.matching.ezgg.member.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matching.ezgg.menber.dto.SignupRequest;
-import com.matching.ezgg.menber.dto.SignupResponse;
-import com.matching.ezgg.menber.entity.Member;
-import com.matching.ezgg.menber.repository.MemberRepository;
+import com.matching.ezgg.member.dto.SignupRequest;
+import com.matching.ezgg.member.dto.SignupResponse;
+import com.matching.ezgg.member.entity.Member;
+import com.matching.ezgg.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 

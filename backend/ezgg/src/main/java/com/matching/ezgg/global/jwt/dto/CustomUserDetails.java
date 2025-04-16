@@ -6,7 +6,7 @@ import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.matching.ezgg.menber.entity.Member;
+import com.matching.ezgg.member.entity.Member;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,5 +30,25 @@ public class CustomUserDetails implements UserDetails {
 	@Override
 	public String getUsername() {
 		return member.getMemberId();
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return true;
 	}
 }

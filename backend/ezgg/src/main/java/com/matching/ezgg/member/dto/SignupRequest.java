@@ -1,4 +1,4 @@
-package com.matching.ezgg.menber.dto;
+package com.matching.ezgg.member.dto;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;

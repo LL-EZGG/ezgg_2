@@ -1,4 +1,4 @@
-package com.matching.ezgg.menber.entity;
+package com.matching.ezgg.member.entity;
 
 import com.matching.ezgg.global.entity.BaseEntity;
 
