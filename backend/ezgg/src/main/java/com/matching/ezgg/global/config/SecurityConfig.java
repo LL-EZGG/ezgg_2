@@ -49,7 +49,7 @@ public class SecurityConfig {
 
 		// URL 접근 권한 설정
 		http.authorizeHttpRequests((auth) -> auth
-			.requestMatchers("*").permitAll() // 모든 요청 허용 임시로
+			.requestMatchers("/**").permitAll() // 모든 요청 허용 임시로
 			.anyRequest().hasAnyAuthority("ROLE_USER"));
 
 		// 세션 관리 설정
