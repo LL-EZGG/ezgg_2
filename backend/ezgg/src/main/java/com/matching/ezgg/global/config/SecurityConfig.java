@@ -61,8 +61,8 @@ public class SecurityConfig {
 
 		// URL 접근 권한 설정
 		http.authorizeHttpRequests((auth) -> auth
-			.requestMatchers("/auth/**", "/login").permitAll() // 모든 요청 허용 임시로
-			.anyRequest().hasAnyAuthority("ROLE_USER"));
+			.requestMatchers("/auth/**", "/login", "/refresh").permitAll() // 해당 요청 은 인증 없이 접근 가능
+			.anyRequest().hasAnyAuthority("ROLE_USER")); // 나머지 요청은 ROLE_USER 권한이 있어야 접근 가능
 
 		// 세션 관리 설정
 		http.sessionManagement((session) ->
@@ -70,7 +70,7 @@ public class SecurityConfig {
 
 		// JWT 필터 적용
 		http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
-			.addFilterBefore(new LoginFilter(jwtUtil, authenticationManager(authenticationConfiguration), refreshRepository),
+			.addFilterAt(new LoginFilter(jwtUtil, authenticationManager(authenticationConfiguration), refreshRepository),
 				UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
