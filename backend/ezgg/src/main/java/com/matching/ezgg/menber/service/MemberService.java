@@ -30,6 +30,7 @@ public class MemberService {
 			.email(signupRequest.getEmail())
 			.riotUsername(signupRequest.getRiotUsername())
 			.riotTag(signupRequest.getRiotTag())
+			.role("ROLE_USER") // 기본 역할 설정
 			.build();
 
 		memberRepository.save(newMember);
