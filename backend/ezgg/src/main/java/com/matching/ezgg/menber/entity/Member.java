@@ -35,13 +35,16 @@ public class Member extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String riotTag;
 
+    private String role;
+
     @Builder
-    public Member(Long memberNo, String memberId, String password, String email, String riotUsername, String riotTag) {
+    public Member(Long memberNo, String memberId, String password, String email, String riotUsername, String riotTag, String role) {
         this.memberNo = memberNo;
         this.memberId = memberId;
         this.password = password;
         this.email = email;
         this.riotUsername = riotUsername;
         this.riotTag = riotTag;
+        this.role = role;
     }
 }
