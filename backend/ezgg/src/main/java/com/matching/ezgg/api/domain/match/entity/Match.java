@@ -1,5 +1,7 @@
 package com.matching.ezgg.api.domain.match.entity;
 
+import com.matching.ezgg.global.entity.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
