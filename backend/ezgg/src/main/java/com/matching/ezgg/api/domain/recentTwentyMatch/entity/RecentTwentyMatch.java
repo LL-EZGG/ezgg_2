@@ -9,11 +9,9 @@ import com.matching.ezgg.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -37,29 +35,25 @@ public class RecentTwentyMatch extends BaseEntity {
 	// @EqualsAndHashCode.Exclude // 순환 참조 방지
 	// private Member member;TODO
 
-	@Column(name = "recent_riot_match_id", unique = false, nullable = true)
-	private String recentRiotMatchId;
+	@Column(name = "sum_kills", unique = false, nullable = true)
+	private Integer sumKills;
 
-	@Column(name = "recent_kills", unique = false, nullable = true)
-	private Long recentKills;
+	@Column(name = "sum_deaths", unique = false, nullable = true)
+	private Integer sumDeaths;
 
-	@Column(name = "recent_deaths", unique = false, nullable = true)
-	private Long recentDeaths;
-
-	@Column(name = "recent_assists", unique = false, nullable = true)
-	private Long recentAssists;
+	@Column(name = "sum_assists", unique = false, nullable = true)
+	private Integer sumAssists;
 
 	@Column(name = "champion_stats", unique = false, nullable = true)
 	@Convert(converter = ChampionStatsConvert.class)
 	private Map<String, ChampionStat> championStats;
 
 	@Builder
-	public RecentTwentyMatch(String recentRiotMatchId, Long recentKills, Long recentDeaths, Long recentAssists,
+	public RecentTwentyMatch(Integer sumKills, Integer sumDeaths, Integer sumAssists,
 		Map<String, ChampionStat> championStats) {
-		this.recentRiotMatchId = recentRiotMatchId;
-		this.recentKills = recentKills;
-		this.recentDeaths = recentDeaths;
-		this.recentAssists = recentAssists;
+		this.sumKills = sumKills;
+		this.sumDeaths = sumDeaths;
+		this.sumAssists = sumAssists;
 		this.championStats = championStats;
 	}
 }
