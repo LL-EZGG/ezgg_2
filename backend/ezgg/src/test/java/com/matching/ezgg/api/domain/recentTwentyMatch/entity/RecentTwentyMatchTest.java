@@ -51,10 +51,9 @@ class RecentTwentyMatchTest {
 		championStats.put("Lux", lux);
 
 		RecentTwentyMatch recentTwentyMatch = RecentTwentyMatch.builder()
-			.recentRiotMatchId("KR_Test0001")
-			.recentKills(57L)
-			.recentDeaths(38L)
-			.recentAssists(55L)
+			.sumKills(57)
+			.sumDeaths(38)
+			.sumAssists(55)
 			.championStats(championStats)
 			.build();
 
