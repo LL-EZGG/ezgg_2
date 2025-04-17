@@ -3,8 +3,10 @@ package com.matching.ezgg.member.dto;
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class SignupRequest {
 
 	private String memberId;
