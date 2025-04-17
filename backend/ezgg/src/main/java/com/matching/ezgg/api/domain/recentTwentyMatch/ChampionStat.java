@@ -14,7 +14,7 @@ public class ChampionStat {
 	private int kills;
 	private int deaths;
 	private int assists;
-	// todo 챔피언별 승률
+	// todo 챔피언별 승률 (총 판수 / 총 승리 횟수)
 
 	@Builder
 	public ChampionStat(String championName, int kills, int deaths, int assists) {

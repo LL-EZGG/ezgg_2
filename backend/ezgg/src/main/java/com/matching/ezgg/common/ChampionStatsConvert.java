@@ -24,7 +24,6 @@ public class ChampionStatsConvert implements AttributeConverter<Map<String, Cham
 		}
 	}
 
-
 	@Override
 	public Map<String, ChampionStat> convertToEntityAttribute(String dbData) {
 		try {
