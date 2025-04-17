@@ -28,6 +28,28 @@ public class MemberService {
 
 		String password = passwordEncoder.encode(signupRequest.getPassword());
 
+		vaildateDuplicateMember(signupRequest);
+
+		Member newMember = Member.builder()
+			.memberId(signupRequest.getMemberId())
+			.password(password)
+			.email(signupRequest.getEmail())
+			.riotUsername(signupRequest.getRiotUsername())
+			.riotTag(signupRequest.getRiotTag())
+			.role("ROLE_USER") // 기본 역할 설정
+			.build();
+
+		Member member = memberRepository.save(newMember);
+
+		return SignupResponse.builder()
+			.memberId(member.getMemberId())
+			.email(member.getEmail())
+			.riotUsername(member.getRiotUsername())
+			.riotTag(member.getRiotTag())
+			.build();
+	}
+
+	private void vaildateDuplicateMember(SignupRequest signupRequest) {
 		// 이미 존재하는 회원인지 확인
 		if (memberRepository.existsByMemberId((signupRequest.getMemberId()))) {
 			throw new ExistMemberIdException();
@@ -47,24 +69,5 @@ public class MemberService {
 		if (memberRepository.existsByRiotTag(signupRequest.getRiotTag())) {
 			throw new ExistRiotTagException();
 		}
-
-		Member newMember = Member.builder()
-			.memberId(signupRequest.getMemberId())
-			.password(password)
-			.email(signupRequest.getEmail())
-			.riotUsername(signupRequest.getRiotUsername())
-			.riotTag(signupRequest.getRiotTag())
-			.role("ROLE_USER") // 기본 역할 설정
-			.build();
-
-		memberRepository.save(newMember);
-
-		return SignupResponse.builder()
-			.memberId(newMember.getMemberId())
-			.email(newMember.getEmail())
-			.riotUsername(newMember.getRiotUsername())
-			.riotTag(newMember.getRiotTag())
-			.build();
-
 	}
 }
