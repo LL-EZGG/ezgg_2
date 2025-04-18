@@ -25,7 +25,6 @@ public class ApiService {
 	@Qualifier("kr")
 	private final WebClient krWebClient;
 	private final String apiKey;
-	// private final WinRateNTierAdapter tierAdapter;
 
 	//Member에서 가져오기 전 임시 데이터
 	MatchIdsDto matchIds = new MatchIdsDto(
@@ -43,11 +42,6 @@ public class ApiService {
 		this.apiKey = apiKey;
 
 	}
-	// public ApiService(WebClient webClient, @Value("${api.key}") String apiKey, WinRateNTierAdapter tierAdapter) {
-	// 	this.webClient = webClient;
-	// 	this.apiKey = apiKey;
-	// 	this.tierAdapter = tierAdapter;
-	// }
 
 	//riot/account/v1/accounts/by-riot-id/{riot-id}/{tag}?api_key=
 	//
@@ -61,17 +55,8 @@ public class ApiService {
 			.retrieve()
 			.bodyToMono(PuuidDto.class)
 			.map(PuuidDto::getPuuid);
-		//저장 로직 추가 필요
+		//TODO 저장 로직 추가 필요
 	}
-
-	//회원가입할 때 puuid는 받아옴
-	//회원가입 이후엔 DB에서 puuid 가져올거임
-	// public Mono<List<String>> getMemberStat(Mono<String> puuid) {
-	// 	// return getMatchIds(getMemberPuuid(riotId, tag)); //테스트용 임시
-	// 	/*
-	//
-	// 	 */
-	// }
 
 	// /lol/league/v4/entries/by-puuid/{encryptedPUUID}
 	// puuid가 DB에 있는 경우
@@ -86,7 +71,7 @@ public class ApiService {
 				.retrieve()
 				.bodyToFlux(WinRateNTierDto.class)
 				.next();
-			//저장 로직 추가 필요
+			//TODO 저장 로직 추가 필요
 		});
 
 	}
@@ -105,12 +90,11 @@ public class ApiService {
 				.retrieve()
 				.bodyToMono(new ParameterizedTypeReference<ArrayList<String>>() {
 				}); //ParameterizedTypeReference는 타입 정보를 유지한 상태로 Webclient에 전달하기 위함
-			//저장 로직 추가 필요
+			//TODO 저장 로직 추가 필요
 		});
 	}
 
-	//DB에 저장되어 있던 매치 아이디들과 조회한 매치 아이디들 비교
-
+	//TODO DB에 저장되어 있던 매치 아이디들과 조회한 매치 아이디들 비교
 	// public Mono<List<String>> compareMatchIds(MatchIdsDto matchIdsDto) {
 	// 	log.info("matchIds 비교 시작");
 	// 	Mono<List<String>> oldMatchIds = getMatchIds(
