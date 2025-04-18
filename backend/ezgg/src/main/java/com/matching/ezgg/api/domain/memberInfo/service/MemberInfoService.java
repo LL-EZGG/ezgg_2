@@ -31,6 +31,6 @@ public class MemberInfoService {
 				.puuid(puuid)
 				.build()
 		);
-		log.info("새 memberInfo 생성");
+		log.info("{}#{}의 새 memberInfo 생성", riotUserName, riotTag);
 	}
 }
