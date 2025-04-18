@@ -39,9 +39,6 @@ public class MemberInfo extends BaseEntity {
 	@Column(name = "puuid", unique = true, nullable = true)
 	private String puuid;
 
-	@Column(name = "last_played_match_id", unique = false, nullable = true)
-	private String lastPlayedMatchId;
-
 	@Column(name = "match_ids", unique = false, nullable = true)
 	@Convert(converter = MatchIdConvert.class)
 	private List<String> matchIds;//TODO 테스트 케이스 작성 필요
@@ -56,13 +53,12 @@ public class MemberInfo extends BaseEntity {
 	private Integer losses;
 
 	@Builder
-	public MemberInfo(Long memberId, String riotUsername, String riotTag, String puuid, String lastPlayedMatchId,
+	public MemberInfo(Long memberId, String riotUsername, String riotTag, String puuid,
 		List<String> matchIds, String tier, Integer wins, Integer losses) {
 		this.memberId = memberId;
 		this.riotUsername = riotUsername;
 		this.riotTag = riotTag;
 		this.puuid = puuid;
-		this.lastPlayedMatchId = lastPlayedMatchId;
 		this.matchIds = matchIds;
 		this.tier = tier;
 		this.wins = wins;
