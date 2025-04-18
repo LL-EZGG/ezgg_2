@@ -48,15 +48,8 @@ public class MemberService {
 			.build();
 
 		Member member = memberRepository.save(newMember);
-		apiService.getMemberPuuid(signupRequest.getRiotUsername(), signupRequest.getRiotTag())
-			.subscribe(puuid -> {
-				memberInfoService.createNewMemberInfo(
-					member.getId(),
-					signupRequest.getRiotUsername(),
-					signupRequest.getRiotTag(),
-					puuid
-				);
-			});
+		String newPuuid = apiService.getMemberPuuid(signupRequest.getRiotUsername(), signupRequest.getRiotTag());
+		memberInfoService.createNewMemberInfo(member.getId(), member.getRiotUsername(), member.getRiotTag(), newPuuid);
 
 		return SignupResponse.builder()
 			.memberUsername(member.getMemberUsername())
