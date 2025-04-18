@@ -1,4 +1,4 @@
-package com.matching.ezgg.Api.controller;
+package com.matching.ezgg.api.controller;
 
 import java.util.ArrayList;
 
@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matching.ezgg.Api.dto.WinRateNTierDto;
-import com.matching.ezgg.Api.service.ApiService;
+import com.matching.ezgg.api.dto.WinRateNTierDto;
+import com.matching.ezgg.api.service.ApiService;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;

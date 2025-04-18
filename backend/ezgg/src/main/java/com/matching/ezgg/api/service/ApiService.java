@@ -1,4 +1,4 @@
-package com.matching.ezgg.Api.service;
+package com.matching.ezgg.api.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,9 +9,9 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.matching.ezgg.Api.dto.MatchIdsDto;
-import com.matching.ezgg.Api.dto.PuuidDto;
-import com.matching.ezgg.Api.dto.WinRateNTierDto;
+import com.matching.ezgg.api.dto.MatchIdsDto;
+import com.matching.ezgg.api.dto.PuuidDto;
+import com.matching.ezgg.api.dto.WinRateNTierDto;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -20,7 +20,9 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class ApiService {
 
+	@Qualifier("asia")
 	private final WebClient asiaWebClient;
+	@Qualifier("kr")
 	private final WebClient krWebClient;
 	private final String apiKey;
 	// private final WinRateNTierAdapter tierAdapter;
