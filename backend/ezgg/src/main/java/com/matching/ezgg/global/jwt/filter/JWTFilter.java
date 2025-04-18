@@ -74,11 +74,11 @@ public class JWTFilter extends OncePerRequestFilter {
 
 	// JWT를 검증하고 인증 정보를 SecurityContext에 설정하는 메서드
 	private void setAuthenticationToContext(String accessToken) {
-		String memberId = jwtUtil.getMemberId(accessToken);
+		String memberUsername = jwtUtil.getMemberUsername(accessToken);
 		String role = jwtUtil.getRole(accessToken);
 
 		Member member = Member.builder()
-			.memberId(memberId)
+			.memberUsername(memberUsername)
 			.role(role)
 			.build();
 		CustomUserDetails userDetails = new CustomUserDetails(member);

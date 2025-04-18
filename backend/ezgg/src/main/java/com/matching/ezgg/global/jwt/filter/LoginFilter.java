@@ -56,13 +56,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 			throw new RuntimeException(e);
 		}
 
-		String memberId = loginRequest.getMemberId();
+		String memberUsername = loginRequest.getMemberUsername();
 		String password = loginRequest.getPassword();
 
-		log.info(">>>>> 로그인 요청 memberId: {}", memberId);
+		log.info(">>>>> 로그인 요청 memberId: {}", memberUsername);
 		log.info(">>>>> 로그인 요청 password: {}", password);
 
-		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(memberId, password);
+		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(memberUsername, password);
 
 		return authenticationManager.authenticate(token);
 	}
@@ -73,15 +73,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		Authentication authResult) throws IOException, ServletException {
 		log.info(">>>>> 로그인 성공 {}", authResult.getName());
 
-		String memberId = authResult.getName();
+		String memberUsername = authResult.getName();
 		Collection<? extends GrantedAuthority> authorities = authResult.getAuthorities();
 		Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
 		GrantedAuthority auth = iterator.next();
 		String role = auth.getAuthority();
 
-		String accessToken = jwtUtil.createJwt("access", memberId, role, 60 * 60 * 1000L); // 1시간 유효
-		String refreshToken = jwtUtil.createJwt("refresh", memberId, role, 24 * 60 * 60 * 1000L); // 1일 유효
-		addRefreshEntity(memberId, refreshToken, 24 * 60 * 60 * 1000L);
+		String accessToken = jwtUtil.createJwt("access", memberUsername, role, 60 * 60 * 1000L); // 1시간 유효
+		String refreshToken = jwtUtil.createJwt("refresh", memberUsername, role, 24 * 60 * 60 * 1000L); // 1일 유효
+		addRefreshEntity(memberUsername, refreshToken, 24 * 60 * 60 * 1000L);
 
 		response.setHeader("Authorization", accessToken);
 		response.addCookie(createCookie("Refresh", refreshToken));
@@ -116,9 +116,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
 	}
 
-	private void addRefreshEntity(String memberId, String refreshToken, Long expiredMs) {
+	private void addRefreshEntity(String memberUsername, String refreshToken, Long expiredMs) {
 		Refresh refresh = Refresh.builder()
-			.memberId(memberId)
+			.memberId(memberUsername)
 			.refresh(refreshToken)
 			.expiration(String.valueOf(new Date(System.currentTimeMillis() + expiredMs)))
 			.build();

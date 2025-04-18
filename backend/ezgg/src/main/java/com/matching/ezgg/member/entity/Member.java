@@ -17,10 +17,10 @@ public class Member extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-	private Long memberNo;
+	private Long id;
 
 	@Column(unique = true, nullable = false)
-	private String memberId;
+	private String memberUsername;
 
 	@Column(nullable = false)
 	private String password;
@@ -37,10 +37,10 @@ public class Member extends BaseEntity {
 	private String role;
 
 	@Builder
-	public Member(Long memberNo, String memberId, String password, String email, String riotUsername, String riotTag,
+	public Member(Long id, String memberUsername, String password, String email, String riotUsername, String riotTag,
 		String role) {
-		this.memberNo = memberNo;
-		this.memberId = memberId;
+		this.id = id;
+		this.memberUsername = memberUsername;
 		this.password = password;
 		this.email = email;
 		this.riotUsername = riotUsername;

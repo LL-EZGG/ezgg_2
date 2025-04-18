@@ -53,14 +53,14 @@ public class RefreshController {
 			throw new InvalidTokenException();
 		}
 
-		String memberId = jwtUtil.getMemberId(refresh);
+		String memberUsername = jwtUtil.getMemberUsername(refresh);
 		String role = jwtUtil.getRole(refresh);
 
-		String newAccessToken = jwtUtil.createJwt("access", memberId, role, 60 * 60 * 1000L);
-		String newRefreshToken = jwtUtil.createJwt("refresh", memberId, role, 24 * 60 * 60 * 1000L);
+		String newAccessToken = jwtUtil.createJwt("access", memberUsername, role, 60 * 60 * 1000L);
+		String newRefreshToken = jwtUtil.createJwt("refresh", memberUsername, role, 24 * 60 * 60 * 1000L);
 
 		refreshRepository.deleteByRefresh(refresh);
-		addRefreshEntity(memberId, newRefreshToken, 24 * 60 * 60 * 1000L);
+		addRefreshEntity(memberUsername, newRefreshToken, 24 * 60 * 60 * 1000L);
 
 		response.setHeader("Authorization", newAccessToken);
 		response.addCookie(createCookie("Refresh", newRefreshToken));
@@ -71,9 +71,9 @@ public class RefreshController {
 			.build());
 	}
 
-	private void addRefreshEntity(String memberId, String refreshToken, Long expiredMs) {
+	private void addRefreshEntity(String memberUsername, String refreshToken, Long expiredMs) {
 		Refresh refresh = Refresh.builder()
-			.memberId(memberId)
+			.memberId(memberUsername)
 			.refresh(refreshToken)
 			.expiration(String.valueOf(new Date(System.currentTimeMillis() + expiredMs)))
 			.build();

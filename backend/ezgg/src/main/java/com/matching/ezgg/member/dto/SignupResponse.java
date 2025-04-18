@@ -8,14 +8,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SignupResponse {
 
-	private String memberId;
+	private String memberUsername;
 	private String email;
 	private String riotUsername;
 	private String riotTag;
 
 	@Builder
-	public SignupResponse(String memberId, String email, String riotUsername, String riotTag) {
-		this.memberId = memberId;
+	public SignupResponse(String memberUsername, String email, String riotUsername, String riotTag) {
+		this.memberUsername = memberUsername;
 		this.email = email;
 		this.riotUsername = riotUsername;
 		this.riotTag = riotTag;

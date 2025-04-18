@@ -8,7 +8,7 @@ import com.matching.ezgg.member.entity.Member;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-	Optional<Member> findByMemberId(String memberId);
+	Optional<Member> findByMemberUsername(String memberUsername);
 
 	Optional<Member> findByEmail(String email);
 
@@ -16,7 +16,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
 	Optional<Member> findByRiotTag(String riotTag);
 
-	boolean existsByMemberId(String memberId);
+	boolean existsByMemberUsername(String memberUsername);
 
 	boolean existsByEmail(String email);
 

@@ -26,9 +26,9 @@ public class JWTUtil {
 		return Jwts.parser().verifyWith(key).build().parseSignedClaims(toekn).getPayload();
 	}
 
-	// memberId 가져오기
-	public String getMemberId(String toeken) {
-		return parseClaims(toeken).get("memberId", String.class);
+	// memberUsername 가져오기
+	public String getMemberUsername(String toeken) {
+		return parseClaims(toeken).get("memberUsername", String.class);
 	}
 
 	// 권한 정보 가져오기
@@ -46,10 +46,10 @@ public class JWTUtil {
 		return parseClaims(token).getExpiration().before(new java.util.Date());
 	}
 
-	public String createJwt(String category, String memberId, String role, Long expiredMs) {
+	public String createJwt(String category, String memberUsername, String role, Long expiredMs) {
 		return Jwts.builder()
 			.claim("category", category)
-			.claim("memberId", memberId)
+			.claim("memberUsername", memberUsername)
 			.claim("role", role)
 			.issuedAt(new java.util.Date(System.currentTimeMillis()))
 			.expiration(new java.util.Date(System.currentTimeMillis() + expiredMs))

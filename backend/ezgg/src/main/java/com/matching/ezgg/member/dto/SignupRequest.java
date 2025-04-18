@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SignupRequest {
 
-	private String memberId;
+	private String memberUsername;
 	@Pattern(regexp = "^[a-zA-Z0-9]{4,20}$", message = "패스워드 4~20자의 영문 대소문자와 숫자만 사용 가능합니다.")
 	private String password;
 	private String email;
@@ -17,8 +17,8 @@ public class SignupRequest {
 	private String riotTag;
 
 	@Builder
-	public SignupRequest(String memberId, String password, String email, String riotUsername, String riotTag) {
-		this.memberId = memberId;
+	public SignupRequest(String memberUsername, String password, String email, String riotUsername, String riotTag) {
+		this.memberUsername = memberUsername;
 		this.password = password;
 		this.email = email;
 		this.riotUsername = riotUsername;

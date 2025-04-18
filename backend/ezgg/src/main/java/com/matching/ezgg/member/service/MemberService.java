@@ -1,5 +1,7 @@
 package com.matching.ezgg.member.service;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +16,9 @@ import com.matching.ezgg.member.entity.Member;
 import com.matching.ezgg.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -26,12 +30,14 @@ public class MemberService {
 	@Transactional
 	public SignupResponse signup(SignupRequest signupRequest) {
 
+		log.info("아이디 : {}", signupRequest.getMemberUsername());
+
 		String password = passwordEncoder.encode(signupRequest.getPassword());
 
 		vaildateDuplicateMember(signupRequest);
 
 		Member newMember = Member.builder()
-			.memberId(signupRequest.getMemberId())
+			.memberUsername(signupRequest.getMemberUsername())
 			.password(password)
 			.email(signupRequest.getEmail())
 			.riotUsername(signupRequest.getRiotUsername())
@@ -42,7 +48,7 @@ public class MemberService {
 		Member member = memberRepository.save(newMember);
 
 		return SignupResponse.builder()
-			.memberId(member.getMemberId())
+			.memberUsername(member.getMemberUsername())
 			.email(member.getEmail())
 			.riotUsername(member.getRiotUsername())
 			.riotTag(member.getRiotTag())
@@ -51,7 +57,7 @@ public class MemberService {
 
 	private void vaildateDuplicateMember(SignupRequest signupRequest) {
 		// 이미 존재하는 회원인지 확인
-		if (memberRepository.existsByMemberId((signupRequest.getMemberId()))) {
+		if (memberRepository.existsByMemberUsername((signupRequest.getMemberUsername()))) {
 			throw new ExistMemberIdException();
 		}
 
