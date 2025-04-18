@@ -19,7 +19,7 @@ public class MatchService {
 	public void save(MatchDto matchDto) {
 		try {
 			Match match = Match.builder()
-				// .memberId(matchDto.getMemberId())TODO
+				.memberId(matchDto.getMemberId())
 				.riotMatchId(matchDto.getRiotMatchId())
 				.kills(matchDto.getKills())
 				.deaths(matchDto.getDeaths())

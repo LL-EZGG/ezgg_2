@@ -19,7 +19,7 @@ public class RecentTwentyMatchService {
 	public void save(RecentTwentyMatchDto recentTwentyMatchDto) {
 		try {
 			RecentTwentyMatch recentTwentyMatch = RecentTwentyMatch.builder()
-				// .memberId(matchDto.getMemberId())TODO
+				.memberId(recentTwentyMatchDto.getMemberId())
 				.sumKills(recentTwentyMatchDto.getSumKills())
 				.sumDeaths(recentTwentyMatchDto.getSumDeaths())
 				.sumAssists(recentTwentyMatchDto.getSumAssists())
