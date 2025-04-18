@@ -1,9 +1,9 @@
 package com.matching.ezgg.global.exception;
 
-public class MemberInfoException extends BaseException {
+public class MemberInfoNotFoundException extends BaseException {
 	private static final String MESSAGE = "멤버 정보를 찾을 수 없습니다.";
 
-	public MemberInfoException() {
+	public MemberInfoNotFoundException() {
 		super(MESSAGE);
 	}
 

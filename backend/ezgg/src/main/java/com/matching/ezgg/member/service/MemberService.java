@@ -47,7 +47,10 @@ public class MemberService {
 			.role("ROLE_USER") // 기본 역할 설정
 			.build();
 
+		//Member 엔티티 생성
 		Member member = memberRepository.save(newMember);
+
+		//MemberInfo 엔티티 생성
 		String newPuuid = apiService.getMemberPuuid(signupRequest.getRiotUsername(), signupRequest.getRiotTag());
 		memberInfoService.createNewMemberInfo(member.getId(), member.getRiotUsername(), member.getRiotTag(), newPuuid);
 

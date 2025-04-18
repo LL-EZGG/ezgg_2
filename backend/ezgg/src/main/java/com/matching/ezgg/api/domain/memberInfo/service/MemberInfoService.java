@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.api.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.api.domain.memberInfo.repository.MemberInfoRepository;
-import com.matching.ezgg.global.exception.MemberInfoException;
+import com.matching.ezgg.global.exception.MemberInfoNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ public class MemberInfoService {
 	//DB에 저장되어 있는 puuid 가져오기
 	public String getMemberPuuid(Long memberId) {
 		return memberInfoRepository.findPuuidByMemberId(memberId)
-			.orElseThrow(MemberInfoException::new);
+			.orElseThrow(MemberInfoNotFoundException::new);
 	}
 
 	//member info 생성
