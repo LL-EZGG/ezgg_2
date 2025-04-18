@@ -46,6 +46,9 @@ public class MemberInfo extends BaseEntity {
 	@Column(name = "tier", unique = false, nullable = true)
 	private String tier;
 
+	@Column(name = "rank", unique = false, nullable = true)
+	private String rank;
+
 	@Column(name = "wins", unique = false, nullable = true)
 	private Integer wins;
 
@@ -54,13 +57,14 @@ public class MemberInfo extends BaseEntity {
 
 	@Builder
 	public MemberInfo(Long memberId, String riotUsername, String riotTag, String puuid,
-		List<String> matchIds, String tier, Integer wins, Integer losses) {
+		List<String> matchIds, String tier, String rank, Integer wins, Integer losses) {
 		this.memberId = memberId;
 		this.riotUsername = riotUsername;
 		this.riotTag = riotTag;
 		this.puuid = puuid;
 		this.matchIds = matchIds;
 		this.tier = tier;
+		this.rank = rank;
 		this.wins = wins;
 		this.losses = losses;
 	}
