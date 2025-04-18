@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import axios from 'axios';
 import '../../styles/Join.css';
+import { useNavigate } from 'react-router-dom';
+
 
 function Join() {
+
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     memberUsername: '',
     password: '',
@@ -33,14 +38,7 @@ function Join() {
       const response = await axios.post('/api/auth/signup', formData);
       console.log('회원가입 성공:', response.data);
       setMessage('회원가입이 성공적으로 완료되었습니다!');
-      // 폼 초기화
-      setFormData({
-        memberUsername: '',
-        password: '',
-        email: '',
-        riotUsername: '',
-        riotTag: ''
-      });
+      navigate("/");
     } catch (error) {
       console.error('회원가입 오류:', error);
       setMessage(error.response?.data?.message || '회원가입 중 오류가 발생했습니다.');
