@@ -1,11 +1,11 @@
 package com.matching.ezgg.member.service;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
+import com.matching.ezgg.api.service.ApiService;
 import com.matching.ezgg.global.exception.ExistEmailException;
 import com.matching.ezgg.global.exception.ExistMemberIdException;
 import com.matching.ezgg.global.exception.ExistRiotTagException;
@@ -24,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 public class MemberService {
 
 	private final MemberRepository memberRepository;
+	private final MemberInfoService memberInfoService;
+	private final ApiService apiService;
 
 	private final PasswordEncoder passwordEncoder;
 
@@ -46,6 +48,15 @@ public class MemberService {
 			.build();
 
 		Member member = memberRepository.save(newMember);
+		apiService.getMemberPuuid(signupRequest.getRiotUsername(), signupRequest.getRiotTag())
+			.subscribe(puuid -> {
+				memberInfoService.createNewMemberInfo(
+					member.getId(),
+					signupRequest.getRiotUsername(),
+					signupRequest.getRiotTag(),
+					puuid
+				);
+			});
 
 		return SignupResponse.builder()
 			.memberUsername(member.getMemberUsername())
