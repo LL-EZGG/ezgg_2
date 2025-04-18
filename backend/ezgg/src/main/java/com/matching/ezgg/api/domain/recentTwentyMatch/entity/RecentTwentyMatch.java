@@ -29,11 +29,8 @@ public class RecentTwentyMatch extends BaseEntity {
 	@Column(name = "id")
 	private Long id;
 
-	// @ManyToOne(fetch = FetchType.LAZY)
-	// @JoinColumn(name = "id", nullable = false)
-	// @ToString.Exclude  // 순환 참조 방지
-	// @EqualsAndHashCode.Exclude // 순환 참조 방지
-	// private Member member;TODO
+	@Column(name = "member_id", unique = false, nullable = false)
+	private Long memberId;
 
 	@Column(name = "sum_kills", unique = false, nullable = true)
 	private Integer sumKills;
@@ -49,8 +46,9 @@ public class RecentTwentyMatch extends BaseEntity {
 	private Map<String, ChampionStat> championStats;
 
 	@Builder
-	public RecentTwentyMatch(Integer sumKills, Integer sumDeaths, Integer sumAssists,
+	public RecentTwentyMatch(Long memberId, Integer sumKills, Integer sumDeaths, Integer sumAssists,
 		Map<String, ChampionStat> championStats) {
+		this.memberId = memberId;
 		this.sumKills = sumKills;
 		this.sumDeaths = sumDeaths;
 		this.sumAssists = sumAssists;

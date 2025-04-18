@@ -27,11 +27,8 @@ public class MemberInfo extends BaseEntity {
 	@Column(name = "id")
 	private Long id;
 
-	// @ManyToOne(fetch = FetchType.LAZY)
-	// @JoinColumn(name = "id", nullable = false)
-	// @ToString.Exclude  // 순환 참조 방지
-	// @EqualsAndHashCode.Exclude // 순환 참조 방지
-	// private Member member;TODO
+	@Column(name = "member_id", unique = false, nullable = false)
+	private Long memberId;
 
 	@Column(name = "riot_username", unique = false, nullable = false)
 	private String riotUsername;
@@ -42,15 +39,15 @@ public class MemberInfo extends BaseEntity {
 	@Column(name = "puuid", unique = true, nullable = true)
 	private String puuid;
 
-	@Column(name = "last_played_match_id", unique = false, nullable = true)
-	private String lastPlayedMatchId;
-
 	@Column(name = "match_ids", unique = false, nullable = true)
 	@Convert(converter = MatchIdConvert.class)
 	private List<String> matchIds;//TODO 테스트 케이스 작성 필요
 
 	@Column(name = "tier", unique = false, nullable = true)
 	private String tier;
+
+	@Column(name = "rank", unique = false, nullable = true)
+	private String rank;
 
 	@Column(name = "wins", unique = false, nullable = true)
 	private Integer wins;
@@ -59,14 +56,15 @@ public class MemberInfo extends BaseEntity {
 	private Integer losses;
 
 	@Builder
-	public MemberInfo(String riotUsername, String riotTag, String puuid, String lastPlayedMatchId,
-		List<String> matchIds, String tier, Integer wins, Integer losses) {
+	public MemberInfo(Long memberId, String riotUsername, String riotTag, String puuid,
+		List<String> matchIds, String tier, String rank, Integer wins, Integer losses) {
+		this.memberId = memberId;
 		this.riotUsername = riotUsername;
 		this.riotTag = riotTag;
 		this.puuid = puuid;
-		this.lastPlayedMatchId = lastPlayedMatchId;
 		this.matchIds = matchIds;
 		this.tier = tier;
+		this.rank = rank;
 		this.wins = wins;
 		this.losses = losses;
 	}
