@@ -1,5 +1,6 @@
 package com.matching.ezgg.global.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
@@ -14,8 +15,11 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
-    @CreatedDate
-    private LocalDateTime createdAt;
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
+	@CreatedDate
+	@Column(nullable = false, updatable = false)
+	private LocalDateTime createdAt;
+
+	@LastModifiedDate
+	@Column(nullable = false)
+	private LocalDateTime updatedAt;
 }
