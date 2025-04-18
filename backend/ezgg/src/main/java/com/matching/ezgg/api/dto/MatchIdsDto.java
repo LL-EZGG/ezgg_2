@@ -1,4 +1,4 @@
-package com.matching.ezgg.Api.dto;
+package com.matching.ezgg.api.dto;
 
 import java.util.ArrayList;
 
