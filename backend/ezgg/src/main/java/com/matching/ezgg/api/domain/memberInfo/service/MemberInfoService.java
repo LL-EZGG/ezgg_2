@@ -15,8 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 public class MemberInfoService {
 	private final MemberInfoRepository memberInfoRepository;
 
-	//DB에 저장되어 있는 puuid 가져오기
-	public String getMemberPuuid(Long memberId) {
+	// memberId로 puuid 조회
+	public String getMemberPuuidByMemberId(Long memberId) {
 		return memberInfoRepository.findPuuidByMemberId(memberId)
 			.orElseThrow(MemberInfoNotFoundException::new);
 	}
