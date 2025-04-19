@@ -1,17 +1,23 @@
 package com.matching.ezgg.api.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.api.dto.PuuidDto;
 import com.matching.ezgg.api.dto.WinRateNTierDto;
+import com.matching.ezgg.global.exception.RiotAccountNotFoundException;
+import com.matching.ezgg.global.exception.RiotApiException;
+import com.matching.ezgg.global.exception.RiotTierNotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,7 +51,7 @@ public class ApiService {
 	}
 
 	//riot/account/v1/accounts/by-riot-id/{riot-id}/{tag}?api_key=
-	//
+	// 유저 id, tag -> Riot api -> puuid를 수령
 	public String getMemberPuuid(String riotId, String tag) {
 		log.info("puuid 조회 시작: {}, {}", riotId, tag);
 
@@ -56,49 +62,53 @@ public class ApiService {
 			);
 
 			PuuidDto dto = asiaRestTemplate.getForObject(url, PuuidDto.class);
-			//TODO 저장 로직 추가 필요
-
+			if (dto == null || dto.getPuuid() == null) {
+				throw new RiotAccountNotFoundException(riotId, tag);
+			}
 			return dto.getPuuid();
 
-		}catch (NullPointerException e){
-			e.printStackTrace();//TODO
-			throw e;
-		}catch (Exception e){
-			e.printStackTrace();//TODO
-			throw e;
+		} catch (HttpClientErrorException.NotFound e) {
+			throw new RiotAccountNotFoundException(riotId, tag);
+		} catch (RestClientException e) {
+			throw new RiotApiException("puuid 조회 Riot Api 실패");
 		}
 	}
 
 	// /lol/league/v4/entries/by-puuid/{encryptedPUUID}
-	// puuid가 DB에 있는 경우
+	// puuid -> Riot api -> tier, rank, wins, losses 수령
 	public WinRateNTierDto getMemberWinRateNTier(String puuid) {
-		log.info("승률과 티어 조회 시작");
+		log.info("승률/티어 조회 시작: {}", puuid);
 
 		try {
 			String url = String.format(
-				"/lol/league/v4/entries/by-puuid/%s?api_key=%s", puuid, apiKey);
+				"/lol/league/v4/entries/by-puuid/%s?api_key=%s",
+				puuid, apiKey
+			);
 
-			WinRateNTierDto[] dtoArr =
-				krRestTemplate.getForObject(url, WinRateNTierDto[].class);
+			WinRateNTierDto[] dtoArr = krRestTemplate.getForObject(url, WinRateNTierDto[].class);
 
-			// Riot API는 배열을 주므로 첫 번째만 사용
-			WinRateNTierDto dto = (dtoArr != null && dtoArr.length > 0) ? dtoArr[0] : null;
-			if (dto == null) {
-				log.warn("응답 없음 → puuid: {}", puuid);
-				throw new Exception();//TODO
+			if (dtoArr == null || dtoArr.length == 0) {
+				throw new RiotTierNotFoundException(puuid);
 			}
 
-			// 동기 저장
-			// memberInfoService.save(puuid, dto);//TODO dto에 puuid 넣기
-			log.info("저장 완료");
+			// Riot API에서 배열 구조로 게임 큐타입 단위로 티어/승률 객체 전송 -> 개인/2인 랭크 큐타입 데이터만 저장
+			WinRateNTierDto winRateNTierDto = Arrays.stream(dtoArr)
+				.filter(dto -> "RANKED_SOLO_5x5".equalsIgnoreCase(dto.getQueueType()))
+				.findFirst()
+				.orElseThrow(() -> new RiotTierNotFoundException(puuid));
 
-			return dto;
-		}catch (Exception e){
-			e.printStackTrace();//TODO
-			throw new RuntimeException();
+
+			// memberInfoService.updateWinRateNTier(winRateNTierDto);
+			// log.info("저장 완료");//TODO 저장은 다른 곳에서
+
+			return winRateNTierDto;
+
+		} catch (HttpClientErrorException.NotFound e) {
+			throw new RiotTierNotFoundException(puuid);
+		} catch (RestClientException e){
+			throw new RiotApiException("승률/티어 조회 Riot Api 실패");
 		}
 	}
-
 
 	//lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count=20&api_key=apiKey
 	public ArrayList<String> getMatchIds(String puuid) {
@@ -108,18 +118,18 @@ public class ApiService {
 
 			String url = String.format(
 				"/lol/match/v5/matches/by-puuid/%s/ids?start=0&count=20&api_key=%s",
-				puuid, apiKey);
-
-			//TODO 저장 로직 추가 필요
+				puuid, apiKey
+			);
 
 			return asiaRestTemplate.exchange(
 				url,
 				HttpMethod.GET,
 				null,
-				new ParameterizedTypeReference<ArrayList<String>>() {}
+				new ParameterizedTypeReference<ArrayList<String>>() {
+				}
 			).getBody();
 
-		}catch (Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException();//TODO
 		}
