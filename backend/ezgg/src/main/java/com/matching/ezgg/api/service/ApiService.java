@@ -97,10 +97,6 @@ public class ApiService {
 				.findFirst()
 				.orElseThrow(() -> new RiotTierNotFoundException(puuid));
 
-
-			// memberInfoService.updateWinRateNTier(winRateNTierDto);
-			// log.info("저장 완료");//TODO 저장은 다른 곳에서
-
 			return winRateNTierDto;
 
 		} catch (HttpClientErrorException.NotFound e) {
