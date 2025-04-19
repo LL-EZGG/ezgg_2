@@ -43,6 +43,7 @@ public class MemberInfoService {
 			winRateNTierDto.getWins(),
 			winRateNTierDto.getLosses()
 		); // 영속성 상태에서 Dirty Checking을 해 자동으로 db에 커밋됨
+	}
 
 	//member info 생성
 	public void createNewMemberInfo(Long memberId, String riotUserName, String riotTag, String puuid) {
