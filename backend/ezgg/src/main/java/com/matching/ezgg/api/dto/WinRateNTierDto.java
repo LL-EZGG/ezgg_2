@@ -13,8 +13,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WinRateNTierDto {
-	private Long wins;
-	private Long losses;
+	private String queueType;
+
+	private String puuid;
+	private Integer wins;
+	private Integer losses;
 	private String tier;
 	private String rank;
 }

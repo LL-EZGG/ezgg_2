@@ -68,4 +68,11 @@ public class MemberInfo extends BaseEntity {
 		this.wins = wins;
 		this.losses = losses;
 	}
+
+	public void updateWinRateAndTier(String tier, String rank, int wins, int losses) {
+		this.tier   = tier;
+		this.rank   = rank;
+		this.wins   = wins;
+		this.losses = losses;
+	}
 }

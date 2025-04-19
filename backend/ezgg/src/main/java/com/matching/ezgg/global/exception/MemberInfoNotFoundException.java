@@ -11,4 +11,6 @@ public class MemberInfoNotFoundException extends BaseException {
 	public int getStatusCode() {
 		return 404;
 	}
+
 }
+
