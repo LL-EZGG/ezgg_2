@@ -10,8 +10,10 @@ import com.matching.ezgg.global.exception.MemberInfoNotFoundException;
 import com.matching.ezgg.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MemberInfoService {
 	private final MemberInfoRepository memberInfoRepository;
@@ -22,6 +24,7 @@ public class MemberInfoService {
 		return memberInfoRepository.findPuuidByMemberId(memberId)
 			.orElseThrow(MemberInfoNotFoundException::new);
 	}
+
 
 	// puuid로 MemberInfo 조회
 	public MemberInfo getMemberInfoByPuuid(String puuid) {
@@ -40,5 +43,18 @@ public class MemberInfoService {
 			winRateNTierDto.getWins(),
 			winRateNTierDto.getLosses()
 		); // 영속성 상태에서 Dirty Checking을 해 자동으로 db에 커밋됨
+
+	//member info 생성
+	public void createNewMemberInfo(Long memberId, String riotUserName, String riotTag, String puuid) {
+		memberInfoRepository.save(
+			MemberInfo.builder()
+				.memberId(memberId)
+				.riotUsername(riotUserName)
+				.riotTag(riotTag)
+				.puuid(puuid)
+				.build()
+		);
+		log.info("{}#{}의 새 memberInfo 생성", riotUserName, riotTag);
+
 	}
 }
