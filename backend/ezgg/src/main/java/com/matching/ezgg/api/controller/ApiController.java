@@ -38,7 +38,7 @@ public class ApiController {
 	//테스트용-matchIds
 	@GetMapping("match/{puuid}")//TODO 테스트 컨트롤러. 배포시 삭제
 	public ResponseEntity<ArrayList<String>> getMatchIds(@PathVariable("puuid") String puuid) {
-		ArrayList<String> matchIds = apiService.getMatchIds(puuid);
+		ArrayList<String> matchIds = apiService.getMemberMatchIds(puuid);
 		return ResponseEntity.ok().body(matchIds);
 	}
 }

@@ -12,7 +12,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.api.dto.PuuidDto;
 import com.matching.ezgg.api.dto.WinRateNTierDto;
 import com.matching.ezgg.global.exception.RiotAccountNotFoundException;
@@ -31,23 +30,11 @@ public class ApiService {
 	private final RestTemplate krRestTemplate;
 	private final String apiKey;
 
-	private final MemberInfoService memberInfoService;
-
-	//Member에서 가져오기 전 임시 데이터
-	// MatchIdsDto matchIds = new MatchIdsDto(
-	// 	new ArrayList<>(Arrays.asList(
-	// 		"KR_7601768141", "KR_7601734513", "KR_7601705129", "KR_7601656394", "KR_7601613169",
-	// 		"KR_7600470456", "KR_7600434924", "KR_7600399950", "KR_7600362953", "KR_7600316442",
-	// 		"KR_7600285732", "KR_7600101729", "KR_7599633637", "KR_7599216701", "KR_7599167828",
-	// 		"KR_7599149069", "KR_7599089836", "KR_7599045765", "KR_7598920436", "KR_7598839696")));
-	// PuuidDto puuid = new PuuidDto("35XPfSvBPYGbS38jEmjVgCrLlZu-PO9yP5ajqMMH-Xec3o9nQ3PkqSBU7lAVQo1-Sa3e74aFxcpRPg");
-
 	public ApiService(@Qualifier("asia") RestTemplate asiaRestTemplate, @Qualifier("kr") RestTemplate krRestTemplate,
-		@Value("${api.key}") String apiKey, MemberInfoService memberInfoService) {
+		@Value("${api.key}") String apiKey) {
 		this.asiaRestTemplate = asiaRestTemplate;
 		this.krRestTemplate = krRestTemplate;
 		this.apiKey = apiKey;
-		this.memberInfoService = memberInfoService;
 	}
 
 	//riot/account/v1/accounts/by-riot-id/{riot-id}/{tag}?api_key=
@@ -107,11 +94,10 @@ public class ApiService {
 	}
 
 	//lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count=20&api_key=apiKey
-	public ArrayList<String> getMatchIds(String puuid) {
+	public ArrayList<String> getMemberMatchIds(String puuid) {
 		log.info("matchIds 조회 시작");
 
 		try {
-
 			String url = String.format(
 				"/lol/match/v5/matches/by-puuid/%s/ids?start=0&count=20&api_key=%s",
 				puuid, apiKey
