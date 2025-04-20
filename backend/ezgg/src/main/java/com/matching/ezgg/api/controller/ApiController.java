@@ -1,6 +1,7 @@
 package com.matching.ezgg.api.controller;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,8 +38,8 @@ public class ApiController {
 
 	//테스트용-matchIds
 	@GetMapping("match/{puuid}")//TODO 테스트 컨트롤러. 배포시 삭제
-	public ResponseEntity<ArrayList<String>> getMatchIds(@PathVariable("puuid") String puuid) {
-		ArrayList<String> matchIds = apiService.getMemberMatchIds(puuid);
+	public ResponseEntity<List<String>> getMatchIds(@PathVariable("puuid") String puuid) {
+		List<String> matchIds = apiService.getMemberMatchIds(puuid);
 		return ResponseEntity.ok().body(matchIds);
 	}
 }
