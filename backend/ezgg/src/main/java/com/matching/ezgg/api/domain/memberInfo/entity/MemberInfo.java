@@ -75,4 +75,8 @@ public class MemberInfo extends BaseEntity {
 		this.wins   = wins;
 		this.losses = losses;
 	}
+
+	public void updateMatchIds(List<String> matchIds) {
+		this.matchIds = matchIds;
+	}
 }
