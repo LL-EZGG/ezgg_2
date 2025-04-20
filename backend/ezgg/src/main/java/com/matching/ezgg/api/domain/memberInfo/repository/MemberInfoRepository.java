@@ -1,5 +1,6 @@
 package com.matching.ezgg.api.domain.memberInfo.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +15,7 @@ public interface MemberInfoRepository extends JpaRepository<MemberInfo, Long> {
 	Optional<String> findPuuidByMemberId(Long memberId);
 
 	Optional<MemberInfo> findByPuuid(String puuid);
+
+	@Query("SELECT m.matchIds FROM MemberInfo m WHERE m.puuid = :puuid")
+	Optional<List<String>> findMatchIdsByPuuid(String puuid);
 }

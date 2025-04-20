@@ -1,5 +1,7 @@
 package com.matching.ezgg.matching.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
@@ -20,14 +22,31 @@ public class MatchingService {
 	}
 
 	public void updateAllAttributesOfMember(String puuid){
+		// 티어, 승률 업데이트
 		memberInfoService.updateWinRateNTier(apiService.getMemberWinRateNTier(puuid));
 
-		//TODO match, recentTwentyMatch 업데이트
+		// matchIds 업데이트 후 새롭게 추가된 matchId 리스트 리턴
+		List<String> newlyAddedMatchIds = updateAndGetNewMatchIds(puuid, apiService.getMemberMatchIds(puuid));
+
+		//TODO match 각각 업데이트
+
+		//TODO recentTwentyMatch 업데이트
 
 	}
 
 	private void createEsMatchingDocument(){
 		//TODO
+	}
+
+	// 새롭게 추가된 matchId가 없으면 null리스트 리턴. 있으면 matchIds 업데이트 후 새롭게 저장된 matchId 리스트 리턴
+	public List<String> updateAndGetNewMatchIds(String puuid, List<String> fetchedMatchIds) {
+		List<String> newlyAddedMatchIds = memberInfoService.extractNewMatchIds(puuid, fetchedMatchIds);
+
+		if (newlyAddedMatchIds != null && !newlyAddedMatchIds.isEmpty()) {
+			memberInfoService.updateMatchIds(puuid, fetchedMatchIds);
+		}
+
+		return newlyAddedMatchIds;
 	}
 
 }
