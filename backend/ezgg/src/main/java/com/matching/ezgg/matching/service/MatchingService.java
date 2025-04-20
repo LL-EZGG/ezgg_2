@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.matching.ezgg.api.domain.match.service.MatchService;
 import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.api.service.ApiService;
 
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MatchingService {
 	private final MemberInfoService memberInfoService;
+	private final MatchService matchService;
 	private final ApiService apiService;
 
 	public void startMatching(Long memberId) {
@@ -28,7 +30,10 @@ public class MatchingService {
 		// matchIds 업데이트 후 새롭게 추가된 matchId 리스트 리턴
 		List<String> newlyAddedMatchIds = updateAndGetNewMatchIds(puuid, apiService.getMemberMatchIds(puuid));
 
-		//TODO match 각각 업데이트
+		// 새로운 match 들 저장
+		for (String matchId : newlyAddedMatchIds) {
+			matchService.save(apiService.getMemberMatch(puuid, matchId));
+		}
 
 		//TODO recentTwentyMatch 업데이트
 

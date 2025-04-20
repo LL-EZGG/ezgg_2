@@ -14,6 +14,9 @@ public interface MemberInfoRepository extends JpaRepository<MemberInfo, Long> {
 	@Query("SELECT m.puuid FROM MemberInfo m WHERE m.memberId = :memberId")
 	Optional<String> findPuuidByMemberId(Long memberId);
 
+	@Query("SELECT m.memberId FROM MemberInfo m WHERE m.puuid = :puuid")
+	Optional<Long> findMemberIdByPuuid(String puuid);
+
 	Optional<MemberInfo> findByPuuid(String puuid);
 
 	@Query("SELECT m.matchIds FROM MemberInfo m WHERE m.puuid = :puuid")

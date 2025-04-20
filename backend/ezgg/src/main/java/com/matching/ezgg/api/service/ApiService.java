@@ -12,11 +12,15 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
+import com.matching.ezgg.api.dto.MatchDto;
 import com.matching.ezgg.api.dto.PuuidDto;
 import com.matching.ezgg.api.dto.WinRateNTierDto;
+import com.matching.ezgg.common.MatchMapper;
 import com.matching.ezgg.global.exception.RiotMatchIdsNotFoundException;
 import com.matching.ezgg.global.exception.RiotAccountNotFoundException;
 import com.matching.ezgg.global.exception.RiotApiException;
+import com.matching.ezgg.global.exception.RiotMatchNotFoundException;
 import com.matching.ezgg.global.exception.RiotTierNotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,18 +34,22 @@ public class ApiService {
 	@Qualifier("kr")
 	private final RestTemplate krRestTemplate;
 	private final String apiKey;
+	private final MatchMapper matchMapper;
+	private final MemberInfoService memberInfoService;
 
 	public ApiService(@Qualifier("asia") RestTemplate asiaRestTemplate, @Qualifier("kr") RestTemplate krRestTemplate,
-		@Value("${api.key}") String apiKey) {
+		@Value("${api.key}") String apiKey, MatchMapper matchMapper, MemberInfoService memberInfoService) {
 		this.asiaRestTemplate = asiaRestTemplate;
 		this.krRestTemplate = krRestTemplate;
 		this.apiKey = apiKey;
+		this.matchMapper = matchMapper;
+		this.memberInfoService = memberInfoService;
 	}
 
 	//riot/account/v1/accounts/by-riot-id/{riot-id}/{tag}?api_key=
 	// 유저 id, tag -> Riot api -> puuid를 수령
 	public String getMemberPuuid(String riotId, String tag) {
-		log.info("puuid 조회 시작: {}, {}", riotId, tag);
+		log.info("puuid 조회 시작: {}#{}", riotId, tag);
 
 		try {
 			String url = String.format(
@@ -55,7 +63,7 @@ public class ApiService {
 				throw new RiotAccountNotFoundException(riotId, tag);
 			}
 
-			log.info("puuid 조회 성공: {}, {}", riotId, tag);
+			log.info("puuid 조회 성공: {}#{}", riotId, tag);
 			return dto.getPuuid();
 
 		} catch (HttpClientErrorException.NotFound e) {
@@ -131,24 +139,31 @@ public class ApiService {
 		}
 	}
 
-	//TODO DB에 저장되어 있던 매치 아이디들과 조회한 매치 아이디들 비교
-	// public Mono<List<String>> compareMatchIds(MatchIdsDto matchIdsDto) {
-	// 	log.info("matchIds 비교 시작");
-	// 	Mono<List<String>> oldMatchIds = getMatchIds(
-	//
-	//
-	// }
-
 	//lol/match/v5/matches/{matchId}?api_key=
-	public String getMatchInfo(String matchId) {
-		log.info("matchInfo 조회 시작");
+	public MatchDto getMemberMatch(String puuid, String matchId) {
+		log.info("matchInfo 조회 시작: puuid = {} / matchId = {}", puuid, matchId);
 
-		String url = String.format(
-			"/lol/match/v5/matches/%s?api_key=%s",
-			matchId, apiKey
-		);
+		try {
+			String url = String.format(
+				"/lol/match/v5/matches/%s?api_key=%s",
+				matchId, apiKey
+			);
 
-		return asiaRestTemplate.getForObject(url, String.class);
+			// Json 전체 수령
+			String rawJson = asiaRestTemplate.getForObject(url, String.class);
+			// MatchDto 형식으로 매핑
+			MatchDto matchDto = matchMapper.toMatchDto(rawJson, puuid);
+			// MemberId를 MatchDto에 따로 지정
+			matchDto.setMemberId(memberInfoService.getMemberIdByPuuid(puuid));
+
+			log.info("matchInfo 조회 성공: puuid = {} matchId = {}", puuid, matchId);
+			return matchDto;
+
+		} catch (RiotMatchNotFoundException e){
+			throw new RiotMatchNotFoundException(matchId);
+		} catch (RiotApiException e){
+			throw new RiotApiException("Match 조회 Riot Api 실패");
+		}
 	}
 
 }

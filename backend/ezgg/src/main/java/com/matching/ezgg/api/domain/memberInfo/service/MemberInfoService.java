@@ -30,6 +30,12 @@ public class MemberInfoService {
 			.orElseThrow(MemberInfoNotFoundException::new);
 	}
 
+	// puuid로 memberId 조회
+	public Long getMemberIdByPuuid(String puuid) {
+		return memberInfoRepository.findMemberIdByPuuid(puuid)
+			.orElseThrow(MemberInfoNotFoundException::new);
+	}
+
 	// puuid로 MemberInfo 조회
 	public MemberInfo getMemberInfoByPuuid(String puuid) {
 		return memberInfoRepository.findByPuuid(puuid).orElseThrow(MemberInfoNotFoundException::new);
