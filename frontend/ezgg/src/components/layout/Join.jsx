@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import axios from 'axios';
 import '../../styles/Join.css';
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate, Link } from 'react-router-dom';
 
 function Join() {
-
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -48,78 +46,67 @@ function Join() {
   };
 
   return (
-    <div className="join-container">
-      <form onSubmit={handleSubmit} className="join-form">
+    <div className="auth-form-container">
+      <Link to="/" className="auth-logo-link">
+        <img src="/logo.png" alt="EZGG Logo" className="auth-logo-image" />
+      </Link>
+      <form onSubmit={handleSubmit} className="auth-form">
         {message && <div className={`message ${message.includes('성공') ? 'success' : 'error'}`}>{message}</div>}
         
-        <div className="form-group">
-          <label htmlFor="memberUsername">아이디</label>
-          <input
-            type="text"
-            id="memberUsername"
-            name="memberUsername"
-            value={formData.memberUsername}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
-        </div>
+        <input
+          type="text"
+          name="memberUsername"
+          placeholder="ID"
+          value={formData.memberUsername}
+          onChange={handleChange}
+          required
+          disabled={isLoading}
+        />
         
-        <div className="form-group">
-          <label htmlFor="password">비밀번호</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
-        </div>
+        <input
+          type="password"
+          name="password"
+          placeholder="PW"
+          value={formData.password}
+          onChange={handleChange}
+          required
+          disabled={isLoading}
+        />
         
-        <div className="form-group">
-          <label htmlFor="email">이메일</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
-        </div>
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+          disabled={isLoading}
+        />
         
-        <div className="form-group">
-          <label htmlFor="riotUsername">라이엇 아이디</label>
-          <input
-            type="text"
-            id="riotUsername"
-            name="riotUsername"
-            value={formData.riotUsername}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
-        </div>
+        <input
+          type="text"
+          name="riotUsername"
+          placeholder="Riot ID"
+          value={formData.riotUsername}
+          onChange={handleChange}
+          required
+          disabled={isLoading}
+        />
         
-        <div className="form-group">
-          <label htmlFor="riotTag">라이엇 태그</label>
-          <input
-            type="text"
-            id="riotTag"
-            name="riotTag"
-            value={formData.riotTag}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
-        </div>
+        <input
+          type="text"
+          name="riotTag"
+          placeholder="Tag"
+          value={formData.riotTag}
+          onChange={handleChange}
+          required
+          disabled={isLoading}
+        />
         
-        <button type="submit" className="submit-btn" disabled={isLoading}>
-          {isLoading ? '처리 중...' : '가입하기'}
+        <button type="submit" className="auth-button" disabled={isLoading}>
+          {isLoading ? '처리 중...' : '회원가입'}
         </button>
+        <Link to="/" className="home-link">홈으로</Link>
       </form>
     </div>
   );

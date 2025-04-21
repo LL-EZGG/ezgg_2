@@ -12,16 +12,16 @@ const router = createBrowserRouter([
             {
                 index: true,
                 element: <Home/>
-            },
-            {
-                path: 'login',
-                element: <Login/>
-            },
-            {
-                path: 'join',
-                element: <Join/>
             }
         ]
+    },
+    {
+        path: 'login',
+        element: <Login/>
+    },
+    {
+        path: 'join',
+        element: <Join/>
     }
 ]);
 
