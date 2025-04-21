@@ -55,7 +55,7 @@ public class ChampionStat {//모스트 3개 캐릭터에 대해서만 생성
 	}
 
 	// kda 계산
-	public double getKda() {
+	public double calculateKda() {
 		if (deaths == 0) {
 			return kills + assists; // 1데스 했다고 가정
 		}

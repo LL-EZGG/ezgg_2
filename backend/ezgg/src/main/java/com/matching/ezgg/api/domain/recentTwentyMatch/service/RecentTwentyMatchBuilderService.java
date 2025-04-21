@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.api.domain.match.entity.Match;
 import com.matching.ezgg.api.domain.match.service.MatchService;
+import com.matching.ezgg.api.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.api.domain.recentTwentyMatch.ChampionStat;
 import com.matching.ezgg.api.dto.RecentTwentyMatchDto;
@@ -30,10 +31,12 @@ public class RecentTwentyMatchBuilderService {
 	// recentTwentyMatchDto 생성
 	public RecentTwentyMatchDto buildDto(String puuid) {
 		log.info("recentTwentyMatch 계산 시작");
+
+		MemberInfo memberInfo = memberInfoService.getMemberInfoByPuuid(puuid);
 		// matchIds 조회
-		List<String> matchIds = memberInfoService.getMemberMatchIdsByPuuid(puuid);
+		List<String> matchIds = memberInfo.getMatchIds();
 		// member_Id 조회
-		Long memberId = memberInfoService.getMemberIdByPuuid(puuid);
+		Long memberId = memberInfo.getMemberId();
 
 		// recentTwentyMatch에 들어갈 값 계산(sumKills, sumDeaths, sumAssists, wins, losses, allChampionStat)
 		AggregateResult result = calculateAggregateStatsFromMatches(matchIds, memberId);
@@ -70,6 +73,7 @@ public class RecentTwentyMatchBuilderService {
 	// recentTwentyMatch 계산 메서드
 	private AggregateResult calculateAggregateStatsFromMatches(List<String> matchIds, Long memberId) {
 
+		log.info("Riot Api Match 반복문 시작");
 		AggregateResult result = new AggregateResult();
 
 		// 최근 20 경기의 matchId들로 RecentTwentyMatch 업데이트
@@ -111,7 +115,7 @@ public class RecentTwentyMatchBuilderService {
 		return allChampionStats.values().stream()
 			.sorted(Comparator
 				.comparingInt(ChampionStat::getTotal).reversed()
-				.thenComparingDouble(ChampionStat::getKda).reversed())
+				.thenComparingDouble(ChampionStat::calculateKda).reversed())
 			.limit(3)
 			.collect(Collectors.toMap(
 				ChampionStat::getChampionName, // key 값
