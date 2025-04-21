@@ -12,9 +12,11 @@ import com.matching.ezgg.api.domain.recentTwentyMatch.service.RecentTwentyMatchS
 import com.matching.ezgg.api.service.ApiService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MatchingService {
 	private final MemberInfoService memberInfoService;
 	private final MatchService matchService;
@@ -24,6 +26,7 @@ public class MatchingService {
 
 	// 매칭 시작 시 호출
 	public void startMatching(Long memberId) {
+		log.info("매칭 시작! memberId = {}", memberId);
 		String puuid = memberInfoService.getMemberPuuidByMemberId(memberId);
 		updateAllAttributesOfMember(puuid);
 		//TODO createEsMatchingDocument(), StartMatchingByDocuments(), ...
@@ -31,6 +34,7 @@ public class MatchingService {
 
 	// 매칭 시작 전 모든 데이터 업데이트
 	public void updateAllAttributesOfMember(String puuid){
+		log.info("Riot Api로 모든 데이터 저장 시작: {}", puuid);
 		// 티어, 승률 업데이트
 		memberInfoService.updateWinRateNTier(apiService.getMemberWinRateNTier(puuid));
 
@@ -43,6 +47,8 @@ public class MatchingService {
 		}
 
 		saveRecentTwentyMatch(recentTwentyMatchBuilderService.buildDto(puuid));
+
+		log.info("Riot Api로 모든 데이터 저장 종료: {}", puuid);
 	}
 
 	private void createEsMatchingDocument(){

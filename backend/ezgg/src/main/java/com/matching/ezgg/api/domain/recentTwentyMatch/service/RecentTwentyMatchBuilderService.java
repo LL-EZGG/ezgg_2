@@ -17,9 +17,11 @@ import com.matching.ezgg.api.domain.recentTwentyMatch.ChampionStat;
 import com.matching.ezgg.api.dto.RecentTwentyMatchDto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RecentTwentyMatchBuilderService {
 
 	private final MemberInfoService memberInfoService;
@@ -27,6 +29,7 @@ public class RecentTwentyMatchBuilderService {
 
 	// recentTwentyMatchDto 생성
 	public RecentTwentyMatchDto buildDto(String puuid) {
+		log.info("recentTwentyMatch 계산 시작");
 		// matchIds 조회
 		List<String> matchIds = memberInfoService.getMemberMatchIdsByPuuid(puuid);
 		// member_Id 조회
@@ -50,6 +53,7 @@ public class RecentTwentyMatchBuilderService {
 		recentTwentyMatchDto.setWinRate(winRate);
 		recentTwentyMatchDto.setChampionStats(most3ChampionStats);
 
+		log.info("recentTwentyMatch 계산 종료");
 		return recentTwentyMatchDto;
 	}
 

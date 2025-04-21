@@ -9,9 +9,11 @@ import com.matching.ezgg.api.domain.recentTwentyMatch.repository.RecentTwentyMat
 import com.matching.ezgg.global.exception.RecentTwentyMatchNotFoundException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RecentTwentyMatchService {
 
 	private final RecentTwentyMatchRepository recentTwentyMatchRepository;
@@ -30,6 +32,7 @@ public class RecentTwentyMatchService {
 	// recentTwentyMatch 생성
 	@Transactional
 	public void createNewRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
+		log.info("recentTwentyMatch 저장 시작");
 
 		RecentTwentyMatch recentTwentyMatch = RecentTwentyMatch.builder()
 			.memberId(recentTwentyMatchDto.getMemberId())
@@ -41,11 +44,13 @@ public class RecentTwentyMatchService {
 			.build();
 
 		recentTwentyMatchRepository.save(recentTwentyMatch);
+		log.info("recentTwentyMatch 저장 종료");
 	}
 
 	// recentTwentyMatch 업데이트
 	@Transactional
 	public void updateRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
+		log.info("recentTwentyMatch 업데이트 시작");
 		RecentTwentyMatch recentTwentyMatch = getRecentTwentyMatchByMemberId(recentTwentyMatchDto.getMemberId());
 		recentTwentyMatch.update(
 			recentTwentyMatchDto.getSumKills(),
@@ -54,5 +59,7 @@ public class RecentTwentyMatchService {
 			recentTwentyMatchDto.getChampionStats(),
 			recentTwentyMatchDto.getWinRate()
 		); // 영속성 상태에서 Dirty Checking을 해 자동으로 db에 커밋됨
+
+		log.info("recentTwentyMatch 업데이트 종료");
 	}
 }
