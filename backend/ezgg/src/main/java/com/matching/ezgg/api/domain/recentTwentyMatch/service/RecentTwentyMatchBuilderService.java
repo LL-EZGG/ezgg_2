@@ -86,13 +86,13 @@ public class RecentTwentyMatchBuilderService {
 
 			if (Boolean.TRUE.equals(match.getWin())) {
 				result.wins++;
-			}else {
+			} else {
 				result.losses++;
 			}
 
 			// championStat 업데이트
 			result.allChampionStats
-				.computeIfAbsent(match.getChampionName(),
+				.computeIfAbsent(match.getChampionName().trim().toLowerCase(),
 					name -> ChampionStat.builder()
 						.championName(name)
 						.build())// 해당 챔피언이 처음으로 기록될때만 ChampionStat 객체 생성. 있을 시에는 해당 championStat 객체에 updateByMatch메서드 바로 적용
@@ -115,7 +115,9 @@ public class RecentTwentyMatchBuilderService {
 		return allChampionStats.values().stream()
 			.sorted(Comparator
 				.comparingInt(ChampionStat::getTotal).reversed()
-				.thenComparingDouble(ChampionStat::calculateKda).reversed())
+				.thenComparing(Comparator.comparingDouble(ChampionStat::calculateKda)
+					.reversed())
+			)
 			.limit(3)
 			.collect(Collectors.toMap(
 				ChampionStat::getChampionName, // key 값

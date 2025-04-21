@@ -5,9 +5,11 @@ import com.matching.ezgg.api.domain.match.entity.Match;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @NoArgsConstructor
+@Slf4j
 public class ChampionStat {//모스트 3개 캐릭터에 대해서만 생성
 
 	private String championName;
@@ -35,11 +37,11 @@ public class ChampionStat {//모스트 3개 캐릭터에 대해서만 생성
 		this.kills += match.getKills();
 		this.deaths += match.getDeaths();
 		this.assists += match.getAssists();
-		addMatchResult(match.getWin());
+		addMatchResult(Boolean.TRUE.equals(match.getWin()));
 	}
 
 	// 승패 여부 기록
-	public void addMatchResult(boolean win) {
+	private void addMatchResult(boolean win) {
 		if (win) {
 			this.wins++;
 		} else {
