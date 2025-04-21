@@ -41,7 +41,7 @@ public class RecentTwentyMatch extends BaseEntity {
 	@Column(name = "sum_assists", unique = false, nullable = true)
 	private Integer sumAssists;
 
-	@Column(name = "champion_stats", unique = false, nullable = true)
+	@Column(name = "champion_stats", unique = false, nullable = true, length = 1000)//TODO 정규화 필요
 	@Convert(converter = ChampionStatsConvert.class)
 	private Map<String, ChampionStat> championStats;
 
