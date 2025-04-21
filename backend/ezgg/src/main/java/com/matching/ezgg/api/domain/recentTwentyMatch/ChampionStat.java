@@ -1,26 +1,66 @@
 package com.matching.ezgg.api.domain.recentTwentyMatch;
 
-import lombok.AllArgsConstructor;
+import com.matching.ezgg.api.domain.match.entity.Match;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
-public class ChampionStat {
+public class ChampionStat {//모스트 3개 캐릭터에 대해서만 생성
 
 	private String championName;
 	private int kills;
 	private int deaths;
 	private int assists;
-	// todo 챔피언별 승률 (총 판수 / 총 승리 횟수)
+	private int wins;
+	private int losses;
+	private int total;
+	private int winRateOfChampion;
 
 	@Builder
-	public ChampionStat(String championName, int kills, int deaths, int assists) {
+	public ChampionStat(String championName, int kills, int deaths, int assists, int wins, int losses) {
 		this.championName = championName;
 		this.kills = kills;
 		this.deaths = deaths;
 		this.assists = assists;
+		this.wins = wins;
+		this.losses = losses;
+		recalculate();
+	}
+
+	// match 데이터로 championStat 업데이트
+	public void updateByMatch(Match match) {
+		this.kills += match.getKills();
+		this.deaths += match.getDeaths();
+		this.assists += match.getAssists();
+		addMatchResult(match.getWin());
+	}
+
+	// 승패 여부 기록
+	public void addMatchResult(boolean win) {
+		if (win) {
+			this.wins++;
+		} else {
+			this.losses++;
+		}
+		recalculate();
+	}
+
+	// 승률 재계산
+	private void recalculate() {
+		this.total = wins + losses;
+		this.winRateOfChampion = total == 0 ? 0 : (wins * 100) / total;
+	}
+
+	// kda 계산
+	public double getKda() {
+		if (deaths == 0) {
+			return kills + assists; // 1데스 했다고 가정
+		}
+
+		double kda = (double)(kills + assists) / deaths;
+		return Math.round(kda * 100.0) / 100.0; // 소수점 2자리 반올림
 	}
 }

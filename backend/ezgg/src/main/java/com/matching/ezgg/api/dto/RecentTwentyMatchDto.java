@@ -1,18 +1,21 @@
-package com.matching.ezgg.api.domain.recentTwentyMatch.dto;
+package com.matching.ezgg.api.dto;
 
 import java.util.Map;
 
 import com.matching.ezgg.api.domain.recentTwentyMatch.ChampionStat;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Builder
 @Getter
-public class RecentTwentyMatchDto {//TODO 예시 DTO. 상황에 맞게 조정
+@Setter
+@NoArgsConstructor
+public class RecentTwentyMatchDto {
 	private long memberId;
 	private int sumKills;
 	private int sumDeaths;
 	private int sumAssists;
 	private Map<String, ChampionStat> championStats;
+	private int winRate;
 }

@@ -45,13 +45,26 @@ public class RecentTwentyMatch extends BaseEntity {
 	@Convert(converter = ChampionStatsConvert.class)
 	private Map<String, ChampionStat> championStats;
 
+	@Column(name = "win_rate", unique = false, nullable = true)
+	private Integer winRate;
+
 	@Builder
 	public RecentTwentyMatch(Long memberId, Integer sumKills, Integer sumDeaths, Integer sumAssists,
-		Map<String, ChampionStat> championStats) {
+		Map<String, ChampionStat> championStats, Integer winRate) {
 		this.memberId = memberId;
 		this.sumKills = sumKills;
 		this.sumDeaths = sumDeaths;
 		this.sumAssists = sumAssists;
 		this.championStats = championStats;
+		this.winRate = winRate;
+	}
+
+	public void update(Integer sumKills, Integer sumDeaths, Integer sumAssists,
+		Map<String, ChampionStat> championStats, Integer winRate) {
+		this.sumKills = sumKills;
+		this.sumDeaths = sumDeaths;
+		this.sumAssists = sumAssists;
+		this.championStats = championStats;
+		this.winRate = winRate;
 	}
 }
