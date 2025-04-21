@@ -18,7 +18,4 @@ public interface MemberInfoRepository extends JpaRepository<MemberInfo, Long> {
 	Optional<Long> findMemberIdByPuuid(String puuid);
 
 	Optional<MemberInfo> findByPuuid(String puuid);
-
-	@Query("SELECT m.matchIds FROM MemberInfo m WHERE m.puuid = :puuid")
-	Optional<List<String>> findMatchIdsByPuuid(String puuid);
 }
