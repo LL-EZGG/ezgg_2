@@ -19,12 +19,6 @@ public interface MemberInfoRepository extends JpaRepository<MemberInfo, Long> {
 	Optional<Long> findMemberIdByPuuid(String puuid);
 
 	Optional<MemberInfo> findByPuuid(String puuid);
-  
-	// riotUsername 중복 검사
-	boolean existsByRiotUsername(String riotUsername);
-
-	// riotTag 중복 검사
-	boolean existsByRiotTag(String riotTag);
 
 	// riotUsername과 riotTag를 동시에 일치하는 회원이 존재하는 지 확인
 	boolean existsByRiotUsernameAndRiotTag(String riotUsename, String riotTag);
