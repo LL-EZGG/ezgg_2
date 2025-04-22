@@ -3,6 +3,7 @@ package com.matching.ezgg.api.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,12 +13,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WinRateNTierDto {
-	private String queueType;
-
-	private String puuid;
-	private Integer wins;
-	private Integer losses;
-	private String tier;
-	private String rank;
+public class MatchDto {
+	private long memberId;
+	private String riotMatchId;
+	private int kills;
+	private int deaths;
+	private int assists;
+	private String teamPosition;
+	private String championName;
+	private boolean win;
 }

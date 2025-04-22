@@ -3,33 +3,63 @@ package com.matching.ezgg.api.domain.recentTwentyMatch.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matching.ezgg.api.domain.recentTwentyMatch.dto.RecentTwentyMatchDto;
+import com.matching.ezgg.api.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.api.domain.recentTwentyMatch.entity.RecentTwentyMatch;
 import com.matching.ezgg.api.domain.recentTwentyMatch.repository.RecentTwentyMatchRepository;
+import com.matching.ezgg.global.exception.RecentTwentyMatchNotFoundException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RecentTwentyMatchService {
 
 	private final RecentTwentyMatchRepository recentTwentyMatchRepository;
 
-	@Transactional
-	public void save(RecentTwentyMatchDto recentTwentyMatchDto) {
-		try {
-			RecentTwentyMatch recentTwentyMatch = RecentTwentyMatch.builder()
-				.memberId(recentTwentyMatchDto.getMemberId())
-				.sumKills(recentTwentyMatchDto.getSumKills())
-				.sumDeaths(recentTwentyMatchDto.getSumDeaths())
-				.sumAssists(recentTwentyMatchDto.getSumAssists())
-				.championStats(recentTwentyMatchDto.getChampionStats())
-				.build();
+	// memberId를 가지고 있는 recentTwentyMatch 존재 여부 조회 TODO Upsert 방식으로 수정
+	public boolean existsByMemberId(Long memberId) {
+		return recentTwentyMatchRepository.existsByMemberId(memberId);
+	}
 
-			recentTwentyMatchRepository.save(recentTwentyMatch);
-		} catch (Exception e) {
-			e.printStackTrace();//FIXME 예외처리 제대로 하고 삭제
-			//TODO 예외 경우 여러가지 판단해서 커스텀Exception 생성하고 각각 ErrorResponse 리턴하는 예외처리
-		}
+	// memberId로 recentTwentyMatch 조회
+	public RecentTwentyMatch getRecentTwentyMatchByMemberId(Long memberId) {
+		return recentTwentyMatchRepository.findByMemberId(memberId)
+			.orElseThrow(RecentTwentyMatchNotFoundException::new);
+	}
+
+	// recentTwentyMatch 생성 TODO Upsert 방식으로 수정
+	@Transactional
+	public void createNewRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
+		log.info("recentTwentyMatch 저장 시작");
+
+		RecentTwentyMatch recentTwentyMatch = RecentTwentyMatch.builder()
+			.memberId(recentTwentyMatchDto.getMemberId())
+			.sumKills(recentTwentyMatchDto.getSumKills())
+			.sumDeaths(recentTwentyMatchDto.getSumDeaths())
+			.sumAssists(recentTwentyMatchDto.getSumAssists())
+			.championStats(recentTwentyMatchDto.getChampionStats())
+			.winRate(recentTwentyMatchDto.getWinRate())
+			.build();
+
+		recentTwentyMatchRepository.save(recentTwentyMatch);
+		log.info("recentTwentyMatch 저장 종료");
+	}
+
+	// recentTwentyMatch 업데이트 TODO Upsert 방식으로 수정
+	@Transactional
+	public void updateRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
+		log.info("recentTwentyMatch 업데이트 시작");
+		RecentTwentyMatch recentTwentyMatch = getRecentTwentyMatchByMemberId(recentTwentyMatchDto.getMemberId());
+		recentTwentyMatch.update(
+			recentTwentyMatchDto.getSumKills(),
+			recentTwentyMatchDto.getSumDeaths(),
+			recentTwentyMatchDto.getSumAssists(),
+			recentTwentyMatchDto.getChampionStats(),
+			recentTwentyMatchDto.getWinRate()
+		); // 영속성 상태에서 Dirty Checking을 해 자동으로 db에 커밋됨
+
+		log.info("recentTwentyMatch 업데이트 종료");
 	}
 }
