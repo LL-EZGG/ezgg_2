@@ -19,6 +19,17 @@ spring:
       enabled: true
       settings:
         web-allow-others: true
+  sql:
+    init:
+      mode: never
+
+  elasticsearch:
+    uris: http://elasticsearch:9200
+    username:
+    password:
+    connection-timeout: 5s
+    socket-timeout: 10s
+
 logging:
   level:
     org.springframework.security: DEBUG
