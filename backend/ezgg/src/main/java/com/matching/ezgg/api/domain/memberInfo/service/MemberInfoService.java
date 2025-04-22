@@ -82,7 +82,7 @@ public class MemberInfoService {
 
 	//기존 matchIds와 새로운 matchIds 비교 후 새롭게 추가된 matchId 리스트를 리턴
 	public List<String> extractNewMatchIds(String puuid, List<String> fetchedMatchIds) {
-		// 기존 matchIds가 null이면 빈 리스트로 대체
+		// 기존 matchIds가 null이면 빈 리스트로 대체 TODO memberInfo에 항상 빈 리스트를 채워놓도록 refactor
 		List<String> existingMatchIds = Optional.ofNullable(getMemberInfoByPuuid(puuid).getMatchIds())
 			.orElse(Collections.emptyList());
 

@@ -18,7 +18,7 @@ public class RecentTwentyMatchService {
 
 	private final RecentTwentyMatchRepository recentTwentyMatchRepository;
 
-	// memberId를 가지고 있는 recentTwentyMatch 존재 여부 조회
+	// memberId를 가지고 있는 recentTwentyMatch 존재 여부 조회 TODO Upsert 방식으로 수정
 	public boolean existsByMemberId(Long memberId) {
 		return recentTwentyMatchRepository.existsByMemberId(memberId);
 	}
@@ -29,7 +29,7 @@ public class RecentTwentyMatchService {
 			.orElseThrow(RecentTwentyMatchNotFoundException::new);
 	}
 
-	// recentTwentyMatch 생성
+	// recentTwentyMatch 생성 TODO Upsert 방식으로 수정
 	@Transactional
 	public void createNewRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
 		log.info("recentTwentyMatch 저장 시작");
@@ -47,7 +47,7 @@ public class RecentTwentyMatchService {
 		log.info("recentTwentyMatch 저장 종료");
 	}
 
-	// recentTwentyMatch 업데이트
+	// recentTwentyMatch 업데이트 TODO Upsert 방식으로 수정
 	@Transactional
 	public void updateRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
 		log.info("recentTwentyMatch 업데이트 시작");

@@ -21,14 +21,6 @@ public class ApiController {
 
 	private final ApiService apiService;
 
-	// //puuid 조회
-	// @GetMapping("/{riot-id}/{tag}")
-	// public ResponseEntity<String> postRiotIdTag(@PathVariable("riot-id") String riotId,
-	// 	@PathVariable("tag") String tag) {
-	// 	String puuid = apiService.getMemberPuuid(riotId, tag);
-	// 	return ResponseEntity.ok().body(puuid);
-	// }//TODO 굳이 백엔드 서버내에서 api를 주고받을 이유가 없다.
-
 	//테스트용-티어
 	@GetMapping("tier/{puuid}")//TODO 테스트 컨트롤러. 배포시 삭제
 	public ResponseEntity<WinRateNTierDto> getWinRateNTier(@PathVariable("puuid") String puuid) {

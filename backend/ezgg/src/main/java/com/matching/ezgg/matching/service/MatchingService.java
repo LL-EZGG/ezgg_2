@@ -70,7 +70,7 @@ public class MatchingService {
 	// recent_twenty_match 엔티티 업데이트 & 저장
 	public void saveRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
 
-		// 이미 존재하면 업데이트, 없으면 새롭게 저장
+		// 이미 존재하면 업데이트, 없으면 새롭게 저장 TODO Upsert 방식으로 수정
 		if(recentTwentyMatchService.existsByMemberId(recentTwentyMatchDto.getMemberId())){
 			recentTwentyMatchService.updateRecentTwentyMatch(recentTwentyMatchDto);
 		} else {
