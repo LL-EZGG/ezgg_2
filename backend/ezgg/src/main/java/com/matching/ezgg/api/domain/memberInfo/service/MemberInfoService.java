@@ -62,18 +62,22 @@ public class MemberInfoService {
 	}
 
 	//member info 생성
-	public void createNewMemberInfo(Long memberId, String riotUserName, String riotTag,
+	public MemberInfo createNewMemberInfo(Long memberId, String riotUserName, String riotTag,
 		String puuid) {//TODO 트랜잭션을 memberService가 아니라 여기서??
+
 		log.info("{}#{}의 새 memberInfo 생성 시작", riotUserName, riotTag);
-		memberInfoRepository.save(
-			MemberInfo.builder()
-				.memberId(memberId)
-				.riotUsername(riotUserName)
-				.riotTag(riotTag)
-				.puuid(puuid)
-				.build()
-		);
+
+		MemberInfo memberInfo = MemberInfo.builder()
+			.memberId(memberId)
+			.riotUsername(riotUserName)
+			.riotTag(riotTag)
+			.puuid(puuid)
+			.build();
+
+		memberInfoRepository.save(memberInfo);
 		log.info("{}#{}의 새 memberInfo 생성 종료", riotUserName, riotTag);
+
+		return memberInfo;
 	}
 
 	//기존 matchIds와 새로운 matchIds 비교 후 새롭게 추가된 matchId 리스트를 리턴

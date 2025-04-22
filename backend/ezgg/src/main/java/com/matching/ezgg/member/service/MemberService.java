@@ -53,7 +53,7 @@ public class MemberService {
 
 		//MemberInfo 엔티티 생성 후 저장
 		String newPuuid = apiService.getMemberPuuid(signupRequest.getRiotUsername(), signupRequest.getRiotTag());
-		memberInfoService.createNewMemberInfo(member.getId(), member.getRiotUsername(), member.getRiotTag(), newPuuid);
+		MemberInfo memberInfo = memberInfoService.createNewMemberInfo(member.getId(), signupRequest.getRiotUsername(), signupRequest.getRiotTag(), newPuuid);
 
 		return SignupResponse.builder()
 			.memberUsername(member.getMemberUsername())
