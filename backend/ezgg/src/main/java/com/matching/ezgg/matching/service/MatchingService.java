@@ -46,8 +46,9 @@ public class MatchingService {
 			matchService.save(apiService.getMemberMatch(puuid, matchId));
 		}
 
-		saveRecentTwentyMatch(recentTwentyMatchBuilderService.buildDto(puuid));
-
+		if (!newlyAddedMatchIds.isEmpty()) {
+			saveRecentTwentyMatch(recentTwentyMatchBuilderService.buildDto(puuid));
+		}
 		log.info("Riot Api로 모든 데이터 저장 종료: {}", puuid);
 	}
 
