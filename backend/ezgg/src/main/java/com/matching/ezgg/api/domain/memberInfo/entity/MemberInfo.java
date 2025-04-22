@@ -39,9 +39,9 @@ public class MemberInfo extends BaseEntity {
 	@Column(name = "puuid", unique = true, nullable = true)
 	private String puuid;
 
-	@Column(name = "match_ids", unique = false, nullable = true)
+	@Column(name = "match_ids", unique = false, nullable = true, length = 1000)//TODO 정규화 필요
 	@Convert(converter = MatchIdConvert.class)
-	private List<String> matchIds;//TODO 테스트 케이스 작성 필요
+	private List<String> matchIds;
 
 	@Column(name = "tier", unique = false, nullable = true)
 	private String tier;
@@ -67,5 +67,16 @@ public class MemberInfo extends BaseEntity {
 		this.rank = rank;
 		this.wins = wins;
 		this.losses = losses;
+	}
+
+	public void updateWinRateAndTier(String tier, String rank, int wins, int losses) {
+		this.tier   = tier;
+		this.rank   = rank;
+		this.wins   = wins;
+		this.losses = losses;
+	}
+
+	public void updateMatchIds(List<String> matchIds) {
+		this.matchIds = matchIds;
 	}
 }
