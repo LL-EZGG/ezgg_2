@@ -19,5 +19,5 @@ public class WinRateNTierDto {
 	private Integer wins;
 	private Integer losses;
 	private String tier;
-	private String rank;
+	private String tierNum;
 }
