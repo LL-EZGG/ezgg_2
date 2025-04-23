@@ -9,7 +9,7 @@ import com.matching.ezgg.api.domain.recentTwentyMatch.repository.RecentTwentyMat
 
 @ActiveProfiles("local")
 @DataJpaTest
-public class RecentTwentyMatchLocalProfilesTest {
+class RecentTwentyMatchInfoLocalProfilesTest {
 
 	@Autowired
 	private RecentTwentyMatchRepository recentTwentyMatchRepository;

@@ -4,9 +4,9 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.matching.ezgg.api.domain.match.entity.Match;
+import com.matching.ezgg.api.domain.match.entity.MatchInfo;
 
-public interface MatchRepository extends JpaRepository<Match, Long> {
+public interface MatchRepository extends JpaRepository<MatchInfo, Long> {
 
-	Optional<Match> findByMemberIdAndRiotMatchId(Long memberId, String matchId);
+	Optional<MatchInfo> findByMemberIdAndRiotMatchId(Long memberId, String matchId);
 }

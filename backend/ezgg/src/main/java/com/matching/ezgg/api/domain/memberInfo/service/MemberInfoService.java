@@ -53,12 +53,12 @@ public class MemberInfoService {
 
 		memberInfo.updateWinRateAndTier(
 			winRateNTierDto.getTier(),
-			winRateNTierDto.getRank(),
+			winRateNTierDto.getTierNum(),
 			winRateNTierDto.getWins(),
 			winRateNTierDto.getLosses()
 		); // 영속성 상태에서 Dirty Checking을 해 자동으로 db에 커밋됨
 
-		log.info("티어, 승률 업데이트 종료: {}{}", winRateNTierDto.getTier(), winRateNTierDto.getRank());
+		log.info("티어, 승률 업데이트 종료: {}{}", winRateNTierDto.getTier(), winRateNTierDto.getTierNum());
 	}
 
 	//member info 생성
