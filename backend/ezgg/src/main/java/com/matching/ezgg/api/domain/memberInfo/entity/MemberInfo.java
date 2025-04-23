@@ -46,8 +46,8 @@ public class MemberInfo extends BaseEntity {
 	@Column(name = "tier", unique = false, nullable = true)
 	private String tier;
 
-	@Column(name = "rank", unique = false, nullable = true)
-	private String rank;
+	@Column(name = "tier_num", unique = false, nullable = true)
+	private String tierNum;
 
 	@Column(name = "wins", unique = false, nullable = true)
 	private Integer wins;
@@ -57,22 +57,22 @@ public class MemberInfo extends BaseEntity {
 
 	@Builder
 	public MemberInfo(Long memberId, String riotUsername, String riotTag, String puuid,
-		List<String> matchIds, String tier, String rank, Integer wins, Integer losses) {
+		List<String> matchIds, String tier, String tierNum, Integer wins, Integer losses) {
 		this.memberId = memberId;
 		this.riotUsername = riotUsername;
 		this.riotTag = riotTag;
 		this.puuid = puuid;
 		this.matchIds = matchIds;
 		this.tier = tier;
-		this.rank = rank;
+		this.tierNum = tierNum;
 		this.wins = wins;
 		this.losses = losses;
 	}
 
-	public void updateWinRateAndTier(String tier, String rank, int wins, int losses) {
-		this.tier   = tier;
-		this.rank   = rank;
-		this.wins   = wins;
+	public void updateWinRateAndTier(String tier, String tierNum, int wins, int losses) {
+		this.tier = tier;
+		this.tierNum = tierNum;
+		this.wins = wins;
 		this.losses = losses;
 	}
 
