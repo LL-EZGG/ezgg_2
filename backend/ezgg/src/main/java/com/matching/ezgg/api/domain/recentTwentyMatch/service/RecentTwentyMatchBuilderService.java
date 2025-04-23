@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.matching.ezgg.api.domain.match.entity.Match;
+import com.matching.ezgg.api.domain.match.entity.MatchInfo;
 import com.matching.ezgg.api.domain.match.service.MatchService;
 import com.matching.ezgg.api.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
@@ -78,13 +78,13 @@ public class RecentTwentyMatchBuilderService {
 
 		// 최근 20 경기의 matchId들로 RecentTwentyMatch 업데이트
 		for (String matchId : matchIds) {
-			Match match = matchService.getMatchByMemberIdAndRiotMatchId(memberId, matchId);
+			MatchInfo matchInfo = matchService.getMatchByMemberIdAndRiotMatchId(memberId, matchId);
 
-			result.sumKills += match.getKills();
-			result.sumDeaths += match.getDeaths();
-			result.sumAssists += match.getAssists();
+			result.sumKills += matchInfo.getKills();
+			result.sumDeaths += matchInfo.getDeaths();
+			result.sumAssists += matchInfo.getAssists();
 
-			if (Boolean.TRUE.equals(match.getWin())) {
+			if (Boolean.TRUE.equals(matchInfo.getWin())) {
 				result.wins++;
 			} else {
 				result.losses++;
@@ -92,11 +92,11 @@ public class RecentTwentyMatchBuilderService {
 
 			// championStat 업데이트
 			result.allChampionStats
-				.computeIfAbsent(match.getChampionName().trim().toLowerCase(),
+				.computeIfAbsent(matchInfo.getChampionName().trim().toLowerCase(),
 					name -> ChampionStat.builder()
 						.championName(name)
 						.build())// 해당 챔피언이 처음으로 기록될때만 ChampionStat 객체 생성. 있을 시에는 해당 championStat 객체에 updateByMatch메서드 바로 적용
-				.updateByMatch(match);
+				.updateByMatch(matchInfo);
 		}
 
 		return result;

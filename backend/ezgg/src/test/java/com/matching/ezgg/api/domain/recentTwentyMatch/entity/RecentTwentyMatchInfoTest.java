@@ -1,7 +1,5 @@
 package com.matching.ezgg.api.domain.recentTwentyMatch.entity;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +14,7 @@ import com.matching.ezgg.api.domain.recentTwentyMatch.repository.RecentTwentyMat
 
 @ActiveProfiles("test")
 @DataJpaTest
-class RecentTwentyMatchTest {
+class RecentTwentyMatchInfoTest {
 
 	@Autowired
 	private RecentTwentyMatchRepository recentTwentyMatchRepository;

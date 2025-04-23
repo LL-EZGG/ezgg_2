@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "match_info")
-public class Match extends BaseEntity {
+public class MatchInfo extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
@@ -48,7 +48,8 @@ public class Match extends BaseEntity {
 	private Boolean win;
 
 	@Builder
-	public Match(Long memberId, String riotMatchId, Integer kills, Integer deaths, Integer assists, String teamPosition,
+	public MatchInfo(Long memberId, String riotMatchId, Integer kills, Integer deaths, Integer assists,
+		String teamPosition,
 		String championName, Boolean win) {
 		this.memberId = memberId;
 		this.riotMatchId = riotMatchId;
