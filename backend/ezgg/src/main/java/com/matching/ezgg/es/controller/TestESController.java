@@ -1,12 +1,18 @@
 package com.matching.ezgg.es.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.matching.ezgg.es.dto.TestDto;
 import com.matching.ezgg.es.index.MatchingUserES;
 import com.matching.ezgg.es.repository.MatchingUserRepository;
+import com.matching.ezgg.es.service.EsMatchingFilter;
 import com.matching.ezgg.global.response.SuccessResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -16,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class TestESController {
 
 	private final MatchingUserRepository matchingUserRepository;
+	private final EsMatchingFilter esMatchingFilter;
 
 	@PostMapping("/es/test")
 	public ResponseEntity<SuccessResponse<Void>> esTest(@RequestBody MatchingUserES matchingUserES) {
@@ -24,6 +31,15 @@ public class TestESController {
 			.code("200")
 			.message("success")
 			.build());
+	}
+
+	// 테스트용
+	@GetMapping("es/matching/{my-line}/{partner-line}/{tier}/{member-id}")
+	public ResponseEntity<List<TestDto>> testMatching(@PathVariable("my-line") String myLine,
+		@PathVariable("partner-line") String partnerLine,
+		@PathVariable("tier") String tier,
+		@PathVariable("member-id") Long memberId) {
+		return ResponseEntity.ok().body(esMatchingFilter.findMatchingUsers(myLine, partnerLine, tier, memberId));
 	}
 
 }
