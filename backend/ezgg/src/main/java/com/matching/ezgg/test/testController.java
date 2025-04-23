@@ -22,6 +22,6 @@ public class testController {
 
 	@GetMapping("/testMatching")
 	public void testMatching() {
-		matchingService.startMatching(1L);
+		matchingService.startMatching(1L);//TODO CustomUserDetailService에서 실제 memberId 받아오기
 	}
 }
