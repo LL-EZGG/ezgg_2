@@ -22,7 +22,6 @@ public class MemberInfoES {
 	@Field(type = FieldType.Object)
 	private SeasonInfo seasonInfo;
 
-
 	@Getter
 	@Setter
 	@NoArgsConstructor
@@ -30,7 +29,7 @@ public class MemberInfoES {
 	@Builder
 	public static class SeasonInfo {
 		private String tier;
-		private String rank;
+		private String tierNum;
 		private int wins;
 		private int defeats;
 		private int winRate;
