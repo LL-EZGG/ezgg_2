@@ -1,6 +1,7 @@
 package com.matching.ezgg.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,5 +20,6 @@ public class WinRateNTierDto {
 	private Integer wins;
 	private Integer losses;
 	private String tier;
+	@JsonProperty("rank")
 	private String tierNum;
 }
