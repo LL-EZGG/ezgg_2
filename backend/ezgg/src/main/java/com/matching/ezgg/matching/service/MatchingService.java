@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.api.dto.MatchDto;
-import com.matching.ezgg.api.dto.RecentTwentyMatchDto;
-import com.matching.ezgg.api.domain.recentTwentyMatch.service.RecentTwentyMatchBuilderService;
 import com.matching.ezgg.api.dto.WinRateNTierDto;
 import com.matching.ezgg.api.service.ApiService;
 import com.matching.ezgg.matching.dto.MemberDataBundle;
@@ -22,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 public class MatchingService {
 	private final MemberInfoService memberInfoService;
 	private final ApiService apiService;
-	private final RecentTwentyMatchBuilderService recentTwentyMatchBuilderService;
 	private final MatchingDataBulkSaveService matchingDataBulkSaveService;
 
 	// 매칭 시작 시 호출
@@ -42,7 +39,7 @@ public class MatchingService {
 		WinRateNTierDto memberWinRateNTier = apiService.getMemberWinRateNTier(puuid);
 		List<String> fetchedMatchIds = apiService.getMemberMatchIds(puuid);
 		List<String> newlyAddedMatchIds = getNewMatchIds(puuid, fetchedMatchIds);
-		boolean existNewMatchIds = !newlyAddedMatchIds.isEmpty();
+		boolean existsNewMatchIds = !newlyAddedMatchIds.isEmpty();
 
 		// matchInfo api 요청해서 메모리에 저장
 		List<MatchDto> matchDtoList = new ArrayList<>();
@@ -51,22 +48,21 @@ public class MatchingService {
 			matchDtoList.add(matchInfo);
 		}
 
-		// recentTwentyMatch 계산
-		RecentTwentyMatchDto recentTwentyMatchDto = new RecentTwentyMatchDto();
-		if (existNewMatchIds) recentTwentyMatchDto = recentTwentyMatchBuilderService.buildDto(puuid);
+		// returnDto
+		MemberDataBundle memberDataBundle = new MemberDataBundle();
 
+		// api로 받아온 데이터 한 트랜잭션으로 저장하고 memberInfo 리턴
+		memberDataBundle.setMemberInfo(matchingDataBulkSaveService.saveAllAggregatedData(
+			memberId, memberWinRateNTier, fetchedMatchIds, matchDtoList, existsNewMatchIds
+		));
 
-		// api로 받아온 데이터 한 트랜잭션으로 저장
-		// return 객체 = {memberInfo : MemberInfo, recentTwentyMatch : RecentTwentyMatch}
-		MemberDataBundle MemInfoNRecentTwentyMatch = matchingDataBulkSaveService.saveAllAggregatedData(
-			memberId, memberWinRateNTier, fetchedMatchIds, matchDtoList, recentTwentyMatchDto, existNewMatchIds
-		);
-
-
-
+		// recentTwentyMatch 저장
+		memberDataBundle.setRecentTwentyMatch(matchingDataBulkSaveService.calculateAndSaveRecentTwentyMatch(
+			existsNewMatchIds, puuid, memberId
+		));
 
 		log.info("Riot Api로 모든 데이터 저장 종료: {}", puuid);
-		return MemInfoNRecentTwentyMatch;
+		return memberDataBundle;
 	}
 
 	private void createEsMatchingDocument(){

@@ -9,11 +9,11 @@ import com.matching.ezgg.api.domain.match.service.MatchService;
 import com.matching.ezgg.api.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.api.domain.recentTwentyMatch.entity.RecentTwentyMatch;
+import com.matching.ezgg.api.domain.recentTwentyMatch.service.RecentTwentyMatchBuilderService;
 import com.matching.ezgg.api.domain.recentTwentyMatch.service.RecentTwentyMatchService;
 import com.matching.ezgg.api.dto.MatchDto;
 import com.matching.ezgg.api.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.api.dto.WinRateNTierDto;
-import com.matching.ezgg.matching.dto.MemberDataBundle;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,14 +23,14 @@ public class MatchingDataBulkSaveService {
 	private final MemberInfoService memberInfoService;
 	private final MatchService matchService;
 	private final RecentTwentyMatchService recentTwentyMatchService;
+	private final RecentTwentyMatchBuilderService recentTwentyMatchBuilderService;
 
 	@Transactional
-	public MemberDataBundle saveAllAggregatedData(
+	public MemberInfo saveAllAggregatedData(
 		Long memberId,
 		WinRateNTierDto winRateNTierDto,
 		List<String> fetchedMatchIds,
 		List<MatchDto> matchDtoList,
-		RecentTwentyMatchDto recentTwentyMatchDto,
 		boolean existsNewMatchIds
 	) {
 		// memberInfo 업데이트
@@ -42,6 +42,16 @@ public class MatchingDataBulkSaveService {
 			matchService.save(matchDto);
 		}
 
+		return memberInfo;
+	}
+
+	// recentTwentyMatch 계산 후 저장
+	public RecentTwentyMatch calculateAndSaveRecentTwentyMatch(boolean existsNewMatchIds, String puuid, Long memberId){
+
+		// recentTwentyMatch 계산
+		RecentTwentyMatchDto recentTwentyMatchDto = new RecentTwentyMatchDto();
+		if (existsNewMatchIds) recentTwentyMatchDto = recentTwentyMatchBuilderService.buildDto(puuid);
+
 		// recentTwentyMatch 업데이트
 		RecentTwentyMatch recentTwentyMatch;
 		if (existsNewMatchIds) {
@@ -49,11 +59,10 @@ public class MatchingDataBulkSaveService {
 		} else {
 			recentTwentyMatch = recentTwentyMatchService.getRecentTwentyMatchByMemberId(memberId);
 		}
-
-		return MemberDataBundle.builder()
-			.memberInfo(memberInfo)
-			.recentTwentyMatch(recentTwentyMatch)
-			.build();
+		return recentTwentyMatch;
 	}
+
+
+
 
 }
