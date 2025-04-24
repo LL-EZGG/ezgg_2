@@ -1,0 +1,398 @@
+import React, { useState, useRef, useEffect } from 'react';
+import styled from '@emotion/styled';
+import { champions } from '../../data/champions';
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const Section = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const Label = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  font-size: 0.9rem;
+`;
+
+const LaneGroup = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const LaneButton = styled.button`
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  background: ${props => props.selected ? '#FF416C' : props.disabled ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.1)'};
+  color: ${props => props.disabled ? 'rgba(255, 255, 255, 0.3)' : 'white'};
+  border-radius: 4px;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  font-size: 0.9rem;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${props => props.selected ? '#FF416C' : props.disabled ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.2)'};
+  }
+`;
+
+const SearchContainer = styled.div`
+  position: relative;
+`;
+
+const SearchInput = styled.div`
+  position: relative;
+  
+  input {
+    width: 100%;
+    padding: 0.5rem 2rem 0.5rem 0.8rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.9rem;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.5;
+  }
+`;
+
+const Suggestions = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #1a1a1a;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const SuggestionItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: white;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  img {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+  }
+`;
+
+const ChampionTags = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+const ChampionTag = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: white;
+  font-size: 0.9rem;
+
+  img {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+  }
+
+  button {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 0;
+    font-size: 1.2rem;
+    line-height: 1;
+
+    &:hover {
+      color: white;
+    }
+  }
+`;
+
+const SubmitButton = styled.button`
+  padding: 0.8rem;
+  background: ${props => props.disabled ? 'rgba(255, 255, 255, 0.3)' : 'white'};
+  color: ${props => props.disabled ? 'rgba(0, 0, 0, 0.5)' : 'black'};
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  transition: all 0.2s;
+
+  &:hover {
+    opacity: ${props => props.disabled ? 1 : 0.9};
+  }
+`;
+
+const lanes = ['TOP', 'JUG', 'MID', 'AD', 'SUP'];
+
+const DuoFinderForm = ({ onSubmit }) => {
+  const [formData, setFormData] = useState({
+    preferredLane: '',
+    partnerLane: '',
+    preferredChampions: [],
+    bannedChampions: [],
+  });
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [bannedSearchTerm, setBannedSearchTerm] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showBannedSuggestions, setShowBannedSuggestions] = useState(false);
+  const searchRef = useRef(null);
+  const bannedSearchRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+      if (bannedSearchRef.current && !bannedSearchRef.current.contains(event.target)) {
+        setShowBannedSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const isFormValid = () => {
+    return (
+      formData.preferredLane !== '' &&
+      formData.partnerLane !== '' &&
+      (formData.preferredChampions.length > 0)
+    );
+  };
+
+  const handleLaneSelect = (type, lane) => {
+    if (type === 'partnerLane' && lane === formData.preferredLane) {
+      return; // 내가 선택한 라인은 상대방이 선택할 수 없음
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      [type]: prev[type] === lane ? '' : lane
+    }));
+  };
+
+  const filterChampions = (term) => {
+    if (!term) return [];
+    const lowerTerm = term.toLowerCase();
+    return champions.filter(champion => 
+      champion.name.toLowerCase().includes(lowerTerm) ||
+      champion.id.toLowerCase().includes(lowerTerm)
+    );
+  };
+
+  const handleChampionSelect = (champion, type) => {
+    const key = type === 'preferred' ? 'preferredChampions' : 'bannedChampions';
+    if (!formData[key].find(c => c.id === champion.id)) {
+      setFormData(prev => ({
+        ...prev,
+        [key]: [...prev[key], champion]
+      }));
+    }
+    if (type === 'preferred') {
+      setSearchTerm('');
+      setShowSuggestions(false);
+    } else {
+      setBannedSearchTerm('');
+      setShowBannedSuggestions(false);
+    }
+  };
+
+  const handleRemoveChampion = (championId, type) => {
+    const key = type === 'preferred' ? 'preferredChampions' : 'bannedChampions';
+    setFormData(prev => ({
+      ...prev,
+      [key]: prev[key].filter(c => c.id !== championId)
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <Form onSubmit={handleSubmit}>
+      <Section>
+        <Label>라인 선택</Label>
+        <LaneGroup>
+          {lanes.map(lane => (
+            <LaneButton
+              key={`preferred-${lane}`}
+              type="button"
+              selected={formData.preferredLane === lane}
+              onClick={() => handleLaneSelect('preferredLane', lane)}
+            >
+              {lane}
+            </LaneButton>
+          ))}
+        </LaneGroup>
+      </Section>
+
+      <Section>
+        <Label>상대 선택</Label>
+        <LaneGroup>
+          {lanes.map(lane => (
+            <LaneButton
+              key={`partner-${lane}`}
+              type="button"
+              selected={formData.partnerLane === lane}
+              disabled={lane === formData.preferredLane}
+              onClick={() => handleLaneSelect('partnerLane', lane)}
+            >
+              {lane}
+            </LaneButton>
+          ))}
+        </LaneGroup>
+      </Section>
+
+      <Section>
+        <Label>선호 챔피언</Label>
+        <SearchContainer ref={searchRef}>
+          <SearchInput>
+            <input
+              type="text"
+              placeholder="챔피언 검색..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
+            />
+          </SearchInput>
+          {showSuggestions && searchTerm && (
+            <Suggestions>
+              {filterChampions(searchTerm).map(champion => (
+                <SuggestionItem
+                  key={champion.id}
+                  onClick={() => handleChampionSelect(champion, 'preferred')}
+                >
+                  <img src={`/champions/${champion.image}`} alt={champion.name} />
+                  {champion.name}
+                </SuggestionItem>
+              ))}
+            </Suggestions>
+          )}
+          <ChampionTags>
+            {formData.preferredChampions.map(champion => (
+              <ChampionTag key={champion.id}>
+                <img src={`/champions/${champion.image}`} alt={champion.name} />
+                {champion.name}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveChampion(champion.id, 'preferred')}
+                >
+                  ×
+                </button>
+              </ChampionTag>
+            ))}
+          </ChampionTags>
+        </SearchContainer>
+      </Section>
+
+      <Section>
+        <Label>비선호 챔피언</Label>
+        <SearchContainer ref={bannedSearchRef}>
+          <SearchInput>
+            <input
+              type="text"
+              placeholder="챔피언 검색..."
+              value={bannedSearchTerm}
+              onChange={(e) => {
+                setBannedSearchTerm(e.target.value);
+                setShowBannedSuggestions(true);
+              }}
+              onFocus={() => setShowBannedSuggestions(true)}
+            />
+          </SearchInput>
+          {showBannedSuggestions && bannedSearchTerm && (
+            <Suggestions>
+              {filterChampions(bannedSearchTerm).map(champion => (
+                <SuggestionItem
+                  key={champion.id}
+                  onClick={() => handleChampionSelect(champion, 'banned')}
+                >
+                  <img src={`/champions/${champion.image}`} alt={champion.name} />
+                  {champion.name}
+                </SuggestionItem>
+              ))}
+            </Suggestions>
+          )}
+          <ChampionTags>
+            {formData.bannedChampions.map(champion => (
+              <ChampionTag key={champion.id}>
+                <img src={`/champions/${champion.image}`} alt={champion.name} />
+                {champion.name}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveChampion(champion.id, 'banned')}
+                >
+                  ×
+                </button>
+              </ChampionTag>
+            ))}
+          </ChampionTags>
+        </SearchContainer>
+      </Section>
+
+      <SubmitButton 
+        type="submit"
+        disabled={!isFormValid()}
+      >
+        매칭 시작
+      </SubmitButton>
+    </Form>
+  );
+};
+
+export default DuoFinderForm; 
