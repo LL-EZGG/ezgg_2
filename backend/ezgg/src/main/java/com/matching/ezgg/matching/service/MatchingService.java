@@ -14,6 +14,7 @@ import com.matching.ezgg.api.domain.recentTwentyMatch.service.RecentTwentyMatchB
 import com.matching.ezgg.api.domain.recentTwentyMatch.service.RecentTwentyMatchService;
 import com.matching.ezgg.api.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.api.service.ApiService;
+import com.matching.ezgg.es.service.EsService;
 import com.matching.ezgg.matching.dto.MatchingFilterDto;
 import com.matching.ezgg.matching.dto.MemberInfoDto;
 import com.matching.ezgg.matching.dto.PreferredPartnerDto;
@@ -33,6 +34,7 @@ public class MatchingService {
 	private final RecentTwentyMatchBuilderService recentTwentyMatchBuilderService;
 	private final RedisTemplate<String, Object> redisTemplate;
 	private final ObjectMapper objectMapper;
+	private final EsService esService;
 
 	// 매칭 시작 시 호출
 	public void startMatching(Long memberId, PreferredPartnerDto preferredPartnerDto) {
@@ -50,8 +52,7 @@ public class MatchingService {
 				String zsetKey = "matching:queue";
 
 				log.info("JSON 직렬화 성공: {}", json);
-				// TODO es에 저장하는 로직 추가 (임시)
-
+				esService.esPost(matchingFilterDtoDummy);
 				// TODO Redis에 저장하는 로직 추가 (임시)
 				// redisTemplate.opsForZSet().add(zsetKey, json, baseScore);
 			} catch (Exception e) {
@@ -175,12 +176,13 @@ public class MatchingService {
 	}
 
 	// 사전 정의된 값들
-	private final List<String> lines = List.of("top", "mid", "jungle", "adc", "support");
+	private final List<String> lines = List.of("TOP", "MIDDLE", "JUNGLE", "BOTTOM", "UTILITY");
 	private final List<String> champions = List.of("Aatrox", "Zed", "Lee Sin", "Ahri", "Jhin", "Lux", "Yasuo", "Thresh",
 		"Ezreal", "Vayne", "Akali", "Darius", "Garen", "Katarina", "Riven", "Kai'Sa", "Jinx", "Rengar", "Kha'Zix",
 		"Zyra");
 	private final List<String> riotTags = List.of("KR1", "EUW", "NA1", "JP1");
-	private final List<String> tiers = List.of("Iron", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master",
+	private final List<String> tiers = List.of("Iron", "Bronze", "Silver", "Gold", "Platinum", "EMERALD", "Diamond",
+		"Master",
 		"Grandmaster", "Challenger");
 	private final List<String> tierNums = List.of("I", "II", "III", "IV", "V");
 
