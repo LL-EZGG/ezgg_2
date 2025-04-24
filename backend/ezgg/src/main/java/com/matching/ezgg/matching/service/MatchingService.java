@@ -13,12 +13,6 @@ import com.matching.ezgg.api.dto.WinRateNTierDto;
 import com.matching.ezgg.api.service.ApiService;
 import com.matching.ezgg.matching.dto.MemberDataBundle;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.matching.ezgg.api.domain.match.service.MatchService;
-import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
-import com.matching.ezgg.api.domain.recentTwentyMatch.service.RecentTwentyMatchBuilderService;
-import com.matching.ezgg.api.domain.recentTwentyMatch.service.RecentTwentyMatchService;
-import com.matching.ezgg.api.dto.RecentTwentyMatchDto;
-import com.matching.ezgg.api.service.ApiService;
 import com.matching.ezgg.matching.dto.MatchingFilterDto;
 import com.matching.ezgg.matching.dto.MemberInfoDto;
 import com.matching.ezgg.matching.dto.PreferredPartnerDto;
@@ -43,12 +37,11 @@ public class MatchingService {
 		log.info("매칭 시작! memberId = {}", memberId);
   
 
-		MemberDataBundle MemInfoNRecentTwentyMatch = updateAllAttributesOfMember(memberId);
+		// MemberDataBundle memberDataBundle = updateAllAttributesOfMember(memberId);//TODO
 		//TODO createEsMatchingDocument(), StartMatchingByDocuments(), ...
-  
-//  --------------------------
-		// String puuid = memberInfoService.getMemberPuuidByMemberId(memberId);
-		// updateAllAttributesOfMember(puuid); // 임시 주석
+
+
+		//TODO memberDataBundle -> matchingFilterDto 생성 로직 추가
 
 		// ------------- 임시 데이터 ---------------
 
@@ -118,6 +111,8 @@ public class MatchingService {
 		return memberInfoService.extractNewMatchIds(puuid, fetchedMatchIds);
 	}
 
+
+	// TODO 이 아래로는 전부 더미데이터 생성 로직. 추후 삭제 필요
 	// ---------------------------------------- 더미데이터 생성 로직 --------------------------------
 	// 랜덤 매칭 데이터 생성
 	private MatchingFilterDto createRandomMatchingData(int index) {
