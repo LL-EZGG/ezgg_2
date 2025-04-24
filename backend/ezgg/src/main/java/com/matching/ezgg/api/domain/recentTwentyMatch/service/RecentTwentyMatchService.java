@@ -18,48 +18,37 @@ public class RecentTwentyMatchService {
 
 	private final RecentTwentyMatchRepository recentTwentyMatchRepository;
 
-	// memberId를 가지고 있는 recentTwentyMatch 존재 여부 조회 TODO Upsert 방식으로 수정
-	public boolean existsByMemberId(Long memberId) {
-		return recentTwentyMatchRepository.existsByMemberId(memberId);
-	}
-
-	// memberId로 recentTwentyMatch 조회
+	// memberId로 recentTwentyMatch 조회 // 엔티티가 없을 시 memberId만 박힌 빈 엔티티 리턴하도록 수정
 	public RecentTwentyMatch getRecentTwentyMatchByMemberId(Long memberId) {
 		return recentTwentyMatchRepository.findByMemberId(memberId)
-			.orElseThrow(RecentTwentyMatchNotFoundException::new);
+			.orElseGet(() -> RecentTwentyMatch.builder()
+				.memberId(memberId)
+				.build());
+		// .orElseThrow(RecentTwentyMatchNotFoundException::new);
 	}
 
-	// recentTwentyMatch 생성 TODO Upsert 방식으로 수정
 	@Transactional
-	public void createNewRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
-		log.info("recentTwentyMatch 저장 시작");
-
-		RecentTwentyMatch recentTwentyMatch = RecentTwentyMatch.builder()
-			.memberId(recentTwentyMatchDto.getMemberId())
-			.sumKills(recentTwentyMatchDto.getSumKills())
-			.sumDeaths(recentTwentyMatchDto.getSumDeaths())
-			.sumAssists(recentTwentyMatchDto.getSumAssists())
-			.championStats(recentTwentyMatchDto.getChampionStats())
-			.winRate(recentTwentyMatchDto.getWinRate())
-			.build();
-
-		recentTwentyMatchRepository.save(recentTwentyMatch);
-		log.info("recentTwentyMatch 저장 종료");
-	}
-
-	// recentTwentyMatch 업데이트 TODO Upsert 방식으로 수정
-	@Transactional
-	public void updateRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
+	public RecentTwentyMatch upsertRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
 		log.info("recentTwentyMatch 업데이트 시작");
-		RecentTwentyMatch recentTwentyMatch = getRecentTwentyMatchByMemberId(recentTwentyMatchDto.getMemberId());
+
+		RecentTwentyMatch recentTwentyMatch = recentTwentyMatchRepository
+			.findByMemberId(recentTwentyMatchDto.getMemberId())
+					.orElseGet(() -> RecentTwentyMatch.builder()
+						.memberId(recentTwentyMatchDto.getMemberId())
+						.build());
+
 		recentTwentyMatch.update(
 			recentTwentyMatchDto.getSumKills(),
 			recentTwentyMatchDto.getSumDeaths(),
 			recentTwentyMatchDto.getSumAssists(),
 			recentTwentyMatchDto.getChampionStats(),
 			recentTwentyMatchDto.getWinRate()
-		); // 영속성 상태에서 Dirty Checking을 해 자동으로 db에 커밋됨
+		);
+
+		// 새로 만든 경우에만 persist, 기존이면 dirty checking → UPDATE
+		recentTwentyMatchRepository.save(recentTwentyMatch);
 
 		log.info("recentTwentyMatch 업데이트 종료");
+		return recentTwentyMatch;
 	}
 }
