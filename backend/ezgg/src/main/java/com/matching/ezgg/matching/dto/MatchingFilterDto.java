@@ -17,6 +17,7 @@ public class MatchingFilterDto {
 	private PreferredPartnerDto preferredPartner;
 	private MemberInfoDto memberInfo;
 	private RecentTwentyMath recentTwentyMatch;
+	private int matchingScore;
 
 	// {
 	// 	"memberId" : "1",
