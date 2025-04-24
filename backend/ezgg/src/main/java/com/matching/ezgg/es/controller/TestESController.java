@@ -34,12 +34,16 @@ public class TestESController {
 	}
 
 	// 테스트용
-	@GetMapping("es/matching/{my-line}/{partner-line}/{tier}/{member-id}")
+	@GetMapping("es/matching/{my-line}/{partner-line}/{tier}/{member-id}/{preferredChampion}/{unpreferredChampion}")
 	public ResponseEntity<List<MatchingFilterDto>> testMatching(@PathVariable("my-line") String myLine,
 		@PathVariable("partner-line") String partnerLine,
 		@PathVariable("tier") String tier,
-		@PathVariable("member-id") Long memberId) {
-		return ResponseEntity.ok().body(esMatchingFilter.findMatchingUsers(myLine, partnerLine, tier, memberId));
+		@PathVariable("member-id") Long memberId,
+		@PathVariable("preferredChampion") String preferredChampion,
+		@PathVariable("unpreferredChampion") String unpreferredChampion) {
+		return ResponseEntity.ok().body(esMatchingFilter.findMatchingUsers(myLine, partnerLine, tier, memberId,
+			preferredChampion, unpreferredChampion
+		));
 	}
 
 }
