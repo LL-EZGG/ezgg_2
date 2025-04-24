@@ -29,7 +29,7 @@ public class RecentTwentyMatch extends BaseEntity {
 	@Column(name = "id")
 	private Long id;
 
-	@Column(name = "member_id", unique = false, nullable = false)
+	@Column(name = "member_id", unique = true, nullable = false)
 	private Long memberId;
 
 	@Column(name = "sum_kills", unique = false, nullable = true)

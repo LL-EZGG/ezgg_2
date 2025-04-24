@@ -27,7 +27,7 @@ public class MemberInfo extends BaseEntity {
 	@Column(name = "id")
 	private Long id;
 
-	@Column(name = "member_id", unique = false, nullable = false)
+	@Column(name = "member_id", unique = true, nullable = false)
 	private Long memberId;
 
 	@Column(name = "riot_username", unique = false, nullable = false)
@@ -69,14 +69,13 @@ public class MemberInfo extends BaseEntity {
 		this.losses = losses;
 	}
 
-	public void updateWinRateAndTier(String tier, String tierNum, int wins, int losses) {
+	public void update(String tier, String tierNum, int wins, int losses, List<String> fetchedMatchIds, boolean existsNewMatchIds){
 		this.tier = tier;
 		this.tierNum = tierNum;
 		this.wins = wins;
 		this.losses = losses;
-	}
-
-	public void updateMatchIds(List<String> matchIds) {
-		this.matchIds = matchIds;
+		if(existsNewMatchIds){
+			this.matchIds = fetchedMatchIds;
+		}
 	}
 }

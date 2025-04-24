@@ -18,6 +18,8 @@ public interface MemberInfoRepository extends JpaRepository<MemberInfo, Long> {
 
 	Optional<MemberInfo> findByPuuid(String puuid);
 
+	Optional<MemberInfo> findByMemberId(Long memberId);
+
 	// riotUsername과 riotTag를 동시에 일치하는 회원이 존재하는 지 확인
 	boolean existsByRiotUsernameAndRiotTag(String riotUsename, String riotTag);
 }
