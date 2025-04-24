@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.matching.ezgg.global.exception.EsQueryException;
 import com.matching.ezgg.matching.dto.MatchingFilterDto;
+import com.matching.ezgg.matching.dto.RecentTwentyMath;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -24,7 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 public class EsMatchingFilter {
 	private final ElasticsearchClient esClient;
 
-	public List<MatchingFilterDto> findMatchingUsers(String myLine, String partnerLine, String tier, Long myMemberId) {
+	public List<MatchingFilterDto> findMatchingUsers(String myLine, String partnerLine, String tier, Long myMemberId,
+		String preferredChampion, String unpreferredChampion) {
 		Query query = Query.of(q -> q
 			.bool(b -> b
 				.filter(
@@ -57,14 +59,100 @@ public class EsMatchingFilter {
 
 		try {
 			SearchResponse<MatchingFilterDto> response = esClient.search(searchRequest, MatchingFilterDto.class);
-			return response.hits().hits().stream()
+			List<MatchingFilterDto> users = response.hits().hits().stream()
 				.map(Hit::source)
 				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+			// 가중치를 추가하여 매칭할 대상들을 정렬
+			return users.stream()
+				.sorted((user1, user2) -> {
+					int score1 = calculateUserWeight(user1, preferredChampion, unpreferredChampion);
+					int score2 = calculateUserWeight(user2, preferredChampion, unpreferredChampion);
+					return Integer.compare(score2, score1); // 높은 점수 순으로 정렬
+				})
 				.collect(Collectors.toList());
 		} catch (IOException e) {
 			log.error("Elasticsearch 조건 조회 중 오류 발생: " + e.getMessage());
 			e.printStackTrace();
 			throw new EsQueryException();
 		}
+	}
+
+	// 가중치 계산 로직
+	private int calculateUserWeight(MatchingFilterDto user, String preferredChampion, String unpreferredChampion) {
+		List<RecentTwentyMath.MostChampion> mostChampionList = user.getRecentTwentyMatch().getMostChampions();
+
+		// 내가 선호하는 챔피언과 비선호하는 챔피언이 상대방의 모스트 챔피언 목록에 있는지 확인
+		int preferredChampionWeight = getChampionWeight(preferredChampion, true, mostChampionList);
+		int unpreferredChampionWeight = getChampionWeight(unpreferredChampion, false, mostChampionList);
+
+		// 최종 매칭 점수 계산: 선호 챔피언 가중치 - 비선호 챔피언 가중치
+		// 음수가 나올수 잇음 ( 비선호 챔피언에 가중치가 더 높을 경우 )
+		int matchingScore = preferredChampionWeight - unpreferredChampionWeight;
+
+		user.setMatchingScore(matchingScore);
+		return matchingScore;
+	}
+
+	public int getChampionWeight(String championName, boolean isPreferred,
+		List<RecentTwentyMath.MostChampion> mostChampions) {
+
+		// 해당 챔피언의 정보 찾기
+		RecentTwentyMath.MostChampion championInfo = findChampionInMostList(championName, mostChampions);
+
+		// 챔피언이 모스트 목록에 없으면 0 반환
+		if (championInfo == null) {
+			return 0;
+		}
+
+		// 챔피언 순위 확인
+		int championRank = getChampionRank(championName, mostChampions);
+
+		// 승률 가중치 (승률이 높을수록 가중치 증가)
+		int winRateWeight = championInfo.getWinRateOfChampion() / 10; // 승률을 10으로 나눠 0~10 범위의 가중치로 변환
+
+		// 순위 가중치
+		int rankWeight = 0;
+		if (championRank == 1) {
+			rankWeight = 5; // 1위는 높은 가중치
+		} else if (championRank == 2) {
+			rankWeight = 3; // 2위는 중간 가중치
+		} else if (championRank == 3) {
+			rankWeight = 1; // 3위는 낮은 가중치
+		}
+
+		// 최종 가중치 계산
+		if (isPreferred) {
+			// 선호 챔피언인 경우: 순위와 승률 모두 고려하여 가중치 증가
+			return rankWeight + winRateWeight;
+		} else {
+			// 비선호 챔피언인 경우: 순위와 승률 모두 고려하여 부정적 가중치 부여
+			return rankWeight + winRateWeight;
+		}
+	}
+
+	private RecentTwentyMath.MostChampion findChampionInMostList(String championName,
+		List<RecentTwentyMath.MostChampion> mostChampions) {
+
+		if (championName == null || championName.isEmpty()) {
+			return null;
+		}
+
+		return mostChampions.stream()
+			.filter(champion -> champion.getChampionName().equals(championName))
+			.findFirst()
+			.orElse(null);
+	}
+
+	public int getChampionRank(String championName, List<RecentTwentyMath.MostChampion> mostChampions) {
+		// 챔피언이 모스트 챔피언 목록에서 몇 번째 순위인지 확인
+		log.debug("Finding rank for: {}", championName);
+		for (int i = 0; i < mostChampions.size(); i++) {
+			log.debug("Candidate: {}", mostChampions.get(i).getChampionName());
+			if (mostChampions.get(i).getChampionName().equals(championName)) {
+				return i + 1; // 1위부터 시작하므로 i + 1을 반환
+			}
+		}
+		return Integer.MAX_VALUE; // 목록에 없으면 매우 낮은 순위로 처리
 	}
 }
