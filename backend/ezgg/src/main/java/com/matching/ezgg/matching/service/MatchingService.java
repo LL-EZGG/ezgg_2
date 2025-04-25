@@ -18,7 +18,7 @@ import com.matching.ezgg.es.service.EsService;
 import com.matching.ezgg.matching.dto.MatchingFilterDto;
 import com.matching.ezgg.matching.dto.MemberInfoDto;
 import com.matching.ezgg.matching.dto.PreferredPartnerDto;
-import com.matching.ezgg.matching.dto.RecentTwentyMath;
+import com.matching.ezgg.matching.dto.RecentTwentyMatch;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -138,17 +138,17 @@ public class MatchingService {
 		dto.setPreferredPartner(preferredPartner);
 
 		// RecentTwentyMath 생성 (실제 애플리케이션에서는 null로 해도 될 것 같습니다)
-		RecentTwentyMath recentTwentyMath = new RecentTwentyMath();
-		recentTwentyMath.setKills(randomInt(30, 150));
-		recentTwentyMath.setDeaths(randomInt(20, 100));
-		recentTwentyMath.setAssists(randomInt(30, 200));
+		RecentTwentyMatch recentTwentyMatch = new RecentTwentyMatch();
+		recentTwentyMatch.setKills(randomInt(30, 150));
+		recentTwentyMatch.setDeaths(randomInt(20, 100));
+		recentTwentyMatch.setAssists(randomInt(30, 200));
 
 		// mostChampions 리스트 초기화
-		recentTwentyMath.setMostChampions(new ArrayList<>());
+		recentTwentyMatch.setMostChampions(new ArrayList<>());
 
 		// MostChampion 생성
 		for (int i = 0; i < 3; i++) {
-			RecentTwentyMath.MostChampion mostChampion = new RecentTwentyMath.MostChampion();
+			RecentTwentyMatch.MostChampion mostChampion = new RecentTwentyMatch.MostChampion();
 			mostChampion.setChampionName(getRandom(champions));
 			mostChampion.setKills(randomInt(5, 20));
 			mostChampion.setDeaths(randomInt(1, 10));
@@ -159,10 +159,10 @@ public class MatchingService {
 			mostChampion.setWinRateOfChampion(
 				(int)((double)mostChampion.getWins() / mostChampion.getTotalMatches() * 100));
 
-			recentTwentyMath.getMostChampions().add(mostChampion);
+			recentTwentyMatch.getMostChampions().add(mostChampion);
 		}
 
-		dto.setRecentTwentyMatch(recentTwentyMath);
+		dto.setRecentTwentyMatch(recentTwentyMatch);
 
 		return dto;
 	}

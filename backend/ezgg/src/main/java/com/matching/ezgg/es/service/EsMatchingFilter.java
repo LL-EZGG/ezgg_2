@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import com.matching.ezgg.global.exception.EsQueryException;
 import com.matching.ezgg.global.exception.MatchingUserNoTFoundException;
 import com.matching.ezgg.matching.dto.MatchingFilterDto;
-import com.matching.ezgg.matching.dto.RecentTwentyMath;
+import com.matching.ezgg.matching.dto.RecentTwentyMatch;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -87,7 +87,7 @@ public class EsMatchingFilter {
 
 	// 가중치 계산 로직
 	private int calculateUserWeight(MatchingFilterDto user, String preferredChampion, String unpreferredChampion) {
-		List<RecentTwentyMath.MostChampion> mostChampionList = user.getRecentTwentyMatch().getMostChampions();
+		List<RecentTwentyMatch.MostChampion> mostChampionList = user.getRecentTwentyMatch().getMostChampions();
 
 		// 내가 선호하는 챔피언과 비선호하는 챔피언이 상대방의 모스트 챔피언 목록에 있는지 확인
 		int preferredChampionWeight = getChampionWeight(preferredChampion, true, mostChampionList);
@@ -102,10 +102,10 @@ public class EsMatchingFilter {
 	}
 
 	public int getChampionWeight(String championName, boolean isPreferred,
-		List<RecentTwentyMath.MostChampion> mostChampions) {
+		List<RecentTwentyMatch.MostChampion> mostChampions) {
 
 		// 해당 챔피언의 정보 찾기
-		RecentTwentyMath.MostChampion championInfo = findChampionInMostList(championName, mostChampions);
+		RecentTwentyMatch.MostChampion championInfo = findChampionInMostList(championName, mostChampions);
 
 		// 챔피언이 모스트 목록에 없으면 0 반환
 		if (championInfo == null) {
@@ -138,8 +138,8 @@ public class EsMatchingFilter {
 		}
 	}
 
-	private RecentTwentyMath.MostChampion findChampionInMostList(String championName,
-		List<RecentTwentyMath.MostChampion> mostChampions) {
+	private RecentTwentyMatch.MostChampion findChampionInMostList(String championName,
+		List<RecentTwentyMatch.MostChampion> mostChampions) {
 
 		if (championName == null || championName.isEmpty()) {
 			return null;
@@ -151,7 +151,7 @@ public class EsMatchingFilter {
 			.orElse(null);
 	}
 
-	public int getChampionRank(String championName, List<RecentTwentyMath.MostChampion> mostChampions) {
+	public int getChampionRank(String championName, List<RecentTwentyMatch.MostChampion> mostChampions) {
 		// 챔피언이 모스트 챔피언 목록에서 몇 번째 순위인지 확인
 		log.debug("Finding rank for: {}", championName);
 		for (int i = 0; i < mostChampions.size(); i++) {
