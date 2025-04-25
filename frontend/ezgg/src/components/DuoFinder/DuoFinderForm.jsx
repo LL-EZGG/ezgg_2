@@ -205,14 +205,16 @@ const DuoFinderForm = ({ onSubmit }) => {
   const isFormValid = () => {
     return (
       formData.preferredLane !== '' &&
-      formData.partnerLane !== '' &&
-      (formData.preferredChampions.length > 0)
+      formData.partnerLane !== ''
     );
   };
 
   const handleLaneSelect = (type, lane) => {
     if (type === 'partnerLane' && lane === formData.preferredLane) {
       return; // 내가 선택한 라인은 상대방이 선택할 수 없음
+    }
+    if (type === 'preferredLane' && lane === formData.partnerLane) {
+      return; // 상대방이 선택한 라인은 내가 선택할 수 없음
     }
 
     setFormData(prev => ({
@@ -270,6 +272,7 @@ const DuoFinderForm = ({ onSubmit }) => {
               key={`preferred-${lane}`}
               type="button"
               selected={formData.preferredLane === lane}
+              disabled={lane === formData.partnerLane}
               onClick={() => handleLaneSelect('preferredLane', lane)}
             >
               {lane}

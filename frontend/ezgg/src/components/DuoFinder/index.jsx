@@ -35,70 +35,114 @@ const ProfileCard = styled.div`
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 635px;
+  padding: 2rem;
 
   @media (max-width: 1024px) {
     max-width: 100%;
   }
-`;
-
-const ChampionImages = styled.div`
-  display: flex;
-  height: 150px;
-  flex-shrink: 0;
-  
-  img {
-    width: 33.333%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  @media (max-width: 768px) {
-    height: 120px;
-  }
-`;
-
-const ProfileInfo = styled.div`
-  padding: 1.5rem;
-  color: white;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 
   @media (max-width: 768px) {
     padding: 1rem;
   }
 `;
 
-const ProfileTitle = styled.h3`
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
+const ChampionImages = styled.div`
+  display: flex;
+  height: 200px;
+  flex-shrink: 0;
+  // margin: -2rem -2rem 0;
+  
+  img {
+    width: 33.333%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  @media (max-width: 768px) {
+    height: 160px;
+    margin: -1rem -1rem 0;
+    
+    img {
+      height: 160px;
+    }
+  }
+`;
+
+const ProfileInfo = styled.div`
+  padding: 2rem 0 0;
   color: white;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  // justify-content: space-between;
+  justify-content: flex-start;
+  gap: 1.7rem;
+`;
+
+const ProfileTitle = styled.h3`
+  font-size: 1.6rem;
+  color: white;
+  padding: 0 1.5rem;
+  font-weight: 800;
+
+  @media (max-width: 768px) {
+    font-size: 1.2rem;
+    padding: 0 1rem;
+    margin-bottom: 1.5rem;
+  }
 `;
 
 const RankBadge = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  border-radius: 8px;
   
   img {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
   }
 
   span {
     color: white;
-    font-size: 1.1rem;
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    gap: 0.8rem;
+    
+    img {
+      width: 50px;
+      height: 50px;
+    }
+
+    span {
+      font-size: 1.2rem;
+    }
   }
 `;
 
 const Stats = styled.div`
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: rgba(255, 255, 255, 0.7);
+  margin-top: auto;
+  padding: 0 1.5rem;
   
   p {
-    margin: 0.3rem 0;
+    margin: 0.8rem 0;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    padding: 0 1rem;
+    
+    p {
+      margin: 0.5rem 0;
+    }
   }
 `;
 
@@ -109,6 +153,7 @@ const FormContainer = styled.div`
   border-radius: 12px;
   padding: 2rem;
   display: flex;
+  min-height: 635px;
   flex-direction: column;
 
   @media (max-width: 1024px) {

@@ -82,11 +82,11 @@ const MatchResult = ({ criteria, onCancel }) => {
         </CriteriaItem>
         <CriteriaItem>
           <span>선호 챔피언:</span>
-          <span>{criteria.preferredChampions.join(', ') || '없음'}</span>
+          <span>{criteria.preferredChampions.map(champion => champion.name).join(', ') || '없음'}</span>
         </CriteriaItem>
         <CriteriaItem>
           <span>비선호 챔피언:</span>
-          <span>{criteria.bannedChampions.join(', ') || '없음'}</span>
+          <span>{criteria.bannedChampions.map(champion => champion.name).join(', ') || '없음'}</span>
         </CriteriaItem>
       </CriteriaList>
 
