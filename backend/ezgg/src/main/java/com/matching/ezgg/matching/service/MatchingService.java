@@ -7,14 +7,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.matching.ezgg.api.domain.match.service.MatchService;
 import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
-import com.matching.ezgg.api.domain.recentTwentyMatch.service.RecentTwentyMatchBuilderService;
-import com.matching.ezgg.api.domain.recentTwentyMatch.service.RecentTwentyMatchService;
-import com.matching.ezgg.api.dto.RecentTwentyMatchDto;
+import com.matching.ezgg.api.dto.MatchDto;
+import com.matching.ezgg.api.dto.WinRateNTierDto;
 import com.matching.ezgg.api.service.ApiService;
 import com.matching.ezgg.es.service.EsService;
+import com.matching.ezgg.matching.dto.MemberDataBundle;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.matching.dto.MatchingFilterDto;
 import com.matching.ezgg.matching.dto.MemberInfoDto;
 import com.matching.ezgg.matching.dto.PreferredPartnerDto;
@@ -28,19 +27,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MatchingService {
 	private final MemberInfoService memberInfoService;
-	private final MatchService matchService;
 	private final ApiService apiService;
-	private final RecentTwentyMatchService recentTwentyMatchService;
-	private final RecentTwentyMatchBuilderService recentTwentyMatchBuilderService;
+	private final MatchingDataBulkSaveService matchingDataBulkSaveService;
 	private final RedisTemplate<String, Object> redisTemplate;
 	private final ObjectMapper objectMapper;
 	private final EsService esService;
 
+
 	// 매칭 시작 시 호출
 	public void startMatching(Long memberId, PreferredPartnerDto preferredPartnerDto) {
 		log.info("매칭 시작! memberId = {}", memberId);
-		// String puuid = memberInfoService.getMemberPuuidByMemberId(memberId);
-		// updateAllAttributesOfMember(puuid); // 임시 주석
+  
+
+		// MemberDataBundle memberDataBundle = updateAllAttributesOfMember(memberId);//TODO
+		//TODO createEsMatchingDocument(), StartMatchingByDocuments(), ...
+
+
+		//TODO memberDataBundle -> matchingFilterDto 생성 로직 추가
 
 		// ------------- 임시 데이터 ---------------
 
@@ -61,26 +64,42 @@ public class MatchingService {
 		}
 
 		// ---------------------------------------
+
 	}
 
 	// 매칭 시작 전 모든 데이터 업데이트
+
 	public void updateAllAttributesOfMember(String puuid) {
 		log.info("Riot Api로 모든 데이터 저장 시작: {}", puuid);
-		// 티어, 승률 업데이트
-		memberInfoService.updateWinRateNTier(apiService.getMemberWinRateNTier(puuid));
 
-		// matchIds 업데이트 후 새롭게 추가된 matchId 리스트 리턴
-		List<String> newlyAddedMatchIds = updateAndGetNewMatchIds(puuid, apiService.getMemberMatchIds(puuid));
+		// 티어+승률/matchIds api 요청해서 메모리에 저장
+		WinRateNTierDto memberWinRateNTier = apiService.getMemberWinRateNTier(puuid);
+		List<String> fetchedMatchIds = apiService.getMemberMatchIds(puuid);
+		List<String> newlyAddedMatchIds = getNewMatchIds(puuid, fetchedMatchIds);
+		boolean existsNewMatchIds = !newlyAddedMatchIds.isEmpty();
 
-		// 새로운 match들 저장
+		// matchInfo api 요청해서 메모리에 저장
+		List<MatchDto> matchDtoList = new ArrayList<>();
 		for (String matchId : newlyAddedMatchIds) {
-			matchService.save(apiService.getMemberMatch(puuid, matchId));
+			MatchDto matchInfo = apiService.getMemberMatch(memberId, puuid, matchId);
+			matchDtoList.add(matchInfo);
 		}
 
-		if (!newlyAddedMatchIds.isEmpty()) {
-			saveRecentTwentyMatch(recentTwentyMatchBuilderService.buildDto(puuid));
-		}
+		// returnDto
+		MemberDataBundle memberDataBundle = new MemberDataBundle();
+
+		// api로 받아온 데이터 한 트랜잭션으로 저장하고 memberInfo 리턴
+		memberDataBundle.setMemberInfo(matchingDataBulkSaveService.saveAllAggregatedData(
+			memberId, memberWinRateNTier, fetchedMatchIds, matchDtoList, existsNewMatchIds
+		));
+
+		// recentTwentyMatch 저장
+		memberDataBundle.setRecentTwentyMatch(matchingDataBulkSaveService.calculateAndSaveRecentTwentyMatch(
+			existsNewMatchIds, puuid, memberId
+		));
+
 		log.info("Riot Api로 모든 데이터 저장 종료: {}", puuid);
+		return memberDataBundle;
 	}
 
 	private void createEsMatchingDocument() {
@@ -88,14 +107,8 @@ public class MatchingService {
 	}
 
 	// 새로운 matchId가 없으면 null 리스트 리턴. 있으면 matchIds 업데이트 후 새로운 matchId 리스트 리턴
-	public List<String> updateAndGetNewMatchIds(String puuid, List<String> fetchedMatchIds) {
-		List<String> newlyAddedMatchIds = memberInfoService.extractNewMatchIds(puuid, fetchedMatchIds);
-
-		if (newlyAddedMatchIds != null && !newlyAddedMatchIds.isEmpty()) {
-			memberInfoService.updateMatchIds(puuid, fetchedMatchIds);
-		}
-
-		return newlyAddedMatchIds;
+	public List<String> getNewMatchIds(String puuid, List<String> fetchedMatchIds) {
+		return memberInfoService.extractNewMatchIds(puuid, fetchedMatchIds);
 	}
 
 	// recent_twenty_match 엔티티 업데이트 & 저장
@@ -109,6 +122,8 @@ public class MatchingService {
 		}
 	}
 
+
+	// TODO 이 아래로는 전부 더미데이터 생성 로직. 추후 삭제 필요
 	// ---------------------------------------- 더미데이터 생성 로직 --------------------------------
 	// 랜덤 매칭 데이터 생성
 	private MatchingFilterDto createRandomMatchingData(int index) {

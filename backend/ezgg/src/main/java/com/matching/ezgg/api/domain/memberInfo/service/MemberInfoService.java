@@ -43,22 +43,9 @@ public class MemberInfoService {
 		return memberInfoRepository.findByPuuid(puuid).orElseThrow(MemberInfoNotFoundException::new);
 	}
 
-	// MemberInfo에 tier, rank, wins, losses 업데이트
-	@Transactional
-	public void updateWinRateNTier(WinRateNTierDto winRateNTierDto) {
-		log.info("티어, 승률 업데이트 시작");
-
-		// db에서 memberInfo 가져오기
-		MemberInfo memberInfo = getMemberInfoByPuuid(winRateNTierDto.getPuuid());
-
-		memberInfo.updateWinRateAndTier(
-			winRateNTierDto.getTier(),
-			winRateNTierDto.getTierNum(),
-			winRateNTierDto.getWins(),
-			winRateNTierDto.getLosses()
-		); // 영속성 상태에서 Dirty Checking을 해 자동으로 db에 커밋됨
-
-		log.info("티어, 승률 업데이트 종료: {}{}", winRateNTierDto.getTier(), winRateNTierDto.getTierNum());
+	// memberId로 MemberInfo 조회
+	public MemberInfo getMemberInfoByMemberId(Long memberId) {
+		return memberInfoRepository.findByMemberId(memberId).orElseThrow(MemberInfoNotFoundException::new);
 	}
 
 	//member info 생성
@@ -86,21 +73,26 @@ public class MemberInfoService {
 		List<String> existingMatchIds = Optional.ofNullable(getMemberInfoByPuuid(puuid).getMatchIds())
 			.orElse(Collections.emptyList());
 
-		Set<String> existingMathIdSet = new HashSet<>(existingMatchIds);
+		Set<String> existingMatchIdSet = new HashSet<>(existingMatchIds);
 
 		return fetchedMatchIds.stream()
-			.filter(matchId -> !existingMathIdSet.contains(matchId))
+			.filter(matchId -> !existingMatchIdSet.contains(matchId))
 			.collect(Collectors.toList());
 	}
 
-	// MemberInfo에 matchIds 업데이트
 	@Transactional
-	public void updateMatchIds(String puuid, List<String> fetchedMatchIds) {
-		log.info("matchIds 업데이트 시작");
-		MemberInfo memberInfo = getMemberInfoByPuuid(puuid);
-		memberInfo.updateMatchIds(
-			fetchedMatchIds
+	public MemberInfo updateMemberInfo(Long memberId, WinRateNTierDto winRateNTierDto, List<String> fetchedMatchIds, boolean existsNewMatchIds){
+		log.info("MemberInfo 업데이트 시작");
+		MemberInfo memberInfo = getMemberInfoByMemberId(memberId);
+		memberInfo.update(
+			winRateNTierDto.getTier(),
+			winRateNTierDto.getTierNum(),
+			winRateNTierDto.getWins(),
+			winRateNTierDto.getLosses(),
+			fetchedMatchIds,
+			existsNewMatchIds
 		); // 영속성 상태에서 Dirty Checking을 해 자동으로 db에 커밋됨
-		log.info("matchIds 업데이트 종료");
+		log.info("MemberInfo 업데이트 종료");
+		return memberInfo;
 	}
 }
