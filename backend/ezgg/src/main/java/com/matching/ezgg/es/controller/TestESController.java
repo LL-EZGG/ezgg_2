@@ -41,7 +41,7 @@ public class TestESController {
 		@PathVariable("member-id") Long memberId,
 		@PathVariable("preferredChampion") String preferredChampion,
 		@PathVariable("unpreferredChampion") String unpreferredChampion) {
-		return ResponseEntity.ok().body(esMatchingFilter.findMatchingUsers(myLine, partnerLine, tier, memberId,
+		return ResponseEntity.ok().body(esMatchingFilter.findMatchingUsers(myLine, partnerLine, tier.toUpperCase(), memberId,
 			preferredChampion, unpreferredChampion
 		));
 	}
