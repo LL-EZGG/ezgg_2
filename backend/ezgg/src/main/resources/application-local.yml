@@ -30,9 +30,17 @@ spring:
     connection-timeout: 5s
     socket-timeout: 10s
 
+  data:
+    redis:
+      host: redis
+      port: 6379
+
 logging:
   level:
     org.springframework.security: DEBUG
 
 jwt:
   secret: "e2e75389fd5685da14c6dc2ef6c20226401e8da66c04a1b62f439cfcd53b47a1207305e292fb48a1fc5b74f91798795617bc8ff243f996d530fa23294cf515ed"
+
+api:
+  key: RGAPI-4c0127d1-7180-490e-ba35-10bbf5ef5c09

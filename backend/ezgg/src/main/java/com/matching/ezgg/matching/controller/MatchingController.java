@@ -1,10 +1,11 @@
 package com.matching.ezgg.matching.controller;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matching.ezgg.matching.dto.PreferredPartnerDto;
+import com.matching.ezgg.matching.dto.PreferredPartnerParsingDto;
 import com.matching.ezgg.matching.service.MatchingService;
 
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class MatchingController {
 	private final MatchingService matchingService;
 
 	@PostMapping("/matching/start/{memberId}")
-	public void startMatching(@RequestBody PreferredPartnerDto preferredPartnerDto, Long memberId) {
+	public void startMatching(@RequestBody PreferredPartnerParsingDto preferredPartnerDto, @PathVariable Long memberId) {
 		matchingService.startMatching(memberId, preferredPartnerDto);
 	}
 
