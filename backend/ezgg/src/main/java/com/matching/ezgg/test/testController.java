@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.matching.ezgg.global.exception.TestException;
-import com.matching.ezgg.matching.dto.PreferredPartnerDto;
+import com.matching.ezgg.matching.dto.PreferredPartnerParsingDto;
 import com.matching.ezgg.matching.service.MatchingService;
 
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class testController {
 	}
 
 	@GetMapping("/testMatching/{memberId}")
-	public void testMatching(@RequestBody PreferredPartnerDto preferredPartnerDto, @PathVariable Long memberId) {
+	public void testMatching(@RequestBody PreferredPartnerParsingDto preferredPartnerDto, @PathVariable Long memberId) {
 		matchingService.startMatching(memberId, preferredPartnerDto);//TODO CustomUserDetailService에서 실제 memberId 받아오기
 	}
 }

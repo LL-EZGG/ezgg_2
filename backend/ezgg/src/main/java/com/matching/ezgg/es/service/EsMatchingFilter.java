@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 
 import com.matching.ezgg.global.exception.EsQueryException;
 import com.matching.ezgg.global.exception.MatchingUserNoTFoundException;
-import com.matching.ezgg.matching.dto.MatchingFilterDto;
-import com.matching.ezgg.matching.dto.RecentTwentyMatch;
+import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
+import com.matching.ezgg.matching.dto.RecentTwentyMatchParsingDto;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -26,21 +26,21 @@ import lombok.extern.slf4j.Slf4j;
 public class EsMatchingFilter {
 	private final ElasticsearchClient esClient;
 
-	public List<MatchingFilterDto> findMatchingUsers(String myLine, String partnerLine, String tier, Long myMemberId,
+	public List<MatchingFilterParsingDto> findMatchingUsers(String myLine, String partnerLine, String tier, Long myMemberId,
 		String preferredChampion, String unpreferredChampion) {
 		Query query = Query.of(q -> q
 			.bool(b -> b
 				.filter(
 					Query.of(q1 -> q1.match(m -> m
-						.field("memberInfo.tier.keyword")
+						.field("memberInfoParsing.tier.keyword")
 						.query(tier)
 					)),
 					Query.of(q2 -> q2.match(m -> m
-						.field("preferredPartner.wantLine.partnerLine.keyword")
+						.field("preferredPartnerParsing.wantLine.partnerLine.keyword")
 						.query(myLine)
 					)),
 					Query.of(q3 -> q3.match(m -> m
-						.field("preferredPartner.wantLine.myLine.keyword")
+						.field("preferredPartnerParsing.wantLine.myLine.keyword")
 						.query(partnerLine)
 					))
 				)
@@ -59,8 +59,8 @@ public class EsMatchingFilter {
 		);
 
 		try {
-			SearchResponse<MatchingFilterDto> response = esClient.search(searchRequest, MatchingFilterDto.class);
-			List<MatchingFilterDto> users = response.hits().hits().stream()
+			SearchResponse<MatchingFilterParsingDto> response = esClient.search(searchRequest, MatchingFilterParsingDto.class);
+			List<MatchingFilterParsingDto> users = response.hits().hits().stream()
 				.map(Hit::source)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
@@ -86,8 +86,8 @@ public class EsMatchingFilter {
 	}
 
 	// 가중치 계산 로직
-	private int calculateUserWeight(MatchingFilterDto user, String preferredChampion, String unpreferredChampion) {
-		List<RecentTwentyMatch.MostChampion> mostChampionList = user.getRecentTwentyMatch().getMostChampions();
+	private int calculateUserWeight(MatchingFilterParsingDto user, String preferredChampion, String unpreferredChampion) {
+		List<RecentTwentyMatchParsingDto.MostChampion> mostChampionList = user.getRecentTwentyMatchParsing().getMostChampions();
 
 		// 내가 선호하는 챔피언과 비선호하는 챔피언이 상대방의 모스트 챔피언 목록에 있는지 확인
 		int preferredChampionWeight = getChampionWeight(preferredChampion, true, mostChampionList);
@@ -102,10 +102,10 @@ public class EsMatchingFilter {
 	}
 
 	public int getChampionWeight(String championName, boolean isPreferred,
-		List<RecentTwentyMatch.MostChampion> mostChampions) {
+		List<RecentTwentyMatchParsingDto.MostChampion> mostChampions) {
 
 		// 해당 챔피언의 정보 찾기
-		RecentTwentyMatch.MostChampion championInfo = findChampionInMostList(championName, mostChampions);
+		RecentTwentyMatchParsingDto.MostChampion championInfo = findChampionInMostList(championName, mostChampions);
 
 		// 챔피언이 모스트 목록에 없으면 0 반환
 		if (championInfo == null) {
@@ -138,8 +138,8 @@ public class EsMatchingFilter {
 		}
 	}
 
-	private RecentTwentyMatch.MostChampion findChampionInMostList(String championName,
-		List<RecentTwentyMatch.MostChampion> mostChampions) {
+	private RecentTwentyMatchParsingDto.MostChampion findChampionInMostList(String championName,
+		List<RecentTwentyMatchParsingDto.MostChampion> mostChampions) {
 
 		if (championName == null || championName.isEmpty()) {
 			return null;
@@ -151,7 +151,7 @@ public class EsMatchingFilter {
 			.orElse(null);
 	}
 
-	public int getChampionRank(String championName, List<RecentTwentyMatch.MostChampion> mostChampions) {
+	public int getChampionRank(String championName, List<RecentTwentyMatchParsingDto.MostChampion> mostChampions) {
 		// 챔피언이 모스트 챔피언 목록에서 몇 번째 순위인지 확인
 		log.debug("Finding rank for: {}", championName);
 		for (int i = 0; i < mostChampions.size(); i++) {
