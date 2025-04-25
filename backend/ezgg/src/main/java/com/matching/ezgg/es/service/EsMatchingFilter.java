@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 import com.matching.ezgg.global.exception.EsQueryException;
+import com.matching.ezgg.global.exception.NoTFoundMatchingUserException;
 import com.matching.ezgg.matching.dto.MatchingFilterDto;
 import com.matching.ezgg.matching.dto.RecentTwentyMath;
 
@@ -63,6 +64,12 @@ public class EsMatchingFilter {
 				.map(Hit::source)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
+
+			if (users.isEmpty()) {
+				log.warn("매칭 대상이 없습니다. ");
+				throw new NoTFoundMatchingUserException();
+			}
+
 			// 가중치를 추가하여 매칭할 대상들을 정렬
 			return users.stream()
 				.sorted((user1, user2) -> {
