@@ -39,7 +39,7 @@ public class MatchingService {
 		log.info("매칭 시작! memberId = {}", memberId);
   
 
-		// MemberDataBundle memberDataBundle = updateAllAttributesOfMember(memberId);//TODO
+		MemberDataBundle memberDataBundle = updateAllAttributesOfMember(memberId);
 		//TODO createEsMatchingDocument(), StartMatchingByDocuments(), ...
 
 
@@ -54,7 +54,9 @@ public class MatchingService {
 				long baseScore = System.currentTimeMillis();
 				String zsetKey = "matching:queue";
 
+				// TODO es에 저장하는 로직 추가 (임시)
 				log.info("JSON 직렬화 성공: {}", json);
+
 				esService.esPost(matchingFilterDtoDummy);
 				// TODO Redis에 저장하는 로직 추가 (임시)
 				// redisTemplate.opsForZSet().add(zsetKey, json, baseScore);
@@ -69,7 +71,9 @@ public class MatchingService {
 
 	// 매칭 시작 전 모든 데이터 업데이트
 
-	public void updateAllAttributesOfMember(String puuid) {
+	public MemberDataBundle updateAllAttributesOfMember(Long memberId){
+
+		String puuid = memberInfoService.getMemberPuuidByMemberId(memberId);
 		log.info("Riot Api로 모든 데이터 저장 시작: {}", puuid);
 
 		// 티어+승률/matchIds api 요청해서 메모리에 저장
@@ -109,17 +113,6 @@ public class MatchingService {
 	// 새로운 matchId가 없으면 null 리스트 리턴. 있으면 matchIds 업데이트 후 새로운 matchId 리스트 리턴
 	public List<String> getNewMatchIds(String puuid, List<String> fetchedMatchIds) {
 		return memberInfoService.extractNewMatchIds(puuid, fetchedMatchIds);
-	}
-
-	// recent_twenty_match 엔티티 업데이트 & 저장
-	public void saveRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
-
-		// 이미 존재하면 업데이트, 없으면 새롭게 저장 TODO Upsert 방식으로 수정
-		if (recentTwentyMatchService.existsByMemberId(recentTwentyMatchDto.getMemberId())) {
-			recentTwentyMatchService.updateRecentTwentyMatch(recentTwentyMatchDto);
-		} else {
-			recentTwentyMatchService.createNewRecentTwentyMatch(recentTwentyMatchDto);
-		}
 	}
 
 
@@ -192,13 +185,9 @@ public class MatchingService {
 
 	// 사전 정의된 값들
 	private final List<String> lines = List.of("TOP", "MIDDLE", "JUNGLE", "BOTTOM", "UTILITY");
-	private final List<String> champions = List.of("Aatrox", "Zed", "Lee Sin", "Ahri", "Jhin", "Lux", "Yasuo", "Thresh",
-		"Ezreal", "Vayne", "Akali", "Darius", "Garen", "Katarina", "Riven", "Kai'Sa", "Jinx", "Rengar", "Kha'Zix",
-		"Zyra");
+	private final List<String> champions = List.of("Aatrox", "Zed", "Lee Sin", "Ahri", "Jhin", "Lux", "Yasuo", "Thresh", "Ezreal", "Vayne", "Akali", "Darius", "Garen", "Katarina", "Riven", "Kai'Sa", "Jinx", "Rengar", "Kha'Zix", "Zyra");
 	private final List<String> riotTags = List.of("KR1", "EUW", "NA1", "JP1");
-	private final List<String> tiers = List.of("Iron", "Bronze", "Silver", "Gold", "Platinum", "EMERALD", "Diamond",
-		"Master",
-		"Grandmaster", "Challenger");
-	private final List<String> tierNums = List.of("I", "II", "III", "IV", "V");
+	private final List<String> tiers = List.of("Iron", "Bronze", "Silver", "Gold", "Platinum", "Emerald", "Diamond", "Master", "Grandmaster", "Challenger");
+	private final List<String> tierNums = List.of("I", "II", "III", "IV");
 
 }
