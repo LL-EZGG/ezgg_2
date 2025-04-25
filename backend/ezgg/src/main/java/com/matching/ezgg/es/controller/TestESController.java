@@ -3,6 +3,7 @@ package com.matching.ezgg.es.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.matching.ezgg.es.index.MatchingUserES;
 import com.matching.ezgg.es.repository.MatchingUserRepository;
 import com.matching.ezgg.es.service.EsMatchingFilter;
+import com.matching.ezgg.es.service.EsService;
 import com.matching.ezgg.global.response.SuccessResponse;
 import com.matching.ezgg.matching.dto.MatchingFilterDto;
 
@@ -23,6 +25,7 @@ public class TestESController {
 
 	private final MatchingUserRepository matchingUserRepository;
 	private final EsMatchingFilter esMatchingFilter;
+	private final EsService esService;
 
 	@PostMapping("/es/test")
 	public ResponseEntity<SuccessResponse<Void>> esTest(@RequestBody MatchingUserES matchingUserES) {
@@ -44,6 +47,11 @@ public class TestESController {
 		return ResponseEntity.ok().body(esMatchingFilter.findMatchingUsers(myLine, partnerLine, tier, memberId,
 			preferredChampion, unpreferredChampion
 		));
+	}
+
+	@DeleteMapping("es/{member-id}")
+	public void deleteDoc(@PathVariable("member-id") Long memberId) {
+		esService.deleteDocByMemberId(memberId);
 	}
 
 }
