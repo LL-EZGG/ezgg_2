@@ -105,6 +105,7 @@ const SuggestionItem = styled.div`
   cursor: pointer;
   color: white;
   transition: background-color 0.2s;
+  background: ${props => props.selected ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
 
   &:hover {
     background: rgba(255, 255, 255, 0.1);
@@ -185,8 +186,12 @@ const DuoFinderForm = ({ onSubmit }) => {
   const [bannedSearchTerm, setBannedSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showBannedSuggestions, setShowBannedSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [bannedSelectedIndex, setBannedSelectedIndex] = useState(0);
   const searchRef = useRef(null);
   const bannedSearchRef = useRef(null);
+  const preferredSuggestionsRef = useRef(null);
+  const bannedSuggestionsRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -201,6 +206,39 @@ const DuoFinderForm = ({ onSubmit }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    scrollToSelected(selectedIndex, 'preferred');
+  }, [selectedIndex]);
+
+  useEffect(() => {
+    scrollToSelected(bannedSelectedIndex, 'banned');
+  }, [bannedSelectedIndex]);
+
+  const scrollToSelected = (index, type) => {
+    const suggestionsElement = type === 'preferred' ? 
+      preferredSuggestionsRef.current : 
+      bannedSuggestionsRef.current;
+
+    if (!suggestionsElement) return;
+
+    const selectedElement = suggestionsElement.children[index];
+    if (!selectedElement) return;
+
+    const containerHeight = suggestionsElement.clientHeight;
+    const elementHeight = selectedElement.clientHeight;
+    const elementTop = selectedElement.offsetTop;
+    const currentScroll = suggestionsElement.scrollTop;
+
+    // 선택된 항목이 컨테이너 아래에 있을 때
+    if (elementTop + elementHeight > currentScroll + containerHeight) {
+      suggestionsElement.scrollTop = elementTop + elementHeight - containerHeight;
+    }
+    // 선택된 항목이 컨테이너 위에 있을 때
+    else if (elementTop < currentScroll) {
+      suggestionsElement.scrollTop = elementTop;
+    }
+  };
 
   const isFormValid = () => {
     return (
@@ -221,6 +259,39 @@ const DuoFinderForm = ({ onSubmit }) => {
       ...prev,
       [type]: prev[type] === lane ? '' : lane
     }));
+  };
+
+  const handleKeyDown = (e, type) => {
+    const suggestions = filterChampions(type === 'preferred' ? searchTerm : bannedSearchTerm);
+    const currentIndex = type === 'preferred' ? selectedIndex : bannedSelectedIndex;
+    const setIndex = type === 'preferred' ? setSelectedIndex : setBannedSelectedIndex;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        if (suggestions.length > 0) {
+          setIndex((prevIndex) => 
+            prevIndex < suggestions.length - 1 ? prevIndex + 1 : prevIndex
+          );
+        }
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        if (suggestions.length > 0) {
+          setIndex((prevIndex) => 
+            prevIndex > 0 ? prevIndex - 1 : prevIndex
+          );
+        }
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (suggestions.length > 0) {
+          handleChampionSelect(suggestions[currentIndex], type);
+        }
+        break;
+      default:
+        break;
+    }
   };
 
   const filterChampions = (term) => {
@@ -309,16 +380,19 @@ const DuoFinderForm = ({ onSubmit }) => {
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setShowSuggestions(true);
+                setSelectedIndex(0);
               }}
               onFocus={() => setShowSuggestions(true)}
+              onKeyDown={(e) => handleKeyDown(e, 'preferred')}
             />
           </SearchInput>
           {showSuggestions && searchTerm && (
-            <Suggestions>
-              {filterChampions(searchTerm).map(champion => (
+            <Suggestions ref={preferredSuggestionsRef}>
+              {filterChampions(searchTerm).map((champion, index) => (
                 <SuggestionItem
                   key={champion.id}
                   onClick={() => handleChampionSelect(champion, 'preferred')}
+                  selected={index === selectedIndex}
                 >
                   <img src={`/champions/${champion.image}`} alt={champion.name} />
                   {champion.name}
@@ -354,16 +428,19 @@ const DuoFinderForm = ({ onSubmit }) => {
               onChange={(e) => {
                 setBannedSearchTerm(e.target.value);
                 setShowBannedSuggestions(true);
+                setBannedSelectedIndex(0);
               }}
               onFocus={() => setShowBannedSuggestions(true)}
+              onKeyDown={(e) => handleKeyDown(e, 'banned')}
             />
           </SearchInput>
           {showBannedSuggestions && bannedSearchTerm && (
-            <Suggestions>
-              {filterChampions(bannedSearchTerm).map(champion => (
+            <Suggestions ref={bannedSuggestionsRef}>
+              {filterChampions(bannedSearchTerm).map((champion, index) => (
                 <SuggestionItem
                   key={champion.id}
                   onClick={() => handleChampionSelect(champion, 'banned')}
+                  selected={index === bannedSelectedIndex}
                 >
                   <img src={`/champions/${champion.image}`} alt={champion.name} />
                   {champion.name}
