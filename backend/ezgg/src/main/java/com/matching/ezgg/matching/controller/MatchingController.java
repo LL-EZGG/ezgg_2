@@ -17,7 +17,7 @@ public class MatchingController {
 	private final MatchingService matchingService;
 
 	@PostMapping("/matching/start/{memberId}")
-	public void startMatching(@RequestBody PreferredPartnerParsingDto preferredPartnerDto, @PathVariable Long memberId) {
+	public void startMatching(@RequestBody PreferredPartnerParsingDto preferredPartnerDto, @PathVariable(name = "memberId") Long memberId) {
 		matchingService.startMatching(memberId, preferredPartnerDto);
 	}
 
