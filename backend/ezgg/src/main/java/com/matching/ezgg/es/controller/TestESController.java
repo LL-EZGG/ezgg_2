@@ -13,7 +13,7 @@ import com.matching.ezgg.es.index.MatchingUserES;
 import com.matching.ezgg.es.repository.MatchingUserRepository;
 import com.matching.ezgg.es.service.EsMatchingFilter;
 import com.matching.ezgg.global.response.SuccessResponse;
-import com.matching.ezgg.matching.dto.MatchingFilterDto;
+import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,13 +35,13 @@ public class TestESController {
 
 	// 테스트용
 	@GetMapping("es/matching/{my-line}/{partner-line}/{tier}/{member-id}/{preferredChampion}/{unpreferredChampion}")
-	public ResponseEntity<List<MatchingFilterDto>> testMatching(@PathVariable("my-line") String myLine,
+	public ResponseEntity<List<MatchingFilterParsingDto>> testMatching(@PathVariable("my-line") String myLine,
 		@PathVariable("partner-line") String partnerLine,
 		@PathVariable("tier") String tier,
 		@PathVariable("member-id") Long memberId,
 		@PathVariable("preferredChampion") String preferredChampion,
 		@PathVariable("unpreferredChampion") String unpreferredChampion) {
-		return ResponseEntity.ok().body(esMatchingFilter.findMatchingUsers(myLine, partnerLine, tier, memberId,
+		return ResponseEntity.ok().body(esMatchingFilter.findMatchingUsers(myLine, partnerLine, tier.toUpperCase(), memberId,
 			preferredChampion, unpreferredChampion
 		));
 	}

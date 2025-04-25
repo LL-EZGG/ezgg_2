@@ -5,13 +5,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PreferredPartnerDto {
+@ToString
+public class PreferredPartnerParsingDto {
 
 	private WantLine wantLine;
 	private ChampionInfo championInfo;
@@ -21,6 +23,7 @@ public class PreferredPartnerDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Builder
+	@ToString
 	public static class WantLine {
 		private String myLine;
 		private String partnerLine;
@@ -31,19 +34,9 @@ public class PreferredPartnerDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Builder
+	@ToString
 	public static class ChampionInfo {
 		private String preferredChampion;
 		private String unpreferredChampion;
 	}
-
-	// "preferredPartner" : {
-	// 	"wantLine" : {
-	// 		"myLine" : "top",
-	// 		"partnerLine" : "mid"
-	// 	},
-	// 	"championInfo" : {
-	// 		"preferredChampion" : "Aatrox",
-	// 		"unpreferredChampion" : "Zed"
-	// 	}
-	// },
 }
