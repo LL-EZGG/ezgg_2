@@ -11,12 +11,13 @@ import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.api.dto.MatchDto;
 import com.matching.ezgg.api.dto.WinRateNTierDto;
 import com.matching.ezgg.api.service.ApiService;
+import com.matching.ezgg.es.service.EsService;
 import com.matching.ezgg.matching.dto.MemberDataBundle;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.matching.dto.MatchingFilterDto;
 import com.matching.ezgg.matching.dto.MemberInfoDto;
 import com.matching.ezgg.matching.dto.PreferredPartnerDto;
-import com.matching.ezgg.matching.dto.RecentTwentyMath;
+import com.matching.ezgg.matching.dto.RecentTwentyMatch;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ public class MatchingService {
 	private final MatchingDataBulkSaveService matchingDataBulkSaveService;
 	private final RedisTemplate<String, Object> redisTemplate;
 	private final ObjectMapper objectMapper;
+	private final EsService esService;
 
 
 	// 매칭 시작 시 호출
@@ -53,8 +55,7 @@ public class MatchingService {
 				String zsetKey = "matching:queue";
 
 				log.info("JSON 직렬화 성공: {}", json);
-				// TODO es에 저장하는 로직 추가 (임시)
-
+				esService.esPost(matchingFilterDtoDummy);
 				// TODO Redis에 저장하는 로직 추가 (임시)
 				// redisTemplate.opsForZSet().add(zsetKey, json, baseScore);
 			} catch (Exception e) {
@@ -67,9 +68,8 @@ public class MatchingService {
 	}
 
 	// 매칭 시작 전 모든 데이터 업데이트
-	public MemberDataBundle updateAllAttributesOfMember(Long memberId){
 
-		String puuid = memberInfoService.getMemberPuuidByMemberId(memberId);
+	public void updateAllAttributesOfMember(String puuid) {
 		log.info("Riot Api로 모든 데이터 저장 시작: {}", puuid);
 
 		// 티어+승률/matchIds api 요청해서 메모리에 저장
@@ -102,7 +102,7 @@ public class MatchingService {
 		return memberDataBundle;
 	}
 
-	private void createEsMatchingDocument(){
+	private void createEsMatchingDocument() {
 		//TODO
 	}
 
@@ -111,14 +111,25 @@ public class MatchingService {
 		return memberInfoService.extractNewMatchIds(puuid, fetchedMatchIds);
 	}
 
+	// recent_twenty_match 엔티티 업데이트 & 저장
+	public void saveRecentTwentyMatch(RecentTwentyMatchDto recentTwentyMatchDto) {
+
+		// 이미 존재하면 업데이트, 없으면 새롭게 저장 TODO Upsert 방식으로 수정
+		if (recentTwentyMatchService.existsByMemberId(recentTwentyMatchDto.getMemberId())) {
+			recentTwentyMatchService.updateRecentTwentyMatch(recentTwentyMatchDto);
+		} else {
+			recentTwentyMatchService.createNewRecentTwentyMatch(recentTwentyMatchDto);
+		}
+	}
+
 
 	// TODO 이 아래로는 전부 더미데이터 생성 로직. 추후 삭제 필요
 	// ---------------------------------------- 더미데이터 생성 로직 --------------------------------
 	// 랜덤 매칭 데이터 생성
 	private MatchingFilterDto createRandomMatchingData(int index) {
 		MatchingFilterDto dto = new MatchingFilterDto();
-		dto.setMemberId((long) index);
-		
+		dto.setMemberId((long)index);
+
 		// MemberInfo 생성
 		MemberInfoDto memberInfo = new MemberInfoDto();
 		memberInfo.setRiotUsername("Player" + index);
@@ -128,7 +139,7 @@ public class MatchingService {
 		memberInfo.setWins(randomInt(10, 100));
 		memberInfo.setLosses(randomInt(10, 100));
 		dto.setMemberInfo(memberInfo);
-		
+
 		// PreferredPartner 생성
 		PreferredPartnerDto preferredPartner = new PreferredPartnerDto();
 		PreferredPartnerDto.WantLine wantLine = new PreferredPartnerDto.WantLine();
@@ -140,19 +151,19 @@ public class MatchingService {
 		championInfo.setUnpreferredChampion(getRandom(champions));
 		preferredPartner.setChampionInfo(championInfo);
 		dto.setPreferredPartner(preferredPartner);
-		
+
 		// RecentTwentyMath 생성 (실제 애플리케이션에서는 null로 해도 될 것 같습니다)
-		RecentTwentyMath recentTwentyMath = new RecentTwentyMath();
-		recentTwentyMath.setKills(randomInt(30, 150));
-		recentTwentyMath.setDeaths(randomInt(20, 100));
-		recentTwentyMath.setAssists(randomInt(30, 200));
+		RecentTwentyMatch recentTwentyMatch = new RecentTwentyMatch();
+		recentTwentyMatch.setKills(randomInt(30, 150));
+		recentTwentyMatch.setDeaths(randomInt(20, 100));
+		recentTwentyMatch.setAssists(randomInt(30, 200));
 
 		// mostChampions 리스트 초기화
-		recentTwentyMath.setMostChampions(new ArrayList<>());
+		recentTwentyMatch.setMostChampions(new ArrayList<>());
 
 		// MostChampion 생성
-		for(int i = 0; i < 3; i++) {
-			RecentTwentyMath.MostChampion mostChampion = new RecentTwentyMath.MostChampion();
+		for (int i = 0; i < 3; i++) {
+			RecentTwentyMatch.MostChampion mostChampion = new RecentTwentyMatch.MostChampion();
 			mostChampion.setChampionName(getRandom(champions));
 			mostChampion.setKills(randomInt(5, 20));
 			mostChampion.setDeaths(randomInt(1, 10));
@@ -160,29 +171,34 @@ public class MatchingService {
 			mostChampion.setWins(randomInt(0, 20));
 			mostChampion.setLosses(randomInt(0, 20));
 			mostChampion.setTotalMatches(mostChampion.getWins() + mostChampion.getLosses());
-			mostChampion.setWinRateOfChampion((int) ((double) mostChampion.getWins() / mostChampion.getTotalMatches() * 100));
+			mostChampion.setWinRateOfChampion(
+				(int)((double)mostChampion.getWins() / mostChampion.getTotalMatches() * 100));
 
-			recentTwentyMath.getMostChampions().add(mostChampion);
+			recentTwentyMatch.getMostChampions().add(mostChampion);
 		}
 
-		dto.setRecentTwentyMatch(recentTwentyMath);
-		
+		dto.setRecentTwentyMatch(recentTwentyMatch);
+
 		return dto;
 	}
 
 	private <T> T getRandom(List<T> list) {
 		return list.get(ThreadLocalRandom.current().nextInt(list.size()));
 	}
-	
+
 	private int randomInt(int min, int max) {
 		return ThreadLocalRandom.current().nextInt(min, max + 1);
 	}
-	
+
 	// 사전 정의된 값들
-	private final List<String> lines = List.of("top", "mid", "jungle", "adc", "support");
-	private final List<String> champions = List.of("Aatrox", "Zed", "Lee Sin", "Ahri", "Jhin", "Lux", "Yasuo", "Thresh", "Ezreal", "Vayne", "Akali", "Darius", "Garen", "Katarina", "Riven", "Kai'Sa", "Jinx", "Rengar", "Kha'Zix", "Zyra");
+	private final List<String> lines = List.of("TOP", "MIDDLE", "JUNGLE", "BOTTOM", "UTILITY");
+	private final List<String> champions = List.of("Aatrox", "Zed", "Lee Sin", "Ahri", "Jhin", "Lux", "Yasuo", "Thresh",
+		"Ezreal", "Vayne", "Akali", "Darius", "Garen", "Katarina", "Riven", "Kai'Sa", "Jinx", "Rengar", "Kha'Zix",
+		"Zyra");
 	private final List<String> riotTags = List.of("KR1", "EUW", "NA1", "JP1");
-	private final List<String> tiers = List.of("Iron", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Grandmaster", "Challenger");
+	private final List<String> tiers = List.of("Iron", "Bronze", "Silver", "Gold", "Platinum", "EMERALD", "Diamond",
+		"Master",
+		"Grandmaster", "Challenger");
 	private final List<String> tierNums = List.of("I", "II", "III", "IV", "V");
 
 }

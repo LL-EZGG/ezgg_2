@@ -13,13 +13,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RecentTwentyMath {
+public class RecentTwentyMatch {
 
 	private int kills;
 	private int deaths;
 	private int assists;
 	private List<MostChampion> mostChampions;
-
 
 	@Getter
 	@Setter

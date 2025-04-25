@@ -36,14 +36,14 @@ public class PreferredPartnerDto {
 		private String unpreferredChampion;
 	}
 
-	// 	"preferredPartner" : {
-	// 		"wantLine" : {
-	// 			"myLine" : "top",
-	// 			"partnerLine" : "mid"
-	// 		},
-	// 		"championInfo" : {
-	// 			"preferredChampion" : "Aatrox",
-	// 			"unpreferredChampion" : "Zed"
-	// 		}
+	// "preferredPartner" : {
+	// 	"wantLine" : {
+	// 		"myLine" : "top",
+	// 		"partnerLine" : "mid"
 	// 	},
+	// 	"championInfo" : {
+	// 		"preferredChampion" : "Aatrox",
+	// 		"unpreferredChampion" : "Zed"
+	// 	}
+	// },
 }
