@@ -47,7 +47,7 @@ public class ElasticsearchIndexInitializer implements ApplicationListener<Contex
 	@Bean("es")
 	public static ElasticsearchClient createClient() {
 		RestClient restClient = RestClient.builder(
-			new HttpHost("localhost", 9200)
+			new HttpHost("elasticsearch", 9200)
 		).build();
 
 		RestClientTransport transport = new RestClientTransport(
