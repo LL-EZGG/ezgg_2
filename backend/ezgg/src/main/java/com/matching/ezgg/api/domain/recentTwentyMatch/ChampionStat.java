@@ -1,6 +1,6 @@
 package com.matching.ezgg.api.domain.recentTwentyMatch;
 
-import com.matching.ezgg.api.domain.match.entity.Match;
+import com.matching.ezgg.api.domain.match.entity.MatchInfo;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -33,11 +33,11 @@ public class ChampionStat {//모스트 3개 캐릭터에 대해서만 생성
 	}
 
 	// match 데이터로 championStat 업데이트
-	public void updateByMatch(Match match) {
-		this.kills += match.getKills();
-		this.deaths += match.getDeaths();
-		this.assists += match.getAssists();
-		addMatchResult(Boolean.TRUE.equals(match.getWin()));
+	public void updateByMatch(MatchInfo matchInfo) {
+		this.kills += matchInfo.getKills();
+		this.deaths += matchInfo.getDeaths();
+		this.assists += matchInfo.getAssists();
+		addMatchResult(Boolean.TRUE.equals(matchInfo.getWin()));
 	}
 
 	// 승패 여부 기록
