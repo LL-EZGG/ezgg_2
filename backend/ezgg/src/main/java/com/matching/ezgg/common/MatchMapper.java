@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 public class MatchMapper {
 	private final ObjectMapper objectMapper;
 
-	public MatchDto toMatchDto(String rawJson, String puuid) {
+	public MatchDto toMatchDto(String rawJson, Long memberId, String puuid) {
 		try {
 			JsonNode root = objectMapper.readTree(rawJson);
 
@@ -33,7 +33,7 @@ public class MatchMapper {
 
 			// Dto 생성, memberId는 따로 추가해야된다!
 			return new MatchDto(
-				0L,
+				memberId,
 				riotMatchId,
 				kills,
 				deaths,

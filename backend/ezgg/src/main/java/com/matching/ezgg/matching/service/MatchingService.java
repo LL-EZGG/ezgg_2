@@ -81,7 +81,7 @@ public class MatchingService {
 		// matchInfo api 요청해서 메모리에 저장
 		List<MatchDto> matchDtoList = new ArrayList<>();
 		for (String matchId : newlyAddedMatchIds) {
-			MatchDto matchInfo = apiService.getMemberMatch(puuid, matchId);
+			MatchDto matchInfo = apiService.getMemberMatch(memberId, puuid, matchId);
 			matchDtoList.add(matchInfo);
 		}
 

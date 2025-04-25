@@ -140,7 +140,7 @@ public class ApiService {
 	}
 
 	//lol/match/v5/matches/{matchId}?api_key=
-	public MatchDto getMemberMatch(String puuid, String matchId) {
+	public MatchDto getMemberMatch(Long memberId, String puuid, String matchId) {
 		log.info("matchInfo 조회 시작: puuid = {} / matchId = {}", puuid, matchId);
 
 		try {
@@ -152,7 +152,7 @@ public class ApiService {
 			// Json 전체 수령
 			String rawJson = asiaRestTemplate.getForObject(url, String.class);
 			// MatchDto 형식으로 매핑
-			MatchDto matchDto = matchMapper.toMatchDto(rawJson, puuid);
+			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
 			// MemberId를 MatchDto에 따로 지정
 			matchDto.setMemberId(memberInfoService.getMemberIdByPuuid(puuid));
 
