@@ -1,9 +1,9 @@
 package com.matching.ezgg.global.exception;
 
-public class EsPostException extends BaseException {
+public class EsPostFailException extends BaseException {
 	private static final String MESSAGE = "Elasticsearch Post를 실패했습니다.";
 
-	public EsPostException() {
+	public EsPostFailException() {
 		super(MESSAGE);
 	}
 
