@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import styled from '@emotion/styled';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import '../../styles/Login.css';
 
 const Container = styled.div`
   display: flex;
@@ -134,12 +136,29 @@ const Login = () => {
     return isValid;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      // TODO: 실제 로그인 로직 구현
+    if (!validateForm()) {return;}
       console.log('Form submitted:', formData);
-      navigate('/');
+
+    try {
+      const response = await axios.post('http://localhost:8888/login', {
+        memberUsername: formData.username,
+        password: formData.password
+      }, {
+        withCredentials: true
+      });
+
+      const token = response.headers['Authorization'];
+      if (response.status === 200) {
+        // 로그인 성공 후, JWT 토큰을 로컬 스토리지에 저장
+        localStorage.setItem('token', token);
+        // 로그인 성공 후, 홈 페이지로 리다이렉트
+        navigate('/');
+      }
+    } catch (error) {
+      alert('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
+      console.error('Login error:', error);
     }
   };
 
