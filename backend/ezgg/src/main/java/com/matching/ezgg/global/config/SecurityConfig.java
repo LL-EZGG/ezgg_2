@@ -4,7 +4,9 @@ import static org.springframework.boot.autoconfigure.security.servlet.PathReques
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,6 +16,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import com.matching.ezgg.global.jwt.filter.JWTFilter;
 import com.matching.ezgg.global.jwt.filter.JWTUtil;
@@ -54,6 +59,7 @@ public class SecurityConfig {
 
 		// 기본 설정 비활성화
 		http
+			.cors(Customizer.withDefaults())
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable);
@@ -62,7 +68,7 @@ public class SecurityConfig {
 		http.authorizeHttpRequests((auth) -> auth
 
 			.requestMatchers("/auth/**", "/login", "/refresh", "/riotapi/**", "/es/**", "/test/**", "/redis/**", "/matching/**").permitAll() // 해당 요청 은 인증 없이 접근 가능
-
+			.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 			.anyRequest().hasAnyAuthority("ROLE_USER")); // 나머지 요청은 ROLE_USER 권한이 있어야 접근 가능
 
 		// 세션 관리 설정
@@ -78,4 +84,24 @@ public class SecurityConfig {
 		return http.build();
 	}
 
-}
+	@Bean
+	public CorsFilter corsFilter() {
+		// CORS 설정
+		CorsConfiguration configuration = new CorsConfiguration();
+
+		configuration.addAllowedOrigin("http://localhost:3000");
+		configuration.addAllowedMethod("*");
+		configuration.addAllowedHeader("*");
+		configuration.addExposedHeader("Authorization");
+		configuration.setAllowCredentials(true);
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+
+		return new CorsFilter(source);
+	}
+
+
+
+
+	}
