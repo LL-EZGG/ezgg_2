@@ -40,6 +40,7 @@ public class MatchingService {
 	public void startMatching(Long memberId, PreferredPartnerParsingDto preferredPartnerParsingDto) {
 		log.info("매칭 시작! memberId = {}", memberId);
 
+		// 모든 데이터 riot api로 저장 후 리턴
 		MemberDataBundle memberDataBundle = updateAllAttributesOfMember(memberId);
 
 		// memberDataBundle -> MatchingFilterDto 변환
@@ -102,8 +103,61 @@ public class MatchingService {
 		return memberDataBundle;
 	}
 
-	private void createEsMatchingDocument() {
-		//TODO
+	// json Document 생성
+	private MatchingFilterParsingDto createEsMatchingDocument(Long memberId, MemberDataBundle memberDataBundle, PreferredPartnerParsingDto preferredPartnerParsingDto) {
+
+		// MemberInfo -> MemberInfoParsingDto 변환
+		MemberInfoParsingDto memberInfoParsingDto = MemberInfoParsingDto.builder()
+			.riotUsername(memberDataBundle.getMemberInfo().getRiotUsername())
+			.riotTag(memberDataBundle.getMemberInfo().getRiotTag())
+			.tier(memberDataBundle.getMemberInfo().getTier())
+			.tierNum(memberDataBundle.getMemberInfo().getTierNum())
+			.wins(memberDataBundle.getMemberInfo().getWins())
+			.losses(memberDataBundle.getMemberInfo().getLosses())
+			.build();
+
+		// recentTwentyMatch -> recentTwentyMatchParsingDto 변환
+		RecentTwentyMatchParsingDto recentTwentyMatchparsingDto = new RecentTwentyMatchParsingDto();
+
+		if (memberDataBundle.getRecentTwentyMatch().getChampionStats().isEmpty()) {
+			recentTwentyMatchparsingDto.setKills(0);
+			recentTwentyMatchparsingDto.setDeaths(0);
+			recentTwentyMatchparsingDto.setAssists(0);
+			recentTwentyMatchparsingDto.setMostChampions(null);
+		} else {
+			Map<String, ChampionStat> championStats = memberDataBundle.getRecentTwentyMatch().getChampionStats();
+			List<RecentTwentyMatchParsingDto.MostChampion> mostChampions = new ArrayList<>();
+
+			for (ChampionStat value : championStats.values()) {
+
+				mostChampions.add(RecentTwentyMatchParsingDto.MostChampion.builder()
+					.championName(value.getChampionName())
+					.kills(value.getKills())
+					.deaths(value.getDeaths())
+					.assists(value.getAssists())
+					.wins(value.getWins())
+					.losses(value.getLosses())
+					.totalMatches(value.getTotal())
+					.winRateOfChampion(value.getWinRateOfChampion())
+					.build());
+			}
+
+			recentTwentyMatchparsingDto.setKills(memberDataBundle.getRecentTwentyMatch().getSumKills());
+			recentTwentyMatchparsingDto.setDeaths(memberDataBundle.getRecentTwentyMatch().getSumDeaths());
+			recentTwentyMatchparsingDto.setAssists(memberDataBundle.getRecentTwentyMatch().getSumAssists());
+			recentTwentyMatchparsingDto.setMostChampions(mostChampions);
+		}
+
+		// memberDataBundle -> MatchingFilterDto 변환
+		MatchingFilterParsingDto matchingFilterParsingDto = MatchingFilterParsingDto.builder()
+			.memberId(memberId)
+			.preferredPartnerParsing(preferredPartnerParsingDto)
+			.memberInfoParsing(memberInfoParsingDto)
+			.recentTwentyMatchParsing(recentTwentyMatchparsingDto)
+			.build();
+
+		log.info("Json: {}", matchingFilterParsingDto.toString());
+		return matchingFilterParsingDto;
 	}
 
 	// 새로운 matchId가 없으면 null 리스트 리턴. 있으면 matchIds 업데이트 후 새로운 matchId 리스트 리턴
