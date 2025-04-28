@@ -1,4 +1,4 @@
-package com.matching.ezgg.common;
+package com.matching.ezgg.global.common;
 
 import java.io.IOException;
 import java.util.List;

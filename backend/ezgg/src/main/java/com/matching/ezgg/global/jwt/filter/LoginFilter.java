@@ -16,11 +16,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.util.StreamUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.matching.ezgg.global.jwt.dto.CustomUserDetails;
 import com.matching.ezgg.global.jwt.dto.LoginRequest;
 import com.matching.ezgg.global.jwt.entity.Refresh;
 import com.matching.ezgg.global.jwt.repository.RefreshRepository;
 import com.matching.ezgg.global.response.ErrorResponse;
 import com.matching.ezgg.global.response.SuccessResponse;
+import com.matching.ezgg.member.entity.Member;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -73,14 +75,18 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		Authentication authResult) throws IOException, ServletException {
 		log.info(">>>>> 로그인 성공 {}", authResult.getName());
 
+		CustomUserDetails userDetails = (CustomUserDetails) authResult.getPrincipal();
+		Long memberId = userDetails.getMemberId();
+		log.info(">>>>> 로그인 성공한 회원 ID: {}", memberId);
+
 		String memberUsername = authResult.getName();
 		Collection<? extends GrantedAuthority> authorities = authResult.getAuthorities();
 		Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
 		GrantedAuthority auth = iterator.next();
 		String role = auth.getAuthority();
 
-		String accessToken = jwtUtil.createJwt("access", memberUsername, role, 60 * 60 * 1000L); // 1시간 유효
-		String refreshToken = jwtUtil.createJwt("refresh", memberUsername, role, 24 * 60 * 60 * 1000L); // 1일 유효
+		String accessToken = jwtUtil.createJwt("access", memberId, memberUsername, role, 60 * 60 * 1000L); // 1시간 유효
+		String refreshToken = jwtUtil.createJwt("refresh", memberId, memberUsername, role, 24 * 60 * 60 * 1000L); // 1일 유효
 		addRefreshEntity(memberUsername, refreshToken, 24 * 60 * 60 * 1000L);
 
 		response.setHeader("Authorization", accessToken);

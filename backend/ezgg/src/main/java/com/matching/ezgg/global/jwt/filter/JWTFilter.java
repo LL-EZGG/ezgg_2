@@ -45,9 +45,11 @@ public class JWTFilter extends OncePerRequestFilter {
 		}
 
 		try {
-			if (!jwtUtil.isExpired(accessToken)) {
-				setAuthenticationToContext(accessToken);
+			if (jwtUtil.isExpired(accessToken)) {
+				handleJwtException(response, "토큰이 만료되었습니다. 다시 로그인해주세요.", HttpServletResponse.SC_UNAUTHORIZED);
+				return;
 			}
+			setAuthenticationToContext(accessToken);
 			filterChain.doFilter(request, response);
 		} catch (ExpiredJwtException e) {
 			handleJwtException(response, "토큰이 만료되었습니다. 다시 로그인해주세요.", HttpServletResponse.SC_UNAUTHORIZED);
@@ -80,6 +82,7 @@ public class JWTFilter extends OncePerRequestFilter {
 		Member member = Member.builder()
 			.memberUsername(memberUsername)
 			.role(role)
+			.id(jwtUtil.getMemberId(accessToken))
 			.build();
 		CustomUserDetails userDetails = new CustomUserDetails(member);
 		Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,

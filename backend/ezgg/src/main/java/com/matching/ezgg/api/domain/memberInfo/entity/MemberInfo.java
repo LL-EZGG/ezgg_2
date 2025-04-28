@@ -2,7 +2,7 @@ package com.matching.ezgg.api.domain.memberInfo.entity;
 
 import java.util.List;
 
-import com.matching.ezgg.common.MatchIdConvert;
+import com.matching.ezgg.global.common.MatchIdConvert;
 import com.matching.ezgg.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;

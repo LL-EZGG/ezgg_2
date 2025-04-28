@@ -3,7 +3,7 @@ package com.matching.ezgg.api.domain.recentTwentyMatch.entity;
 import java.util.Map;
 
 import com.matching.ezgg.api.domain.recentTwentyMatch.ChampionStat;
-import com.matching.ezgg.common.ChampionStatsConvert;
+import com.matching.ezgg.global.common.ChampionStatsConvert;
 import com.matching.ezgg.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;

@@ -1,4 +1,4 @@
-package com.matching.ezgg.common;
+package com.matching.ezgg.global.common;
 
 import org.springframework.stereotype.Component;
 
