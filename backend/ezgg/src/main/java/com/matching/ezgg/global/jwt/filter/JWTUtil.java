@@ -8,10 +8,14 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class JWTUtil {
 
@@ -44,6 +48,21 @@ public class JWTUtil {
 	// 토큰 만료 여부 확인
 	public Boolean isExpired(String token) {
 		return parseClaims(token).getExpiration().before(new java.util.Date());
+	}
+	
+	// 토큰의 만료 시간 가져오기 (밀리초 단위)
+	public long getExpirationTime(String token) {
+		return parseClaims(token).getExpiration().getTime();
+	}
+	
+	// HTTP 요청 헤더에서 토큰 추출하기
+	public String extractTokenFromRequest(HttpServletRequest request) {
+		String token = request.getHeader("Authorization");
+		log.debug("Authorization Header: {}", token);
+		if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
+			return token.substring(7);
+		}
+		return null;
 	}
 
 	public String createJwt(String category, String memberUsername, String role, Long expiredMs) {

@@ -12,6 +12,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.global.jwt.dto.CustomUserDetails;
+import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
 import com.matching.ezgg.global.response.ErrorResponse;
 import com.matching.ezgg.member.entity.Member;
 
@@ -32,20 +33,26 @@ import lombok.extern.slf4j.Slf4j;
 public class JWTFilter extends OncePerRequestFilter {
 
 	private final JWTUtil jwtUtil;
+	private final RedisRefreshTokenRepository redisRefreshTokenRepository;
 	private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 변환을 위한 ObjectMapper
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
-		String accessToken = extractToken(request);
+		String accessToken = jwtUtil.extractTokenFromRequest(request);
 
-		if (!StringUtils.hasText(accessToken)) {
+		if (accessToken == null) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
 		try {
 			if (!jwtUtil.isExpired(accessToken)) {
+				// 토큰이 블랙리스트에 있는지 확인
+				if (redisRefreshTokenRepository.isBlacklisted(accessToken)) {
+					handleJwtException(response, "로그아웃된 토큰입니다. 다시 로그인해주세요.", HttpServletResponse.SC_UNAUTHORIZED);
+					return;
+				}
 				setAuthenticationToContext(accessToken);
 			}
 			filterChain.doFilter(request, response);
@@ -60,16 +67,6 @@ public class JWTFilter extends OncePerRequestFilter {
 		} catch (JwtException e) {
 			handleJwtException(response, "JWT 처리 중 오류가 발생했습니다.", HttpServletResponse.SC_UNAUTHORIZED);
 		}
-	}
-
-	// 토큰을 추출하는 메서드
-	private String extractToken(HttpServletRequest request) {
-		String token = request.getHeader("Authorization");
-		log.info("Authorization Header: {}", token);
-		if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
-			return token.substring(7);
-		}
-		return token;
 	}
 
 	// JWT를 검증하고 인증 정보를 SecurityContext에 설정하는 메서드

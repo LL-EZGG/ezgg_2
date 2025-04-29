@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,7 +24,7 @@ import org.springframework.web.filter.CorsFilter;
 import com.matching.ezgg.global.jwt.filter.JWTFilter;
 import com.matching.ezgg.global.jwt.filter.JWTUtil;
 import com.matching.ezgg.global.jwt.filter.LoginFilter;
-import com.matching.ezgg.global.jwt.repository.RefreshRepository;
+import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,7 +35,7 @@ public class SecurityConfig {
 
 	private final JWTUtil jwtUtil;
 	private final AuthenticationConfiguration authenticationConfiguration;
-	private final RefreshRepository refreshRepository;
+	private final RedisRefreshTokenRepository redisRefreshTokenRepository;
 
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -66,8 +67,7 @@ public class SecurityConfig {
 
 		// URL 접근 권한 설정
 		http.authorizeHttpRequests((auth) -> auth
-
-			.requestMatchers("/auth/**", "/login", "/refresh", "/riotapi/**", "/es/**", "/test/**", "/redis/**", "/matching/**").permitAll() // 해당 요청 은 인증 없이 접근 가능
+			.requestMatchers("/auth/**", "/login", "/refresh", "/riotapi/**", "/es/**", "/redis/**", "/matching/**").permitAll() // 해당 요청 은 인증 없이 접근 가능
 			.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 			.anyRequest().hasAnyAuthority("ROLE_USER")); // 나머지 요청은 ROLE_USER 권한이 있어야 접근 가능
 
@@ -76,9 +76,9 @@ public class SecurityConfig {
 			session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 		// JWT 필터 적용
-		http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
+		http.addFilterBefore(new JWTFilter(jwtUtil, redisRefreshTokenRepository), LoginFilter.class)
 			.addFilterAt(
-				new LoginFilter(jwtUtil, authenticationManager(authenticationConfiguration), refreshRepository),
+				new LoginFilter(jwtUtil, authenticationManager(authenticationConfiguration), redisRefreshTokenRepository),
 				UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
@@ -100,8 +100,4 @@ public class SecurityConfig {
 
 		return new CorsFilter(source);
 	}
-
-
-
-
-	}
+}
