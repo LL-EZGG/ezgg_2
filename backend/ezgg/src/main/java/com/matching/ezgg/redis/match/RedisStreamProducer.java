@@ -19,8 +19,7 @@ public class RedisStreamProducer {
 	}
 
 	public void acknowledgeBothUser(Long memberId1, Long memberId2) {
-		redisService.acknowledgeMatch(memberId1);
-		redisService.acknowledgeMatch(memberId2);
+		redisService.acknowledgeMatch(memberId1, memberId2);
 	}
 
 	public void retryLater(MatchingFilterParsingDto matchingFilterParsingDto) {

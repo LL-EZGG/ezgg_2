@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,8 +32,6 @@ public class MatchingService {
 	private final MemberInfoService memberInfoService;
 	private final ApiService apiService;
 	private final MatchingDataBulkSaveService matchingDataBulkSaveService;
-	private final RedisTemplate<String, Object> redisTemplate;
-	private final ObjectMapper objectMapper;
 	private final EsService esService;
 	private final RedisStreamProducer redisStreamProducer;
 

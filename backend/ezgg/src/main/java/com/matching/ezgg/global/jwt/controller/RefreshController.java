@@ -63,7 +63,7 @@ public class RefreshController {
 		refreshRepository.deleteByRefresh(refresh);
 		addRefreshEntity(memberUsername, newRefreshToken, 24 * 60 * 60 * 1000L);
 
-		response.setHeader("Authorization", newAccessToken);
+		response.setHeader("Authorization", "Bearer " + newAccessToken);
 		response.addCookie(createCookie("Refresh", newRefreshToken));
 
 		return ResponseEntity.ok(SuccessResponse.<Void>builder()
