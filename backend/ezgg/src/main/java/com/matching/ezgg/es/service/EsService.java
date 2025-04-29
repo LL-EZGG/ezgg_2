@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.matching.ezgg.global.exception.EsDocDeleteFailException;
 import com.matching.ezgg.global.exception.EsPostFailException;
-import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
+import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;

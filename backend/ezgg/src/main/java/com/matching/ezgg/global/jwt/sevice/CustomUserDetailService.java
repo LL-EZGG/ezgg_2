@@ -6,8 +6,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.global.jwt.dto.CustomUserDetails;
-import com.matching.ezgg.member.entity.Member;
-import com.matching.ezgg.member.repository.MemberRepository;
+import com.matching.ezgg.domain.member.entity.Member;
+import com.matching.ezgg.domain.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 
