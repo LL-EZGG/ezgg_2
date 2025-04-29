@@ -1,19 +1,17 @@
 package com.matching.ezgg.global.jwt.filter;
 
 import java.io.IOException;
-import java.io.NotActiveException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.global.jwt.dto.CustomUserDetails;
 import com.matching.ezgg.global.response.ErrorResponse;
-import com.matching.ezgg.member.entity.Member;
+import com.matching.ezgg.domain.member.entity.Member;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -45,9 +43,11 @@ public class JWTFilter extends OncePerRequestFilter {
 		}
 
 		try {
-			if (!jwtUtil.isExpired(accessToken)) {
-				setAuthenticationToContext(accessToken);
+			if (jwtUtil.isExpired(accessToken)) {
+				handleJwtException(response, "토큰이 만료되었습니다. 다시 로그인해주세요.", HttpServletResponse.SC_UNAUTHORIZED);
+				return;
 			}
+			setAuthenticationToContext(accessToken);
 			filterChain.doFilter(request, response);
 		} catch (ExpiredJwtException e) {
 			handleJwtException(response, "토큰이 만료되었습니다. 다시 로그인해주세요.", HttpServletResponse.SC_UNAUTHORIZED);
@@ -80,6 +80,7 @@ public class JWTFilter extends OncePerRequestFilter {
 		Member member = Member.builder()
 			.memberUsername(memberUsername)
 			.role(role)
+			.id(jwtUtil.getMemberId(accessToken))
 			.build();
 		CustomUserDetails userDetails = new CustomUserDetails(member);
 		Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,

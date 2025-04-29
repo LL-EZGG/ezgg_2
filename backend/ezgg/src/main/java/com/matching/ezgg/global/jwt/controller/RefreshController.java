@@ -54,10 +54,11 @@ public class RefreshController {
 		}
 
 		String memberUsername = jwtUtil.getMemberUsername(refresh);
+		Long memberId = jwtUtil.getMemberId(refresh);
 		String role = jwtUtil.getRole(refresh);
 
-		String newAccessToken = jwtUtil.createJwt("access", memberUsername, role, 60 * 60 * 1000L);
-		String newRefreshToken = jwtUtil.createJwt("refresh", memberUsername, role, 24 * 60 * 60 * 1000L);
+		String newAccessToken = jwtUtil.createJwt("access", memberId, memberUsername, role, 60 * 60 * 1000L);
+		String newRefreshToken = jwtUtil.createJwt("refresh", memberId, memberUsername, role, 24 * 60 * 60 * 1000L);
 
 		refreshRepository.deleteByRefresh(refresh);
 		addRefreshEntity(memberUsername, newRefreshToken, 24 * 60 * 60 * 1000L);

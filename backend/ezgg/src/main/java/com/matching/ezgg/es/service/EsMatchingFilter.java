@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 
 import com.matching.ezgg.global.exception.EsQueryException;
 import com.matching.ezgg.global.exception.MatchingUserNoTFoundException;
-import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
-import com.matching.ezgg.matching.dto.RecentTwentyMatchParsingDto;
+import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
+import com.matching.ezgg.domain.matching.dto.RecentTwentyMatchParsingDto;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
