@@ -1,22 +1,44 @@
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-    driver-class-name: ${SPRING_DATASOURCE_DRIVER}
+    url: jdbc:h2:mem:ezgg
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
 
-#spring:
-#  datasource:
-#    url: jdbc:mysql://localhost:3306/ezgg?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-#    username: root
-#    password: ezgg
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-  
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:
         format_sql: true
     defer-datasource-initialization: true
+
+  h2:
+    console:
+      enabled: true
+      settings:
+        web-allow-others: true
+  sql:
+    init:
+      mode: never
+
+  elasticsearch:
+    uris: http://elasticsearch:9200
+    username:
+    password:
+    connection-timeout: 5s
+    socket-timeout: 10s
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+jwt:
+  secret: "e2e75389fd5685da14c6dc2ef6c20226401e8da66c04a1b62f439cfcd53b47a1207305e292fb48a1fc5b74f91798795617bc8ff243f996d530fa23294cf515ed"
+
+es:
+  httpHost: "elasticsearch"
+
+redis:
+  host: "redis"
