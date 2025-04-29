@@ -150,7 +150,7 @@ const Login = () => {
                 withCredentials: true
             });
 
-            const token = response.headers['Authorization'];
+            const token = response.headers['authorization'];
             if (response.status === 200) {
                 // 로그인 성공 후, JWT 토큰을 로컬 스토리지에 저장
                 localStorage.setItem('token', token);
