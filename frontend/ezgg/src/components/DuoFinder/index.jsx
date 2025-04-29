@@ -175,7 +175,15 @@ const DuoFinder = () => {
     const token = localStorage.getItem('token');
     console.log(token);
     setMatchingCriteria(matchingCriteria);
-
+    // const [matchedUser, setMatchedUser] = useState(null);
+    // useEffect(() => {
+    //   const savedCriteria = localStorage.getItem('matchingCriteria');
+    //   if (savedCriteria) {
+    //     const parsed = JSON.parse(savedCriteria);
+    //     setMatchingCriteria(parsed);
+    //     setIsMatching(true);
+    //   }
+    // }, []);
     try {
       const response = await axios.post(
           'http://localhost:8888/matching/start',
@@ -198,9 +206,10 @@ const DuoFinder = () => {
       );
 
       const newToken = response.headers['authorization'];
+      setIsMatching(true);
       if (response.status === 200 && newToken) {
         localStorage.setItem('token', newToken);
-        setIsMatching(true);
+
       }
     } catch (error) {
       alert('매칭에 실패하였습니다.');
