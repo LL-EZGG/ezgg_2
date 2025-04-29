@@ -1,17 +1,20 @@
 package com.matching.ezgg.global.jwt.filter;
 
 import java.io.IOException;
+import java.io.NotActiveException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.global.jwt.dto.CustomUserDetails;
+import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
 import com.matching.ezgg.global.response.ErrorResponse;
-import com.matching.ezgg.domain.member.entity.Member;
+import com.matching.ezgg.member.entity.Member;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -30,24 +33,28 @@ import lombok.extern.slf4j.Slf4j;
 public class JWTFilter extends OncePerRequestFilter {
 
 	private final JWTUtil jwtUtil;
+	private final RedisRefreshTokenRepository redisRefreshTokenRepository;
 	private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 변환을 위한 ObjectMapper
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
-		String accessToken = extractToken(request);
+		String accessToken = jwtUtil.extractTokenFromRequest(request);
 
-		if (!StringUtils.hasText(accessToken)) {
+		if (accessToken == null) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
 		try {
-			if (jwtUtil.isExpired(accessToken)) {
-				handleJwtException(response, "토큰이 만료되었습니다. 다시 로그인해주세요.", HttpServletResponse.SC_UNAUTHORIZED);
-				return;
+			if (!jwtUtil.isExpired(accessToken)) {
+				// 토큰이 블랙리스트에 있는지 확인
+				if (redisRefreshTokenRepository.isBlacklisted(accessToken)) {
+					handleJwtException(response, "로그아웃된 토큰입니다. 다시 로그인해주세요.", HttpServletResponse.SC_UNAUTHORIZED);
+					return;
+				}
+				setAuthenticationToContext(accessToken);
 			}
-			setAuthenticationToContext(accessToken);
 			filterChain.doFilter(request, response);
 		} catch (ExpiredJwtException e) {
 			handleJwtException(response, "토큰이 만료되었습니다. 다시 로그인해주세요.", HttpServletResponse.SC_UNAUTHORIZED);
@@ -62,16 +69,6 @@ public class JWTFilter extends OncePerRequestFilter {
 		}
 	}
 
-	// 토큰을 추출하는 메서드
-	private String extractToken(HttpServletRequest request) {
-		String token = request.getHeader("Authorization");
-		log.info("Authorization Header: {}", token);
-		if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {
-			return token.substring(7);
-		}
-		return token;
-	}
-
 	// JWT를 검증하고 인증 정보를 SecurityContext에 설정하는 메서드
 	private void setAuthenticationToContext(String accessToken) {
 		String memberUsername = jwtUtil.getMemberUsername(accessToken);
@@ -80,7 +77,6 @@ public class JWTFilter extends OncePerRequestFilter {
 		Member member = Member.builder()
 			.memberUsername(memberUsername)
 			.role(role)
-			.id(jwtUtil.getMemberId(accessToken))
 			.build();
 		CustomUserDetails userDetails = new CustomUserDetails(member);
 		Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
