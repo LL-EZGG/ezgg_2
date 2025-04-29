@@ -57,12 +57,13 @@ public class RefreshController {
 		}
 
 		String role = jwtUtil.getRole(refreshToken);
+		Long memberId = jwtUtil.getMemberId(refreshToken);
 
 		long accessTokenExpiry = 60 * 60 * 1000L; // 1시간 유효 
 		long refreshTokenExpiry = 24 * 60 * 60 * 1000L; // 1일 유효
 
-		String newAccessToken = jwtUtil.createJwt("access", memberUsername, role, accessTokenExpiry);
-		String newRefreshToken = jwtUtil.createJwt("refresh", memberUsername, role, refreshTokenExpiry);
+		String newAccessToken = jwtUtil.createJwt("access", memberId, memberUsername, role, accessTokenExpiry);
+		String newRefreshToken = jwtUtil.createJwt("refresh", memberId, memberUsername, role, refreshTokenExpiry);
 
 		// Redis에서 기존 토큰 삭제 후 새 토큰 저장
 		redisRefreshTokenRepository.deleteByMemberId(memberUsername);
