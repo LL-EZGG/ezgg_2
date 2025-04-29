@@ -22,7 +22,6 @@ import com.matching.ezgg.global.jwt.entity.Refresh;
 import com.matching.ezgg.global.jwt.repository.RefreshRepository;
 import com.matching.ezgg.global.response.ErrorResponse;
 import com.matching.ezgg.global.response.SuccessResponse;
-import com.matching.ezgg.member.entity.Member;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

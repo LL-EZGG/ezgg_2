@@ -7,15 +7,12 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import com.matching.ezgg.member.entity.Member;
-import com.matching.ezgg.member.repository.MemberRepository;
+import com.matching.ezgg.domain.member.repository.MemberRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import lombok.RequiredArgsConstructor;
 
 @Component
 public class JWTUtil {

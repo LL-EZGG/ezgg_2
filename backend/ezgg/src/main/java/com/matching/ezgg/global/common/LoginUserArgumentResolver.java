@@ -11,7 +11,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.matching.ezgg.global.annotation.LoginUser;
 import com.matching.ezgg.global.jwt.dto.CustomUserDetails;
-import com.matching.ezgg.member.entity.Member;
+import com.matching.ezgg.domain.member.entity.Member;
 
 @Component
 public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver {

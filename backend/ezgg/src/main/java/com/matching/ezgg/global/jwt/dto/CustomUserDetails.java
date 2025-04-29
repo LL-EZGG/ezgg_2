@@ -6,7 +6,7 @@ import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.matching.ezgg.member.entity.Member;
+import com.matching.ezgg.domain.member.entity.Member;
 
 import lombok.RequiredArgsConstructor;
 

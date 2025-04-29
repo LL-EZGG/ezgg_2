@@ -12,7 +12,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.matching.ezgg.api.domain.memberInfo.service.MemberInfoService;
+import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.api.dto.MatchDto;
 import com.matching.ezgg.api.dto.PuuidDto;
 import com.matching.ezgg.api.dto.WinRateNTierDto;
