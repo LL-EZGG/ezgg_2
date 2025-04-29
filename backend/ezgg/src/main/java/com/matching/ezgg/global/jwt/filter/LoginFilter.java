@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.util.StreamUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.matching.ezgg.global.jwt.dto.CustomUserDetails;
 import com.matching.ezgg.global.jwt.dto.LoginRequest;
 import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
 import com.matching.ezgg.global.response.ErrorResponse;
@@ -72,6 +73,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		Authentication authResult) throws IOException, ServletException {
 		log.info(">>>>> 로그인 성공 {}", authResult.getName());
 
+		CustomUserDetails userDetails = (CustomUserDetails)authResult.getPrincipal();
+		Long memberId = userDetails.getMemberId();
+		log.info(">>>>> 로그인 성공 {}", memberId);
+
 		String memberUsername = authResult.getName();
 		Collection<? extends GrantedAuthority> authorities = authResult.getAuthorities();
 		Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
@@ -81,8 +86,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		long accessTokenExpiry = 60 * 60 * 1000L; // 1시간 유효
 		long refreshTokenExpiry = 24 * 60 * 60 * 1000L; // 1일 유효
 
-		String accessToken = jwtUtil.createJwt("access", memberUsername, role, accessTokenExpiry);
-		String refreshToken = jwtUtil.createJwt("refresh", memberUsername, role, refreshTokenExpiry);
+		String accessToken = jwtUtil.createJwt("access", memberId, memberUsername, role, accessTokenExpiry);
+		String refreshToken = jwtUtil.createJwt("refresh", memberId, memberUsername, role, refreshTokenExpiry);
 		
 		// Redis에 Refresh Token 저장
 		redisRefreshTokenRepository.save(memberUsername, refreshToken, refreshTokenExpiry);
