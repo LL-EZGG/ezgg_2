@@ -2,7 +2,6 @@ package com.matching.ezgg.redis.match;
 
 import java.util.Set;
 
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,17 +16,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DelayQueueWorker {
 
-	private final RedisTemplate<String, String> redisTemplate;
+	private final RedisService redisService;
 	private final RedisStreamProducer redisStreamProducer;
 	private final ObjectMapper objectMapper;
 
-	private static final String RETRY_ZSET_KEY = "matching-retry-zset";
-
 	@Scheduled(fixedDelay = 3000) // 3초마다 실행
 	public void processRetryQueue() {
-		long now = System.currentTimeMillis();
-
-		Set<String> retryCandidates = redisTemplate.opsForZSet().rangeByScore(RETRY_ZSET_KEY, 0, now);
+		Set<String> retryCandidates = redisService.getRetryCandidates();
 
 		if(retryCandidates == null || retryCandidates.isEmpty()) {
 			return;
@@ -37,7 +32,7 @@ public class DelayQueueWorker {
 			try {
 				MatchingFilterParsingDto dto = objectMapper.readValue(json, MatchingFilterParsingDto.class);
 				redisStreamProducer.sendMatchRequest(dto);
-				redisTemplate.opsForZSet().remove(RETRY_ZSET_KEY, json);
+				redisService.removeRetryCandidate(json);
 				log.info("Retry 처리 완료 : {}", json);
 			} catch (Exception e) {
 				log.error("Retry 처리 중 에러 발생 : {}", e.getMessage());
