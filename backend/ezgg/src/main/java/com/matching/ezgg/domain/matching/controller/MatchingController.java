@@ -4,9 +4,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matching.ezgg.global.annotation.LoginUser;
 import com.matching.ezgg.domain.matching.dto.PreferredPartnerParsingDto;
 import com.matching.ezgg.domain.matching.service.MatchingService;
+import com.matching.ezgg.global.annotation.LoginUser;
 
 import lombok.RequiredArgsConstructor;
 
