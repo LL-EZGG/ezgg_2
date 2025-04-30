@@ -6,16 +6,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matching.ezgg.global.jwt.filter.JWTUtil;
-import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
-import com.matching.ezgg.global.response.SuccessResponse;
 import com.matching.ezgg.domain.member.dto.SignupRequest;
 import com.matching.ezgg.domain.member.dto.SignupResponse;
 import com.matching.ezgg.domain.member.service.MemberService;
+import com.matching.ezgg.global.jwt.filter.JWTUtil;
+import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
+import com.matching.ezgg.global.response.SuccessResponse;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +33,7 @@ public class MemberController {
 	//회원 가입
 	@PostMapping("/signup")
 	public ResponseEntity<SuccessResponse<SignupResponse>> signup(
-		@RequestBody SignupRequest signupRequest
+		@Valid @RequestBody SignupRequest signupRequest
 	) {
 		SignupResponse signupResponse = memberService.signup(signupRequest);
 
@@ -54,7 +55,7 @@ public class MemberController {
 				long expirationTime = jwtUtil.getExpirationTime(accessToken);
 				long currentTime = System.currentTimeMillis();
 				long remainingTime = expirationTime - currentTime;
-				
+
 				if (remainingTime > 0) {
 					// Access Token을 블랙리스트에 추가
 					redisRefreshTokenRepository.addToBlacklist(accessToken, remainingTime);
@@ -64,7 +65,7 @@ public class MemberController {
 				log.error(">>>>> Access Token 블랙리스트 추가 실패: {}", e.getMessage());
 			}
 		}
-		
+
 		// Refresh Token 처리
 		String refreshToken = null;
 		Cookie[] cookies = request.getCookies();
@@ -75,20 +76,20 @@ public class MemberController {
 				}
 			}
 		}
-		
+
 		if (refreshToken != null && jwtUtil.getCategory(refreshToken).equals("refresh")) {
 			// 유효한 리프레시 토큰이 있으면 사용자 정보를 가져와서 Redis에서 해당 토큰 삭제
 			String memberUsername = jwtUtil.getMemberUsername(refreshToken);
 			redisRefreshTokenRepository.deleteByMemberId(memberUsername);
 			log.info(">>>>> Redis에서 리프레시 토큰 삭제 완료: {}", memberUsername);
 		}
-		
+
 		// 클라이언트 쿠키 삭제
 		Cookie refreshCookie = new Cookie("Refresh", null);
 		refreshCookie.setMaxAge(0); // 쿠키 즉시 만료
 		refreshCookie.setHttpOnly(true);
 		response.addCookie(refreshCookie);
-		
+
 		return ResponseEntity.ok(SuccessResponse.<Void>builder()
 			.code("200")
 			.message("로그아웃 성공")

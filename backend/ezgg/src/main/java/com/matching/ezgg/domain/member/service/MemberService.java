@@ -4,17 +4,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.api.service.ApiService;
-import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
-import com.matching.ezgg.domain.memberInfo.repository.MemberInfoRepository;
-import com.matching.ezgg.global.exception.ExistEmailException;
-import com.matching.ezgg.global.exception.ExistMemberIdException;
-import com.matching.ezgg.global.exception.ExistRiotUsernamException;
 import com.matching.ezgg.domain.member.dto.SignupRequest;
 import com.matching.ezgg.domain.member.dto.SignupResponse;
 import com.matching.ezgg.domain.member.entity.Member;
 import com.matching.ezgg.domain.member.repository.MemberRepository;
+import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
+import com.matching.ezgg.domain.memberInfo.repository.MemberInfoRepository;
+import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
+import com.matching.ezgg.global.exception.ExistEmailException;
+import com.matching.ezgg.global.exception.ExistMemberIdException;
+import com.matching.ezgg.global.exception.ExistRiotUsernamException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +36,14 @@ public class MemberService {
 
 		log.info("아이디 : {}", signupRequest.getMemberUsername());
 
+		if (!signupRequest.getPassword().equals(signupRequest.getConfirmPassword())) {
+			throw new IllegalArgumentException("패스워드와 패스워드 확인이 일치하지 않습니다.");
+		}
+
+		if (!signupRequest.getPassword().matches("^(?=.*[A-Z])(?=.[a-z])(?=.*\\d)[A-Za-z\\d]{4,20}$")) {
+			throw new IllegalArgumentException("패스워드 4~20자의 영문 대소문자와 숫자만 사용 가능합니다.");
+		}
+
 		String password = passwordEncoder.encode(signupRequest.getPassword());
 
 		validateDuplicateMember(signupRequest);
@@ -52,7 +60,10 @@ public class MemberService {
 
 		//MemberInfo 엔티티 생성 후 저장
 		String newPuuid = apiService.getMemberPuuid(signupRequest.getRiotUsername(), signupRequest.getRiotTag());
-		MemberInfo memberInfo = memberInfoService.createNewMemberInfo(member.getId(), signupRequest.getRiotUsername(), signupRequest.getRiotTag(), newPuuid);
+		MemberInfo memberInfo = memberInfoService.createNewMemberInfo(member.getId(), signupRequest.getRiotUsername(),
+			signupRequest.getRiotTag(), newPuuid);
+		//MemberInfo 엔티티를 memberInfoRepository에 저장 (로그인되었을때 티어정보를 가져오기 위함)
+		memberInfoRepository.save(memberInfo);
 
 		return SignupResponse.builder()
 			.memberUsername(member.getMemberUsername())
