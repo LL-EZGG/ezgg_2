@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from '@emotion/styled';
 import DuoFinderForm from './DuoFinderForm';
 import MatchResult from './MatchResult';
+import axios from "axios";
 
 const Container = styled.div`
   display: flex;
@@ -169,10 +170,52 @@ const DuoFinder = () => {
   const [matchingCriteria, setMatchingCriteria] = useState(null);
   const [isMatching, setIsMatching] = useState(false);
 
-  const handleSubmit = (criteria) => {
-    setMatchingCriteria(criteria);
-    setIsMatching(true);
-    // TODO: API 호출 로직 추가
+  const handleSubmit = async (matchingCriteria) => {
+    console.log(matchingCriteria);
+    const token = localStorage.getItem('token');
+    console.log(token);
+    setMatchingCriteria(matchingCriteria);
+    // const [matchedUser, setMatchedUser] = useState(null);
+    // useEffect(() => {
+    //   const savedCriteria = localStorage.getItem('matchingCriteria');
+    //   if (savedCriteria) {
+    //     const parsed = JSON.parse(savedCriteria);
+    //     setMatchingCriteria(parsed);
+    //     setIsMatching(true);
+    //   }
+    // }, []);
+    try {
+      const response = await axios.post(
+          'http://localhost:8888/matching/start',
+          {
+            wantLine: {
+              myLine: matchingCriteria.preferredLane,
+              partnerLine: matchingCriteria.partnerLane,
+            },
+            championInfo: {
+              preferredChampion: matchingCriteria.preferredChampions[0]?.name || '',
+              unpreferredChampion: matchingCriteria.bannedChampions[0]?.name || '',
+            },
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            withCredentials: true,
+          }
+      );
+
+      const newToken = response.headers['authorization'];
+      setIsMatching(true);
+      if (response.status === 200 && newToken) {
+        localStorage.setItem('token', newToken);
+
+      }
+    } catch (error) {
+      alert('매칭에 실패하였습니다.');
+      console.error('Matching error:', error);
+      setIsMatching(false);
+    }
   };
 
   return (

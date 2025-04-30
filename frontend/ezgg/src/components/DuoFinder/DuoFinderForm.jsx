@@ -173,6 +173,17 @@ const SubmitButton = styled.button`
 `;
 
 const lanes = ['TOP', 'JUG', 'MID', 'AD', 'SUP'];
+const laneMap = {
+  TOP: 'TOP',
+  JUG: 'JUNGLE',
+  MID: 'MIDDLE',
+  AD: 'BOTTOM',
+  SUP: 'UTILITY',
+};
+
+function getServerLaneName(lane) {
+  return laneMap[lane] || lane;
+}
 
 const DuoFinderForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -330,7 +341,12 @@ const DuoFinderForm = ({ onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    const payload = {
+      ...formData,
+      preferredLane: getServerLaneName(formData.preferredLane),
+      partnerLane: getServerLaneName(formData.partnerLane),
+    };
+    onSubmit(payload);
   };
 
   return (
