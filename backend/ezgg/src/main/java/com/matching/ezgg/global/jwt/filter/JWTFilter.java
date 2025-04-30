@@ -74,6 +74,7 @@ public class JWTFilter extends OncePerRequestFilter {
 		Member member = Member.builder()
 			.memberUsername(memberUsername)
 			.role(role)
+			.id(jwtUtil.getMemberId(accessToken))
 			.build();
 		CustomUserDetails userDetails = new CustomUserDetails(member);
 		Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,

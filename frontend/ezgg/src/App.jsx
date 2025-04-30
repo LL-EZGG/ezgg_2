@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import React,{ useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import styled from '@emotion/styled';
 import DuoFinder from './components/DuoFinder';
 import Login from './components/layout/Login';
@@ -86,9 +86,18 @@ const LoginButton = styled(Link)`
   }
 `;
 
+// 로그인 상태에 따라 리다이렉트하는 보호된 라우트 컴포넌트
+const ProtectedRoute = ({ element, isLoggedIn }) => {
+  const location = useLocation();
+  if (!isLoggedIn) {
+    // 로그인되지 않은 경우 로그인 페이지로 리다이렉트하면서 원래 가려던 경로 저장
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return element;
+};
+
 const App = () => {
-  // TODO: 실제 로그인 상태 관리 구현
-  const isLoggedIn = false;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const userInfo = {
     name: 'Hide on bush',
     tag: 'KR1'
@@ -121,8 +130,8 @@ const App = () => {
           </UserSection>
         </Header>
         <Routes>
-          <Route path="/" element={<DuoFinder />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<ProtectedRoute element={<DuoFinder />} isLoggedIn={isLoggedIn} />} />
+          <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
           <Route path="/join" element={<Join />} />
         </Routes>
       </AppContainer>

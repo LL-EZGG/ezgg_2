@@ -37,10 +37,6 @@ public class MemberService {
 
 		log.info("아이디 : {}", signupRequest.getMemberUsername());
 
-		if (!signupRequest.getPassword().equals(signupRequest.getConfirmPassword())) {
-			throw new IllegalArgumentException("패스워드와 패스워드 확인이 일치하지 않습니다.");
-		}
-
 		String password = passwordEncoder.encode(signupRequest.getPassword());
 
 		validateDuplicateMember(signupRequest);
@@ -57,8 +53,7 @@ public class MemberService {
 
 		//MemberInfo 엔티티 생성 후 저장
 		String newPuuid = apiService.getMemberPuuid(signupRequest.getRiotUsername(), signupRequest.getRiotTag());
-		MemberInfo memberInfo = memberInfoService.createNewMemberInfo(member.getId(), signupRequest.getRiotUsername(),
-			signupRequest.getRiotTag(), newPuuid);
+		MemberInfo memberInfo = memberInfoService.createNewMemberInfo(member.getId(), signupRequest.getRiotUsername(), signupRequest.getRiotTag(), newPuuid);
 
 		return SignupResponse.builder()
 			.memberUsername(member.getMemberUsername())

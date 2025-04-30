@@ -102,7 +102,7 @@ const JoinLink = styled(Link)`
     }
 `;
 
-const Login = () => {
+const Login = ({setIsLoggedIn}) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
@@ -150,10 +150,11 @@ const Login = () => {
                 withCredentials: true
             });
 
-            const token = response.headers['Authorization'];
+            const token = response.headers['authorization'];
             if (response.status === 200) {
                 // 로그인 성공 후, JWT 토큰을 로컬 스토리지에 저장
                 localStorage.setItem('token', token);
+                setIsLoggedIn(true);
                 // 로그인 성공 후, 홈 페이지로 리다이렉트
                 navigate('/');
             }
