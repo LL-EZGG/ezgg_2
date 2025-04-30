@@ -16,6 +16,8 @@ import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.global.exception.ExistEmailException;
 import com.matching.ezgg.global.exception.ExistMemberIdException;
 import com.matching.ezgg.global.exception.ExistRiotUsernamException;
+import com.matching.ezgg.global.exception.MemberPassWordNotEqualsException;
+import com.matching.ezgg.global.exception.PasswordBadRequestException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,11 +41,11 @@ public class MemberService {
 		log.info("아이디 : {}", signupRequest.getMemberUsername());
 
 		if (!signupRequest.getPassword().equals(signupRequest.getConfirmPassword())) {
-			throw new IllegalArgumentException("패스워드와 패스워드 확인이 일치하지 않습니다.");
+			throw new MemberPassWordNotEqualsException();
 		}
 
 		if (!signupRequest.getPassword().matches("^(?=.*[A-Z])(?=.[a-z])(?=.*\\d)[A-Za-z\\d]{4,20}$")) {
-			throw new IllegalArgumentException("패스워드 4~20자의 영문 대소문자와 숫자만 사용 가능합니다.");
+			throw new PasswordBadRequestException();
 		}
 
 		String password = passwordEncoder.encode(signupRequest.getPassword());
