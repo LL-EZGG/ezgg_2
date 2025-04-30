@@ -1,255 +1,388 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import styled from '@emotion/styled';
 import DuoFinderForm from './DuoFinderForm';
 import MatchResult from './MatchResult';
-import axios from "axios";
+// import jwtDecode from 'jwt-decode'; // jwt-decode 임포트 추가
 
 const Container = styled.div`
-  display: flex;
-  gap: 2rem;
-  padding: 2rem;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  min-height: calc(100vh - 4rem);
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    gap: 2rem;
+    padding: 2rem;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 4rem);
+    align-items: center;
+    justify-content: center;
 
-  @media (max-width: 1024px) {
-    width: 90%;
-    flex-direction: column;
-    align-items: stretch;
-  }
+    @media (max-width: 1024px) {
+        width: 90%;
+        flex-direction: column;
+        align-items: stretch;
+    }
 
-  @media (max-width: 768px) {
-    width: 95%;
-    padding: 1rem;
-    gap: 1rem;
-  }
+    @media (max-width: 768px) {
+        width: 95%;
+        padding: 1rem;
+        gap: 1rem;
+    }
 `;
 
 const ProfileCard = styled.div`
-  flex: 1;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 635px;
-  padding: 2rem;
+    flex: 1;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 635px;
+    padding: 2rem;
 
-  @media (max-width: 1024px) {
-    max-width: 100%;
-  }
+    @media (max-width: 1024px) {
+        max-width: 100%;
+    }
 
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+    @media (max-width: 768px) {
+        padding: 1rem;
+    }
 `;
 
 const ChampionImages = styled.div`
-  display: flex;
-  height: 200px;
-  flex-shrink: 0;
-  // margin: -2rem -2rem 0;
-  
-  img {
-    width: 33.333%;
+    display: flex;
     height: 200px;
-    object-fit: cover;
-  }
+    flex-shrink: 0;
 
-  @media (max-width: 768px) {
-    height: 160px;
-    margin: -1rem -1rem 0;
-    
     img {
-      height: 160px;
+        width: 33.333%;
+        height: 200px;
+        object-fit: cover;
     }
-  }
+
+    @media (max-width: 768px) {
+        height: 160px;
+        margin: -1rem -1rem 0;
+
+        img {
+            height: 160px;
+        }
+    }
 `;
 
 const ProfileInfo = styled.div`
-  padding: 2rem 0 0;
-  color: white;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  // justify-content: space-between;
-  justify-content: flex-start;
-  gap: 1.7rem;
+    padding: 2rem 0 0;
+    color: white;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 1.7rem;
 `;
 
 const ProfileTitle = styled.h3`
-  font-size: 1.6rem;
-  color: white;
-  padding: 0 1.5rem;
-  font-weight: 800;
+    font-size: 1.6rem;
+    color: white;
+    padding: 0 1.5rem;
+    font-weight: 800;
 
-  @media (max-width: 768px) {
-    font-size: 1.2rem;
-    padding: 0 1rem;
-    margin-bottom: 1.5rem;
-  }
+    @media (max-width: 768px) {
+        font-size: 1.2rem;
+        padding: 0 1rem;
+        margin-bottom: 1.5rem;
+    }
 `;
 
 const RankBadge = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0 1.5rem;
-  border-radius: 8px;
-  
-  img {
-    width: 60px;
-    height: 60px;
-  }
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0 1.5rem;
+    border-radius: 8px;
 
-  span {
-    color: white;
-    font-size: 1.5rem;
-    font-weight: 500;
-  }
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-    gap: 0.8rem;
-    
     img {
-      width: 50px;
-      height: 50px;
+        width: 60px;
+        height: 60px;
     }
 
     span {
-      font-size: 1.2rem;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 500;
     }
-  }
+
+    @media (max-width: 768px) {
+        padding: 1rem;
+        gap: 0.8rem;
+
+        img {
+            width: 50px;
+            height: 50px;
+        }
+
+        span {
+            font-size: 1.2rem;
+        }
+    }
 `;
 
 const Stats = styled.div`
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: auto;
-  padding: 0 1.5rem;
-  
-  p {
-    margin: 0.8rem 0;
-  }
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: auto;
+    padding: 0 1.5rem;
 
-  @media (max-width: 768px) {
-    font-size: 0.9rem;
-    padding: 0 1rem;
-    
     p {
-      margin: 0.5rem 0;
+        margin: 0.8rem 0;
     }
-  }
+
+    @media (max-width: 768px) {
+        font-size: 0.9rem;
+        padding: 0 1rem;
+
+        p {
+            margin: 0.5rem 0;
+        }
+    }
 `;
 
 const FormContainer = styled.div`
-  flex: 1;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 2rem;
-  display: flex;
-  min-height: 635px;
-  flex-direction: column;
+    flex: 1;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 2rem;
+    display: flex;
+    min-height: 635px;
+    flex-direction: column;
 
-  @media (max-width: 1024px) {
-    max-width: 100%;
-  }
+    @media (max-width: 1024px) {
+        max-width: 100%;
+    }
 
-  @media (max-width: 768px) {
+    @media (max-width: 768px) {
+        padding: 1rem;
+    }
+`;
+
+const LoadingSpinner = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    color: white;
+    font-size: 1.2rem;
+`;
+
+const ErrorMessage = styled.div`
+    color: #ff6b6b;
     padding: 1rem;
-  }
+    text-align: center;
+    background: rgba(255, 0, 0, 0.1);
+    border-radius: 8px;
+    margin: 1rem 0;
 `;
 
 const DuoFinder = () => {
-  const [matchingCriteria, setMatchingCriteria] = useState(null);
-  const [isMatching, setIsMatching] = useState(false);
+    const [isMatching, setIsMatching] = useState(false);
+    const [memberDataBundle, setMemberDataBundle] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [matchingCriteria, setMatchingCriteria] = useState(null);
+    const [mostPlayedChampions, setMostPlayedChampions] = useState([]);
+    const [championWinRates, setChampionWinRates] = useState({});
 
-  const handleSubmit = async (matchingCriteria) => {
-    console.log(matchingCriteria);
-    const token = localStorage.getItem('token');
-    console.log(token);
-    setMatchingCriteria(matchingCriteria);
-    // const [matchedUser, setMatchedUser] = useState(null);
-    // useEffect(() => {
-    //   const savedCriteria = localStorage.getItem('matchingCriteria');
-    //   if (savedCriteria) {
-    //     const parsed = JSON.parse(savedCriteria);
-    //     setMatchingCriteria(parsed);
-    //     setIsMatching(true);
-    //   }
-    // }, []);
-    try {
-      const response = await axios.post(
-          'http://localhost:8888/matching/start',
-          {
-            wantLine: {
-              myLine: matchingCriteria.preferredLane,
-              partnerLine: matchingCriteria.partnerLane,
-            },
-            championInfo: {
-              preferredChampion: matchingCriteria.preferredChampions[0]?.name || '',
-              unpreferredChampion: matchingCriteria.bannedChampions[0]?.name || '',
-            },
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            withCredentials: true,
-          }
-      );
+    // const getMemberIdFromToken = () => {
+    //     const token = localStorage.getItem('jwtToken');
+    //     if (!token) return null;
+    //
+    //     try {
+    //         const decoded = jwtDecode(token);
+    //         return decoded.memberId;
+    //     } catch (err) {
+    //         console.error("Token decode error:", err);
+    //         return null;
+    //     }
+    // };
 
-      const newToken = response.headers['authorization'];
-      setIsMatching(true);
-      if (response.status === 200 && newToken) {
-        localStorage.setItem('token', newToken);
+    useEffect(() => {
+        const fetchMemberDataBundle = async () => {
+            setLoading(true);
+            setError(null);
 
-      }
-    } catch (error) {
-      alert('매칭에 실패하였습니다.');
-      console.error('Matching error:', error);
-      setIsMatching(false);
-    }
-  };
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError("로그인이 필요합니다.");
+                setLoading(false);
+                return;
+            }
 
-  return (
-    <Container>
-      <ProfileCard>
-        <ChampionImages>
-          <img src="/champions/Yasuo.png" alt="Yasuo" />
-          <img src="/champions/Ahri.png" alt="Ahri" />
-          <img src="/champions/Zed.png" alt="Zed" />
-        </ChampionImages>
-        <ProfileInfo>
-          <ProfileTitle>Hide on bush #KR1</ProfileTitle>
-          <RankBadge>
-            <img src="/ranks/grandmaster.png" alt="Grandmaster" />
-            <span>Grandmaster 1</span>
-          </RankBadge>
-          <Stats>
-            <p>최근 20경기 K/D/A 7.4/3.9/6 승률 65%</p>
-            <p>S2024 S3 K/D/A 7.4/3.9/6 승률 65%</p>
-          </Stats>
-        </ProfileInfo>
-      </ProfileCard>
-      <FormContainer>
-        {!isMatching ? (
-          <DuoFinderForm onSubmit={handleSubmit} />
-        ) : (
-          <MatchResult 
-            criteria={matchingCriteria}
-            onCancel={() => setIsMatching(false)}
-          />
-        )}
-      </FormContainer>
-    </Container>
-  );
+            try {
+                const res = await fetch('http://localhost:8888/auth/memberdatabundle', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error(`API 요청 실패: ${res.status}`);
+                }
+
+                const result = await res.json();
+
+                if (result.code === "200" && result.data) {
+                    setMemberDataBundle(result.data);
+
+                    // 챔피언 데이터 추출
+                    if (result.data.recentTwentyMatch && result.data.recentTwentyMatch.championStats) {
+                        processChampionData(result.data.recentTwentyMatch.championStats);
+                    }
+                } else {
+                    throw new Error(result.message || "회원정보를 불러오는데 실패했습니다");
+                }
+            } catch (err) {
+                console.error("회원정보 불러오기 에러:", err);
+                setError("회원정보를 불러오는데 실패했습니다. 다시 시도해주세요.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMemberDataBundle();
+    }, []);
+
+    // 챔피언 데이터 처리 함수
+    const processChampionData = (championStats) => {
+        // 챔피언 통계 객체가 있는지 확인
+        if (!championStats || Object.keys(championStats).length === 0) {
+            return;
+        }
+
+        // championStats 객체에서 모스트 챔피언 추출 (총 게임수로 정렬)
+        const champions = Object.values(championStats)
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 3);
+
+        // 챔피언 이름 배열 추출
+        const championNames = champions.map(champ => champ.championName);
+        setMostPlayedChampions(championNames);
+
+        // 각 챔피언의 승률 추출
+        const winRates = {};
+        champions.forEach(champ => {
+            winRates[champ.championName] = champ.winRateOfChampion;
+        });
+        setChampionWinRates(winRates);
+    };
+
+    const handleSubmit = (criteria) => {
+        setMatchingCriteria(criteria);
+        setIsMatching(true);
+    };
+
+    const getRankImageSrc = (tier) => {
+        // 티어에 따른 이미지 경로 반환
+        const tierLower = (tier || "").toLowerCase();
+        const validTiers = ["iron", "bronze", "silver", "gold", "platinum", "diamond", "master", "grandmaster", "challenger"];
+
+        if (validTiers.includes(tierLower)) {
+            return `/ranks/${tierLower}.png`;
+        }
+
+        return "/ranks/unranked.png";
+    };
+
+    const getChampionImageSrc = (championName) => {
+        if (!championName) return "/champions/default.png";
+
+        // 특수 케이스 처리 (공백이나 특수문자가 있는 챔피언)
+        const specialCases = {
+            'missfortune': 'MissFortune',
+            'drmundo': 'DrMundo',
+            'jarvaniv': 'JarvanIV',
+            'leesin': 'LeeSin',
+            'masteryi': 'MasterYi',
+            'tahmkench': 'TahmKench',
+            'twistedfate': 'TwistedFate',
+            'xinzhao': 'XinZhao',
+            'aurelionsol': 'AurelionSol',
+            'kogmaw': 'KogMaw',
+            'reksai': 'RekSai'
+        };
+
+        // 소문자로 변환하여 특수 케이스 체크
+        const lowerName = championName.toLowerCase();
+        if (specialCases[lowerName]) {
+            return `/champions/${specialCases[lowerName]}.png`;
+        }
+
+        // 일반적인 경우: 첫 글자만 대문자로, 나머지는 소문자로 변환
+        const formattedName = championName.charAt(0).toUpperCase() + championName.slice(1).toLowerCase();
+        return `/champions/${formattedName}.png`;
+    };
+
+    return (
+        <Container>
+            <ProfileCard>
+                {loading ? (
+                    <LoadingSpinner>회원정보를 불러오는 중...</LoadingSpinner>
+                ) : error ? (
+                    <ErrorMessage>{error}</ErrorMessage>
+                ) : memberDataBundle ? (
+                    <>
+                        <ChampionImages>
+                            {mostPlayedChampions && mostPlayedChampions.length > 0 ? (
+                                mostPlayedChampions.map((champion, index) => (
+                                    <img key={index} src={getChampionImageSrc(champion)} alt={champion || "Champion"}/>
+                                ))
+                            ) : (
+                                <>
+                                    <img src="/champions/Yasuo.png" alt="Default Champion 1"/>
+                                    <img src="/champions/Ahri.png" alt="Default Champion 2"/>
+                                    <img src="/champions/Zed.png" alt="Default Champion 3"/>
+                                </>
+                            )}
+                        </ChampionImages>
+                        <ProfileInfo>
+                            <ProfileTitle>
+                                {memberDataBundle.memberInfo.riotUsername || "사용자"}#{memberDataBundle.memberInfo.riotTag || "0000"}
+                            </ProfileTitle>
+                            <RankBadge>
+                                <img
+                                    src={getRankImageSrc(memberDataBundle.memberInfo.tier)}
+                                    alt={memberDataBundle.memberInfo.tier || "Unranked"}
+                                />
+                                <span>{memberDataBundle.memberInfo.tier || "Unranked"} {memberDataBundle.memberInfo.tierNum || ""}</span>
+                            </RankBadge>
+                            <Stats>
+                                <p>승률: {memberDataBundle.recentTwentyMatch.winRate || "0"}%</p>
+                                {mostPlayedChampions && mostPlayedChampions.length > 0 && (
+                                    mostPlayedChampions.map((champion, index) => (
+                                        <p key={index}>
+                                            {champion}: {championWinRates[champion] || "0"}% 승률
+                                        </p>
+                                    ))
+                                )}
+                            </Stats>
+                        </ProfileInfo>
+                    </>
+                ) : (
+                    <ErrorMessage>회원정보를 찾을 수 없습니다.</ErrorMessage>
+                )}
+            </ProfileCard>
+            <FormContainer>
+                {!isMatching ? (
+                    <DuoFinderForm onSubmit={handleSubmit}/>
+                ) : (
+                    <MatchResult
+                        criteria={matchingCriteria}
+                        onCancel={() => setIsMatching(false)}
+                    />
+                )}
+            </FormContainer>
+        </Container>
+    );
 };
 
-export default DuoFinder; 
+export default DuoFinder;

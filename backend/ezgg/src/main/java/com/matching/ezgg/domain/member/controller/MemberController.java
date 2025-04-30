@@ -1,14 +1,20 @@
 package com.matching.ezgg.domain.member.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.matching.ezgg.domain.matching.dto.MemberDataBundle;
 import com.matching.ezgg.domain.member.dto.SignupRequest;
 import com.matching.ezgg.domain.member.dto.SignupResponse;
 import com.matching.ezgg.domain.member.service.MemberService;
+import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
+import com.matching.ezgg.domain.memberInfo.service.MemberDataBundleService;
+import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
+import com.matching.ezgg.global.annotation.LoginUser;
 import com.matching.ezgg.global.jwt.filter.JWTUtil;
 import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
 import com.matching.ezgg.global.response.SuccessResponse;
@@ -28,6 +34,8 @@ public class MemberController {
 
 	private final MemberService memberService;
 	private final RedisRefreshTokenRepository redisRefreshTokenRepository;
+	private final MemberDataBundleService memberDataBundleService;
+	private final MemberInfoService memberInfoService;
 	private final JWTUtil jwtUtil;
 
 	//회원 가입
@@ -93,6 +101,30 @@ public class MemberController {
 		return ResponseEntity.ok(SuccessResponse.<Void>builder()
 			.code("200")
 			.message("로그아웃 성공")
+			.build());
+	}
+
+	@GetMapping("/memberinfo")
+	public ResponseEntity<SuccessResponse<MemberInfo>> getMemberInfo(@LoginUser Long memberId) {
+		// 로그인한 사용자의 ID를 사용하여 회원 정보를 조회
+		MemberInfo loggedMemberInfo = memberInfoService.getMemberInfoByMemberId(memberId);
+
+		return ResponseEntity.ok(SuccessResponse.<MemberInfo>builder()
+			.code("200")
+			.message("회원정보 조회 성공")
+			.data(loggedMemberInfo)
+			.build());
+	}
+
+	@GetMapping("/memberdatabundle")
+	public ResponseEntity<SuccessResponse<MemberDataBundle>> getMemberDataBundle(@LoginUser Long memberId) {
+		// 로그인한 사용자의 ID를 사용하여 회원 정보를 조회
+		MemberDataBundle loggedMemberDataBundle = memberDataBundleService.getMemberDataBundleByMemberId(memberId);
+
+		return ResponseEntity.ok(SuccessResponse.<MemberDataBundle>builder()
+			.code("200")
+			.message("회원정보 조회 성공")
+			.data(loggedMemberDataBundle)
 			.build());
 	}
 }

@@ -70,8 +70,6 @@ public class MemberService {
 		// 외부 API로부터 모든 데이터 업데이트
 		matchingService.updateAllAttributesOfMember(member.getId());
 
-		memberInfoRepository.save(memberInfo);
-
 		return SignupResponse.builder()
 			.memberUsername(member.getMemberUsername())
 			.email(member.getEmail())
