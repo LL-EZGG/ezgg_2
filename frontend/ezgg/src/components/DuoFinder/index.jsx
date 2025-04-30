@@ -217,7 +217,7 @@ const DuoFinder = () => {
             }
 
             try {
-                const res = await fetch('http://localhost:8888/auth/memberinfo', {
+                const res = await fetch('http://localhost:8888/auth/memberdatabundle', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
