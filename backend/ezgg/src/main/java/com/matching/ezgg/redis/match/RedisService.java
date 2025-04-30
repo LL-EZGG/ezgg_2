@@ -1,17 +1,26 @@
 package com.matching.ezgg.redis.match;
 
+import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.matching.ezgg.redis.match.RedisKey.*;
+import org.springframework.data.redis.connection.stream.Consumer;
+import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.ReadOffset;
 import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.connection.stream.StreamOffset;
+import org.springframework.data.redis.connection.stream.StreamReadOptions;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
-import com.matching.ezgg.es.service.EsService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,23 +30,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RedisService {
 
-	private final RedisTemplate<String, String> redisTemplate;
-	private final ObjectMapper objectMapper;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final ObjectMapper objectMapper;
+    private final SimpMessagingTemplate messagingTemplate;
 
-	public void saveMatchRequest(MatchingFilterParsingDto matchingFilterParsingDto) {
-		try {
-			String memberId = String.valueOf(matchingFilterParsingDto.getMemberId());
+    public void saveMatchRequest(MatchingFilterParsingDto matchingFilterParsingDto) {
+        try {
+            String memberId = String.valueOf(matchingFilterParsingDto.getMemberId());
+            
+            // 기존 데이터 확인
+            String existingStreamId = (String) redisTemplate.opsForHash().get(STREAM_ID_HASH_KEY.getValue(), memberId);
+            if (existingStreamId == null) {
+                String json = objectMapper.writeValueAsString(matchingFilterParsingDto);
+                Map<String, String> message = new HashMap<>();
+                message.put("data", json);
 
-			// 기존 데이터 확인
-			String existingStreamId = (String)redisTemplate.opsForHash()
-				.get(RedisKey.STREAM_ID_HASH_KEY.getValue(), memberId);
-			if (existingStreamId == null) {
-				String json = objectMapper.writeValueAsString(matchingFilterParsingDto);
-				Map<String, String> message = new HashMap<>();
-				message.put("data", json);
-
-				RecordId recordId = redisTemplate.opsForStream().add(RedisKey.STREAM_KEY.getValue(), message);
-				redisTemplate.opsForHash().put(RedisKey.STREAM_ID_HASH_KEY.getValue(), memberId, recordId.getValue());
+                RecordId recordId = redisTemplate.opsForStream().add(STREAM_KEY.getValue(), message);
+                redisTemplate.opsForHash().put(STREAM_ID_HASH_KEY.getValue(), memberId, recordId.getValue());
 
 				log.info("Redis Stream 및 es 매칭 요청 저장 완료 : {}", matchingFilterParsingDto.getMemberId());
 			}
@@ -60,23 +70,29 @@ public class RedisService {
 			dto1.getMemberInfoParsing().getTier().equals(dto2.getMemberInfoParsing().getTier());
 	}
 
-	public void acknowledgeMatch(Long memberId) {
-		try {
-			String memberIdStr = String.valueOf(memberId);
-			String streamId = (String)redisTemplate.opsForHash()
-				.get(RedisKey.STREAM_ID_HASH_KEY.getValue(), memberIdStr);
+    public void acknowledgeMatch(Long memberId, Long matchedMemberId) {
+        try {
+            String memberIdStr1 = String.valueOf(memberId);
+            String memberIdStr2 = String.valueOf(matchedMemberId);
+            String streamId1 = (String) redisTemplate.opsForHash().get(STREAM_ID_HASH_KEY.getValue(), memberIdStr1);
+            String streamId2 = (String) redisTemplate.opsForHash().get(STREAM_ID_HASH_KEY.getValue(), memberIdStr2);
 
-			if (streamId != null) {
-				redisTemplate.opsForStream()
-					.acknowledge(RedisKey.STREAM_KEY.getValue(), RedisKey.STREAM_GROUP.getValue(), streamId);
-				redisTemplate.opsForStream().delete(RedisKey.STREAM_KEY.getValue(), streamId);
-				redisTemplate.opsForHash().delete(RedisKey.STREAM_ID_HASH_KEY.getValue(), memberIdStr);
-				log.info("유저 Stream 처리 완료 (ACK & 삭제) : {}", memberIdStr);
-			}
-		} catch (Exception e) {
-			log.error("Stream 처리 중 에러 발생 : {}", e.getMessage());
-		}
-	}
+            if (streamId1 != null && streamId2 != null) {
+                redisTemplate.opsForStream().acknowledge(STREAM_KEY.getValue(), STREAM_GROUP.getValue(), streamId1);
+                redisTemplate.opsForStream().acknowledge(STREAM_KEY.getValue(), STREAM_GROUP.getValue(), streamId2);
+                redisTemplate.opsForStream().delete(STREAM_KEY.getValue(), streamId1);
+                redisTemplate.opsForStream().delete(STREAM_KEY.getValue(), streamId2);
+                redisTemplate.opsForHash().delete(STREAM_ID_HASH_KEY.getValue(), memberIdStr1);
+                redisTemplate.opsForHash().delete(STREAM_ID_HASH_KEY.getValue(), memberIdStr2);
+
+                // 각 유저에게 맞는 결과 전송
+                messagingTemplate.convertAndSendToUser(memberId.toString(), "/queue/matching", matchedMemberId);
+                messagingTemplate.convertAndSendToUser(matchedMemberId.toString(), "/queue/matching", memberId);
+            }
+        } catch (Exception e) {
+            log.error("Stream 처리 중 에러 발생 : {}", e.getMessage());
+        }
+    }
 
 	public void retryMatchRequest(MatchingFilterParsingDto matchingFilterParsingDto) {
 		try {
@@ -111,19 +127,30 @@ public class RedisService {
 			String json = objectMapper.writeValueAsString(matchingFilterParsingDto);
 			long retryTime = System.currentTimeMillis() + 10000; // 10초 후 재시도
 
-			redisTemplate.opsForZSet().add(RedisKey.RETRY_ZSET_KEY.getValue(), json, retryTime);
-			log.info("딜레이 큐에 등록 완료 ({}초 후 재시도 예정) : {}", retryTime / 1000, memberId);
-		} catch (JsonProcessingException e) {
-			log.error("딜레이 큐 등록 실패 : {}", e.getMessage());
-		}
-	}
+            redisTemplate.opsForZSet().add(RETRY_ZSET_KEY.getValue(), json, retryTime);
+            log.info("딜레이 큐에 등록 완료 ({}초 후 재시도 예정) : {}", retryTime/1000, memberId);
+        } catch (JsonProcessingException e) {
+            log.error("딜레이 큐 등록 실패 : {}", e.getMessage());
+        }
+    }
 
-	public Set<String> getRetryCandidates() {
-		long now = System.currentTimeMillis();
-		return redisTemplate.opsForZSet().rangeByScore(RedisKey.RETRY_ZSET_KEY.getValue(), 0, now);
-	}
+    public void createStringGroup() {
+        stringRedisTemplate.opsForStream().createGroup(STREAM_KEY.getValue(), ReadOffset.latest(), STREAM_GROUP.getValue());
+    }
 
-	public void removeRetryCandidate(String json) {
-		redisTemplate.opsForZSet().remove(RedisKey.RETRY_ZSET_KEY.getValue(), json);
-	}
+    public List<MapRecord<String, Object, Object>> getStringGroup() {
+        return stringRedisTemplate.opsForStream().read(
+            Consumer.from(STREAM_GROUP.getValue(), CONSUMER_NAME.getValue()),
+            StreamReadOptions.empty().count(5).block(Duration.ofMillis(2000)),
+            StreamOffset.create(STREAM_KEY.getValue(), ReadOffset.lastConsumed()));
+    }
+
+    public Set<String> getRetryCandidates() {
+        long now = System.currentTimeMillis();
+        return redisTemplate.opsForZSet().rangeByScore(RETRY_ZSET_KEY.getValue(), 0, now);
+    }
+
+    public void removeRetryCandidate(String json) {
+        redisTemplate.opsForZSet().remove(RETRY_ZSET_KEY.getValue(), json);
+    }
 }

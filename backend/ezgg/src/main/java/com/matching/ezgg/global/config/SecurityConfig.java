@@ -6,13 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -60,14 +58,13 @@ public class SecurityConfig {
 
 		// 기본 설정 비활성화
 		http
-			.cors(Customizer.withDefaults())
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable);
 
 		// URL 접근 권한 설정
 		http.authorizeHttpRequests((auth) -> auth
-			.requestMatchers("/auth/**", "/login", "/refresh", "/riotapi/**", "/es/**", "/redis/**", "/matching/**", "/test/matching/start").permitAll() // 해당 요청 은 인증 없이 접근 가능
+			.requestMatchers("/auth/**", "/login", "/refresh", "/riotapi/**", "/es/**", "/redis/**", "/matching/**", "/test/matching/start", "/ws/**", "/ws").permitAll() // 해당 요청 은 인증 없이 접근 가능
 			.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 			.anyRequest().hasAnyAuthority("ROLE_USER")); // 나머지 요청은 ROLE_USER 권한이 있어야 접근 가능
 
