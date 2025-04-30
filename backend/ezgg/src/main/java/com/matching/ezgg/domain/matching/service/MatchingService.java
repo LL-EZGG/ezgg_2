@@ -8,17 +8,17 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
-import com.matching.ezgg.domain.recentTwentyMatch.ChampionStat;
 import com.matching.ezgg.api.dto.MatchDto;
 import com.matching.ezgg.api.dto.WinRateNTierDto;
 import com.matching.ezgg.api.service.ApiService;
-import com.matching.ezgg.es.service.EsService;
 import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.domain.matching.dto.MemberDataBundle;
 import com.matching.ezgg.domain.matching.dto.MemberInfoParsingDto;
 import com.matching.ezgg.domain.matching.dto.PreferredPartnerParsingDto;
 import com.matching.ezgg.domain.matching.dto.RecentTwentyMatchParsingDto;
+import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
+import com.matching.ezgg.domain.recentTwentyMatch.ChampionStat;
+import com.matching.ezgg.es.service.EsService;
 import com.matching.ezgg.redis.match.RedisStreamProducer;
 
 import lombok.RequiredArgsConstructor;
@@ -28,12 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class MatchingService {
+
+	private final EsService esService;
 	private final MemberInfoService memberInfoService;
 	private final ApiService apiService;
 	private final MatchingDataBulkSaveService matchingDataBulkSaveService;
-	private final RedisTemplate<String, Object> redisTemplate;
-	private final ObjectMapper objectMapper;
-	private final EsService esService;
 	private final RedisStreamProducer redisStreamProducer;
 
 	// 매칭 시작 시 호출
@@ -95,7 +94,8 @@ public class MatchingService {
 	}
 
 	// memberDataBundle -> MatchingFilterDto 변환 메소드
-	public MatchingFilterParsingDto convertToMatchingFilterDto(MemberDataBundle memberDataBundle, Long memberId, PreferredPartnerParsingDto preferredPartnerParsingDto) {
+	public MatchingFilterParsingDto convertToMatchingFilterDto(MemberDataBundle memberDataBundle, Long memberId,
+		PreferredPartnerParsingDto preferredPartnerParsingDto) {
 		MemberInfoParsingDto memberInfoParsingDto = MemberInfoParsingDto.builder()
 			.riotUsername(memberDataBundle.getMemberInfo().getRiotUsername())
 			.riotTag(memberDataBundle.getMemberInfo().getRiotTag())

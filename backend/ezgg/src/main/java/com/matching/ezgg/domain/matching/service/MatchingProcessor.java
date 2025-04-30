@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.es.service.EsMatchingFilter;
 import com.matching.ezgg.es.service.EsService;
-import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.redis.match.RedisService;
 import com.matching.ezgg.redis.match.RedisStreamProducer;
 
@@ -47,6 +47,10 @@ public class MatchingProcessor {
 			// ES에서 매칭된 유저들의 데이터 삭제
 			esService.deleteDocByMemberId(matchingFilterParsingDto.getMemberId());
 			esService.deleteDocByMemberId(bestMatchingUser.getMemberId());
+
+			// Redis Stream에 매칭된 유저 정보 삭제
+			redisStreamProducer.acknowledgeBothUser(matchingFilterParsingDto.getMemberId(),
+				bestMatchingUser.getMemberId());
 
 			return true;
 		} catch (Exception e) {

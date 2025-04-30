@@ -27,6 +27,7 @@ public class EsService {
 	public void esPost(MatchingFilterParsingDto matchingFilterDto) {
 		IndexRequest<MatchingFilterParsingDto> postRequest = IndexRequest.of(r -> r
 			.index(indexName)
+			.id(String.valueOf(matchingFilterDto.getMemberId()))
 			.document(matchingFilterDto));
 		try {
 			IndexResponse response = esClient.index(postRequest);

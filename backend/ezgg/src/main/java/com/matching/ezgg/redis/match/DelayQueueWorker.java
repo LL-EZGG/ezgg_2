@@ -24,11 +24,11 @@ public class DelayQueueWorker {
 	public void processRetryQueue() {
 		Set<String> retryCandidates = redisService.getRetryCandidates();
 
-		if(retryCandidates == null || retryCandidates.isEmpty()) {
+		if (retryCandidates == null || retryCandidates.isEmpty()) {
 			return;
 		}
 
-		for(String json : retryCandidates) {
+		for (String json : retryCandidates) {
 			try {
 				MatchingFilterParsingDto dto = objectMapper.readValue(json, MatchingFilterParsingDto.class);
 				redisStreamProducer.sendMatchRequest(dto);
