@@ -11,6 +11,8 @@ import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
+import co.elastic.clients.elasticsearch.core.DeleteRequest;
+import co.elastic.clients.elasticsearch.core.DeleteResponse;
 import co.elastic.clients.elasticsearch.core.IndexRequest;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import lombok.RequiredArgsConstructor;
@@ -40,16 +42,12 @@ public class EsService {
 
 	public void deleteDocByMemberId(Long memberId) {
 		try {
-			DeleteByQueryRequest deleteByQueryRequest = DeleteByQueryRequest.of(d -> d
+			DeleteRequest deleteRequest = DeleteRequest.of(d -> d
 				.index(indexName)
-				.query(q -> q
-					.term(t -> t
-						.field("memberId")
-						.value(v -> v.longValue(memberId))
-					)
-				));
-			DeleteByQueryResponse deleteByQueryResponse = esClient.deleteByQuery(deleteByQueryRequest);
-			log.info("Doc 삭제: {}", deleteByQueryResponse);
+				.id(String.valueOf(memberId)) // memberId를 직접 문서 ID로 사용
+			);
+			DeleteResponse response = esClient.delete(deleteRequest);
+			log.info("Doc 삭제 완료: {}", response);
 		} catch (IOException e) {
 			log.error("Elasticsearch Doc 삭제 중 IOException 발생", e);
 			throw new EsDocDeleteFailException();
