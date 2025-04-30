@@ -4,13 +4,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matching.ezgg.api.dto.WinRateNTierDto;
 import com.matching.ezgg.api.service.ApiService;
 import com.matching.ezgg.domain.matching.service.MatchingService;
-import com.matching.ezgg.domain.member.dto.SignupRequest;
-import com.matching.ezgg.domain.member.dto.SignupResponse;
-import com.matching.ezgg.domain.member.entity.Member;
-import com.matching.ezgg.domain.member.repository.MemberRepository;
 import com.matching.ezgg.domain.member.dto.SignupRequest;
 import com.matching.ezgg.domain.member.dto.SignupResponse;
 import com.matching.ezgg.domain.member.entity.Member;
@@ -74,8 +69,6 @@ public class MemberService {
 
 		// 외부 API로부터 모든 데이터 업데이트
 		matchingService.updateAllAttributesOfMember(member.getId());
-
-		memberInfoRepository.save(memberInfo);
 
 		return SignupResponse.builder()
 			.memberUsername(member.getMemberUsername())
