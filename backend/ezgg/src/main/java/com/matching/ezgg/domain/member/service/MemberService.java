@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matching.ezgg.api.service.ApiService;
+import com.matching.ezgg.domain.matching.service.MatchingService;
 import com.matching.ezgg.domain.member.dto.SignupRequest;
 import com.matching.ezgg.domain.member.dto.SignupResponse;
 import com.matching.ezgg.domain.member.entity.Member;
@@ -27,6 +28,7 @@ public class MemberService {
 	private final MemberRepository memberRepository;
 	private final MemberInfoService memberInfoService;
 	private final ApiService apiService;
+	private final MatchingService matchingService;
 	private final MemberInfoRepository memberInfoRepository;
 
 	private final PasswordEncoder passwordEncoder;
@@ -62,7 +64,10 @@ public class MemberService {
 		String newPuuid = apiService.getMemberPuuid(signupRequest.getRiotUsername(), signupRequest.getRiotTag());
 		MemberInfo memberInfo = memberInfoService.createNewMemberInfo(member.getId(), signupRequest.getRiotUsername(),
 			signupRequest.getRiotTag(), newPuuid);
-		//MemberInfo 엔티티를 memberInfoRepository에 저장 (로그인되었을때 티어정보를 가져오기 위함)
+
+		// 외부 API로부터 모든 데이터 업데이트
+		matchingService.updateAllAttributesOfMember(member.getId());
+
 		memberInfoRepository.save(memberInfo);
 
 		return SignupResponse.builder()
