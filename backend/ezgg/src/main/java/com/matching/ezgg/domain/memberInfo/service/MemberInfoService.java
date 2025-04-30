@@ -49,9 +49,8 @@ public class MemberInfoService {
 	}
 
 	//member info 생성
-	//member info 생성 시 티어 + 승패 수를 받아서 함께생성
 	public MemberInfo createNewMemberInfo(Long memberId, String riotUserName, String riotTag,
-		String puuid, WinRateNTierDto winRateNTierDto) {//TODO 트랜잭션을 memberService가 아니라 여기서??
+		String puuid) {//TODO 트랜잭션을 memberService가 아니라 여기서??
 
 		log.info("{}#{}의 새 memberInfo 생성 시작", riotUserName, riotTag);
 
@@ -59,10 +58,6 @@ public class MemberInfoService {
 			.memberId(memberId)
 			.riotUsername(riotUserName)
 			.riotTag(riotTag)
-			.tier(winRateNTierDto.getTier())
-			.tierNum(winRateNTierDto.getTierNum())
-			.wins(winRateNTierDto.getWins())
-			.losses(winRateNTierDto.getLosses())
 			.puuid(puuid)
 			.build();
 
