@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.api.dto.MatchDto;
 import com.matching.ezgg.api.dto.WinRateNTierDto;
 import com.matching.ezgg.api.service.ApiService;
@@ -143,5 +141,4 @@ public class MatchingService {
 			.recentTwentyMatchParsing(recentTwentyMatchparsingDto)
 			.build();
 	}
-
 }
