@@ -116,7 +116,7 @@ const Join = () => {
 
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
+    const [isErrorOpen, setIsErrorOpen] = useState(false);
     const [errors, setErrors] = useState({
         memberUsername: '',
         password: '',
@@ -185,10 +185,8 @@ const Join = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (validateForm()) {
-            // TODO: 실제 회원가입 로직 구현
-            console.log('Form submitted:', formData);
-            navigate('/');
+        if (!validateForm()) {
+            return;
         }
 
         console.log('회원가입 데이터:', formData);
@@ -198,11 +196,12 @@ const Join = () => {
         try {
             const response = await axios.post('http://localhost:8888/auth/signup', formData);
             console.log('회원가입 성공:', response.data);
-            setMessage('회원가입이 성공적으로 완료되었습니다!');
+            alert('회원가입 성공')
             navigate("/");
         } catch (error) {
             console.error('회원가입 오류:', error);
             setMessage(error.response?.data?.message || '회원가입 중 오류가 발생했습니다.');
+            setIsErrorOpen(true);
         } finally {
             setIsLoading(false);
         }
@@ -305,6 +304,12 @@ const Join = () => {
                         {errors.riotTag && <ErrorMessage>{errors.riotTag}</ErrorMessage>}
                     </InputGroup>
                     <SubmitButton type="submit">회원가입</SubmitButton>
+                    {isErrorOpen && (
+                        <div className="modal">
+                            <p>{message}</p>
+                            <button onClick={() => setIsErrorOpen(false)}>닫기</button>
+                        </div>
+                    )}
                 </Form>
                 <LoginLink to="/">홈으로</LoginLink>
                 {message && <SuccessMessage>{message}</SuccessMessage>} {/* 메시지 표시 */}
