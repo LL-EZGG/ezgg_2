@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.matching.ezgg.domain.member.dto.SignupRequest;
 import com.matching.ezgg.domain.member.dto.SignupResponse;
 import com.matching.ezgg.domain.member.service.MemberService;
+import com.matching.ezgg.global.jwt.filter.JWTUtil;
+import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
+import com.matching.ezgg.global.response.SuccessResponse;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.global.annotation.LoginUser;
 import com.matching.ezgg.global.jwt.filter.JWTUtil;
@@ -19,6 +22,7 @@ import com.matching.ezgg.global.response.SuccessResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,7 +39,7 @@ public class MemberController {
 	//회원 가입
 	@PostMapping("/signup")
 	public ResponseEntity<SuccessResponse<SignupResponse>> signup(
-		@RequestBody SignupRequest signupRequest
+		@Valid @RequestBody SignupRequest signupRequest
 	) {
 		SignupResponse signupResponse = memberService.signup(signupRequest);
 

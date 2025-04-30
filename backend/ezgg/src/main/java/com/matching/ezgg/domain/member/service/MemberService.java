@@ -6,6 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.matching.ezgg.api.dto.WinRateNTierDto;
 import com.matching.ezgg.api.service.ApiService;
+import com.matching.ezgg.domain.matching.service.MatchingService;
+import com.matching.ezgg.domain.member.dto.SignupRequest;
+import com.matching.ezgg.domain.member.dto.SignupResponse;
+import com.matching.ezgg.domain.member.entity.Member;
+import com.matching.ezgg.domain.member.repository.MemberRepository;
 import com.matching.ezgg.domain.member.dto.SignupRequest;
 import com.matching.ezgg.domain.member.dto.SignupResponse;
 import com.matching.ezgg.domain.member.entity.Member;
@@ -16,6 +21,8 @@ import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.global.exception.ExistEmailException;
 import com.matching.ezgg.global.exception.ExistMemberIdException;
 import com.matching.ezgg.global.exception.ExistRiotUsernamException;
+import com.matching.ezgg.global.exception.MemberPassWordNotEqualsException;
+import com.matching.ezgg.global.exception.PasswordBadRequestException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +35,7 @@ public class MemberService {
 	private final MemberRepository memberRepository;
 	private final MemberInfoService memberInfoService;
 	private final ApiService apiService;
+	private final MatchingService matchingService;
 	private final MemberInfoRepository memberInfoRepository;
 
 	private final PasswordEncoder passwordEncoder;
@@ -38,7 +46,11 @@ public class MemberService {
 		log.info("아이디 : {}", signupRequest.getMemberUsername());
 
 		if (!signupRequest.getPassword().equals(signupRequest.getConfirmPassword())) {
-			throw new IllegalArgumentException("패스워드와 패스워드 확인이 일치하지 않습니다.");
+			throw new MemberPassWordNotEqualsException();
+		}
+
+		if (!signupRequest.getPassword().matches("^(?=.*[A-Z])(?=.[a-z])(?=.*\\d)[A-Za-z\\d]{4,20}$")) {
+			throw new PasswordBadRequestException();
 		}
 
 		String password = passwordEncoder.encode(signupRequest.getPassword());
@@ -57,10 +69,12 @@ public class MemberService {
 
 		//MemberInfo 엔티티 생성 후 저장
 		String newPuuid = apiService.getMemberPuuid(signupRequest.getRiotUsername(), signupRequest.getRiotTag());
-		WinRateNTierDto newWinRateNTier = apiService.getMemberWinRateNTier(newPuuid);
 		MemberInfo memberInfo = memberInfoService.createNewMemberInfo(member.getId(), signupRequest.getRiotUsername(),
-			signupRequest.getRiotTag(), newPuuid, newWinRateNTier);
-		//MemberInfo 엔티티를 memberInfoRepository에 저장 (로그인되었을때 티어정보를 가져오기 위함)
+			signupRequest.getRiotTag(), newPuuid);
+
+		// 외부 API로부터 모든 데이터 업데이트
+		matchingService.updateAllAttributesOfMember(member.getId());
+
 		memberInfoRepository.save(memberInfo);
 
 		return SignupResponse.builder()
@@ -128,18 +142,6 @@ public class MemberService {
 		if (memberInfoRepository.existsByRiotUsernameAndRiotTag(signupRequest.getRiotUsername(),
 			signupRequest.getRiotTag())) {
 			throw new ExistRiotUsernamException();
-		}
-	}
-
-	public MemberInfo getMemberInfoByMemberId(Long memberId) {
-		//memberId로 MemberInfo 조회
-		try {
-			MemberInfo memberInfo = memberInfoService.getMemberInfoByMemberId(memberId);
-			log.info("memberInfo 조회 성공: {}", memberInfo);
-			return memberInfo;
-		} catch (Exception e) {
-			log.error("memberInfo 조회 실패: {}", e.getMessage());
-			throw e;
 		}
 	}
 }
