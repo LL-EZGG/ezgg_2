@@ -1,6 +1,7 @@
-import React,{ useState } from 'react';
+import React,{ useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import styled from '@emotion/styled';
+import api from './utils/api';
 import DuoFinder from './components/DuoFinder';
 import Login from './components/layout/Login';
 import Join from './components/layout/Join';
@@ -86,21 +87,154 @@ const LoginButton = styled(Link)`
   }
 `;
 
+const LogoutButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background: #FF416C;
+  text-decoration: none;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
 // 로그인 상태에 따라 리다이렉트하는 보호된 라우트 컴포넌트
 const ProtectedRoute = ({ element, isLoggedIn }) => {
   const location = useLocation();
+  
+  // 현재 위치가 /login 페이지이면서 이미 로그인 상태라면 홈으로 리다이렉트
+  if (location.pathname === '/login' && isLoggedIn) {
+    return <Navigate to="/" replace />;
+  }
+  
+  // 로그인이 필요한 페이지이고 로그인되지 않은 경우 로그인 페이지로 리다이렉트
   if (!isLoggedIn) {
-    // 로그인되지 않은 경우 로그인 페이지로 리다이렉트하면서 원래 가려던 경로 저장
+    console.log('로그인되지 않음, 로그인 페이지로 리다이렉트');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
+  
+  // 로그인 상태이면 요청한 페이지 렌더링
   return element;
 };
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const userInfo = {
-    name: 'Hide on bush',
-    tag: 'KR1'
+  const [userInfo, setUserInfo] = useState({
+    riotUsername: '',
+    riotTag: ''
+  });
+  const [memberDataBundle, setMemberDataBundle] = useState(null);
+  const [userDataLoading, setUserDataLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // 앱 시작 시 로컬 스토리지에서 토큰을 확인하여 로그인 상태 유지
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      console.log('토큰 발견, 자동 로그인 시도');
+      // 토큰이 있으면 우선 로그인 상태로 설정하고 사용자 정보 요청
+      setIsLoggedIn(true);
+      fetchUserInfo();
+    } else {
+      setUserDataLoading(false);
+    }
+  }, []);
+
+  // 토큰을 사용하여 사용자 정보 가져오기
+  const fetchUserInfo = async () => {
+    setUserDataLoading(true);
+    try {
+      console.log('사용자 정보 요청 중...');
+      // 첫 번째 API 요청: 기본 사용자 정보
+      const memberInfoResponse = await api.get('/auth/memberinfo');
+      console.log('사용자 정보 API 응답:', memberInfoResponse);
+      
+      // 기본 사용자 정보 설정
+      if (memberInfoResponse.data && memberInfoResponse.data.data) {
+        console.log('기본 사용자 정보 가져오기 성공:', memberInfoResponse.data.data);
+        setUserInfo({
+          riotUsername: memberInfoResponse.data.data.riotUsername || '사용자',
+          riotTag: memberInfoResponse.data.data.riotTag || 'KR'
+        });
+        
+        try {
+          // 두 번째 API 요청: 추가 사용자 데이터 번들 (첫 번째 요청 성공 시에만)
+          const dataBundleResponse = await api.get('/auth/memberdatabundle');
+          console.log('데이터 번들 API 응답:', dataBundleResponse);
+          
+          // 추가 데이터가 있으면 저장
+          if (dataBundleResponse.data && dataBundleResponse.data.data) {
+            console.log('사용자 데이터 번들 가져오기 성공:', dataBundleResponse.data.data);
+            setMemberDataBundle(dataBundleResponse.data.data);
+          }
+        } catch (bundleError) {
+          // 데이터 번들 요청 실패 - 로그만 남기고 기본 사용자 정보는 유지
+          console.error('사용자 데이터 번들 가져오기 실패:', bundleError);
+          // 401/403 오류가 아닌 경우 무시하고 계속 진행
+          if (!(bundleError.response && 
+              (bundleError.response.status === 401 || bundleError.response.status === 403))) {
+            // 401/403이 아닌 다른 오류는 무시
+          }
+        }
+      }
+    } catch (error) {
+      console.error('사용자 정보 가져오기 실패:', error);
+      
+      // 401 또는 403 에러인 경우 로그아웃 처리
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        console.log('토큰이 유효하지 않아 로그아웃합니다.');
+        handleLogout();
+      }
+    } finally {
+      setUserDataLoading(false);
+    }
+  };
+
+  // 로그아웃 함수
+  const handleLogout = async () => {
+    console.log('로그아웃 처리 시작');
+    setIsLoggingOut(true);
+    
+    try {
+      // 토큰 가져오기
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        console.warn('토큰이 없습니다. 로컬에서만 로그아웃합니다.');
+      } else {
+        // 백엔드 로그아웃 API 호출 (인터셉터가 자동으로 토큰을 헤더에 추가)
+        const response = await api.post('/auth/logout');
+        console.log('서버 로그아웃 응답 상태:', response.status);
+        console.log('서버 로그아웃 성공:', response.data);
+      }
+    } catch (error) {
+      console.error('서버 로그아웃 실패:', error);
+      if (error.response) {
+        console.error('응답 상태:', error.response.status);
+        console.error('응답 데이터:', error.response.data);
+      }
+      // 서버 로그아웃에 실패하더라도 클라이언트 측 로그아웃은 진행
+    } finally {
+      // 로컬 스토리지에서 토큰 제거
+      localStorage.removeItem('token');
+      
+      // 상태 초기화
+      setIsLoggedIn(false);
+      setUserInfo({
+        riotUsername: '',
+        riotTag: ''
+      });
+      setMemberDataBundle(null);
+      
+      console.log('로그아웃 처리 완료');
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -119,9 +253,18 @@ const App = () => {
           </a>
           <UserSection>
             {isLoggedIn ? (
-              <UserInfo>
-                {userInfo.name} #{userInfo.tag}
-              </UserInfo>
+              <>
+                <UserInfo>
+                  {userInfo.riotUsername} #{userInfo.riotTag}
+                </UserInfo>
+                <LogoutButton 
+                  onClick={handleLogout} 
+                  disabled={isLoggingOut}
+                  style={{ opacity: isLoggingOut ? 0.7 : 1 }}
+                >
+                  {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+                </LogoutButton>
+              </>
             ) : (
               <LoginButton to="/login">
                 Login
@@ -130,8 +273,18 @@ const App = () => {
           </UserSection>
         </Header>
         <Routes>
-          <Route path="/" element={<ProtectedRoute element={<DuoFinder />} isLoggedIn={isLoggedIn} />} />
-          <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+          <Route path="/" element={
+            <ProtectedRoute 
+              element={
+                <DuoFinder 
+                  memberDataBundle={memberDataBundle} 
+                  isLoading={userDataLoading} 
+                />
+              } 
+              isLoggedIn={isLoggedIn} 
+            />
+          } />
+          <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo} />} />
           <Route path="/join" element={<Join />} />
         </Routes>
       </AppContainer>
