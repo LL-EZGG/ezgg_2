@@ -50,8 +50,7 @@ public class SecurityConfig {
 	public WebSecurityCustomizer webSecurityCustomizer() {
 		return web -> web.ignoring()
 			.requestMatchers("/favicon.ico")
-			.requestMatchers("/error")
-			.requestMatchers(toH2Console());
+			.requestMatchers("/error");
 	}
 
 	@Bean
@@ -90,7 +89,7 @@ public class SecurityConfig {
 		// CORS 설정
 		CorsConfiguration configuration = new CorsConfiguration();
 
-		configuration.addAllowedOrigin("http://localhost:3000");
+		configuration.addAllowedOrigin("http://3.37.41.3:3000");
 		configuration.addAllowedMethod("*");
 		configuration.addAllowedHeader("*");
 		configuration.addExposedHeader("Authorization");

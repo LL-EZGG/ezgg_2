@@ -143,7 +143,8 @@ const Login = ({setIsLoggedIn}) => {
         console.log('Form submitted:', formData);
 
         try {
-            const response = await axios.post('http://localhost:8888/login', {
+            const api = import.meta.env.VITE_API_URL;
+            const response = await axios.post(`${api}/login`, {
                 memberUsername: formData.username,
                 password: formData.password
             }, {

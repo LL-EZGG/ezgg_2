@@ -1,0 +1,40 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+
+  elasticsearch:
+    uris: http://elasticsearch:9200
+    username:
+    password:
+    connection-timeout: 5s
+    socket-timeout: 10s
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+jwt:
+  secret: ${JWT_SECRET}
+
+es:
+  httpHost: "elasticsearch"
+
+redis:
+  host: "redis"

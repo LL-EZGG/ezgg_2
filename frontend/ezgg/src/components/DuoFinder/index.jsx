@@ -217,7 +217,8 @@ const DuoFinder = () => {
             }
 
             try {
-                const res = await fetch('http://localhost:8888/auth/memberdatabundle', {
+                const api = import.meta.env.VITE_API_URL;
+                const res = await fetch(`${api}/auth/memberdatabundle`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

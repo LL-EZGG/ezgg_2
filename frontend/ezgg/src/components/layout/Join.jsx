@@ -194,7 +194,8 @@ const Join = () => {
         setMessage('');
 
         try {
-            const response = await axios.post('http://localhost:8888/auth/signup', formData);
+            const api = import.meta.env.VITE_API_URL;           // ← 환경변수 가져오기
+            const response = await axios.post(`${api}/auth/signup`, formData);
             console.log('회원가입 성공:', response.data);
             alert('회원가입 성공')
             navigate("/");
