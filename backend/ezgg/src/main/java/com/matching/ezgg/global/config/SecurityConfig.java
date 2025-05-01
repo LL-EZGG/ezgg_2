@@ -89,7 +89,11 @@ public class SecurityConfig {
 		// CORS 설정
 		CorsConfiguration configuration = new CorsConfiguration();
 
-		configuration.addAllowedOrigin("http://3.37.41.3:3000");
+		configuration.addAllowedOrigin("http://3.37.41.3:3000");//nginx 예비용
+		configuration.addAllowedOrigin("http://3.37.41.3");
+		configuration.addAllowedOrigin("http://3.37.41.3:80");
+		configuration.addAllowedOrigin("http://eezgg.kro.kr");
+		configuration.addAllowedOrigin("http://eezgg.kro.kr:80");
 		configuration.addAllowedMethod("*");
 		configuration.addAllowedHeader("*");
 		configuration.addExposedHeader("Authorization");
