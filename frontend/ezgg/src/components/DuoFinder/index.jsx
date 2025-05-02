@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import styled from '@emotion/styled';
 import DuoFinderForm from './DuoFinderForm';
 import MatchResult from './MatchResult';
-// import jwtDecode from 'jwt-decode'; // jwt-decode 임포트 추가
 
 const Container = styled.div`
     display: flex;
@@ -182,75 +181,22 @@ const ErrorMessage = styled.div`
     margin: 1rem 0;
 `;
 
-const DuoFinder = () => {
+const DuoFinder = ({ memberDataBundle, isLoading }) => {
     const [isMatching, setIsMatching] = useState(false);
-    const [memberDataBundle, setMemberDataBundle] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [matchingCriteria, setMatchingCriteria] = useState(null);
     const [mostPlayedChampions, setMostPlayedChampions] = useState([]);
     const [championWinRates, setChampionWinRates] = useState({});
 
-    // const getMemberIdFromToken = () => {
-    //     const token = localStorage.getItem('jwtToken');
-    //     if (!token) return null;
-    //
-    //     try {
-    //         const decoded = jwtDecode(token);
-    //         return decoded.memberId;
-    //     } catch (err) {
-    //         console.error("Token decode error:", err);
-    //         return null;
-    //     }
-    // };
-
+    // memberDataBundle가 변경될 때마다 챔피언 데이터 처리
     useEffect(() => {
-        const fetchMemberDataBundle = async () => {
-            setLoading(true);
-            setError(null);
-
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setError("로그인이 필요합니다.");
-                setLoading(false);
-                return;
-            }
-
-            try {
-                const res = await fetch('http://localhost:8888/auth/memberdatabundle', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                    }
-                });
-
-                if (!res.ok) {
-                    throw new Error(`API 요청 실패: ${res.status}`);
-                }
-
-                const result = await res.json();
-
-                if (result.code === "200" && result.data) {
-                    setMemberDataBundle(result.data);
-
-                    // 챔피언 데이터 추출
-                    if (result.data.recentTwentyMatch && result.data.recentTwentyMatch.championStats) {
-                        processChampionData(result.data.recentTwentyMatch.championStats);
-                    }
-                } else {
-                    throw new Error(result.message || "회원정보를 불러오는데 실패했습니다");
-                }
-            } catch (err) {
-                console.error("회원정보 불러오기 에러:", err);
-                setError("회원정보를 불러오는데 실패했습니다. 다시 시도해주세요.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchMemberDataBundle();
-    }, []);
+        if (memberDataBundle && memberDataBundle.recentTwentyMatch && memberDataBundle.recentTwentyMatch.championStats) {
+            processChampionData(memberDataBundle.recentTwentyMatch.championStats);
+        } else if (memberDataBundle) {
+            // 데이터는 있지만 championStats가 없는 경우
+            setMostPlayedChampions([]);
+            setChampionWinRates({});
+        }
+    }, [memberDataBundle]);
 
     // 챔피언 데이터 처리 함수
     const processChampionData = (championStats) => {
@@ -322,14 +268,16 @@ const DuoFinder = () => {
         return `/champions/${formattedName}.png`;
     };
 
+    // 데이터가 없는 경우 기본 데이터 활용
+    const hasValidData = memberDataBundle && memberDataBundle.memberInfo;
+    const dataLoadError = !hasValidData && !isLoading;
+
     return (
         <Container>
             <ProfileCard>
-                {loading ? (
+                {isLoading ? (
                     <LoadingSpinner>회원정보를 불러오는 중...</LoadingSpinner>
-                ) : error ? (
-                    <ErrorMessage>{error}</ErrorMessage>
-                ) : memberDataBundle ? (
+                ) : hasValidData ? (
                     <>
                         <ChampionImages>
                             {mostPlayedChampions && mostPlayedChampions.length > 0 ? (
@@ -346,29 +294,33 @@ const DuoFinder = () => {
                         </ChampionImages>
                         <ProfileInfo>
                             <ProfileTitle>
-                                {memberDataBundle.memberInfo.riotUsername || "사용자"}#{memberDataBundle.memberInfo.riotTag || "0000"}
+                                {memberDataBundle?.memberInfo?.riotUsername || "사용자"}#{memberDataBundle?.memberInfo?.riotTag || "0000"}
                             </ProfileTitle>
                             <RankBadge>
                                 <img
-                                    src={getRankImageSrc(memberDataBundle.memberInfo.tier)}
-                                    alt={memberDataBundle.memberInfo.tier || "Unranked"}
+                                    src={getRankImageSrc(memberDataBundle?.memberInfo?.tier)}
+                                    alt={memberDataBundle?.memberInfo?.tier || "Unranked"}
                                 />
-                                <span>{memberDataBundle.memberInfo.tier || "Unranked"} {memberDataBundle.memberInfo.tierNum || ""}</span>
+                                <span>{memberDataBundle?.memberInfo?.tier || "Unranked"} {memberDataBundle?.memberInfo?.tierNum || ""}</span>
                             </RankBadge>
                             <Stats>
-                                <p>승률: {memberDataBundle.recentTwentyMatch.winRate || "0"}%</p>
-                                {mostPlayedChampions && mostPlayedChampions.length > 0 && (
+                                <p>승률: {memberDataBundle?.recentTwentyMatch?.winRate || "0"}%</p>
+                                {mostPlayedChampions && mostPlayedChampions.length > 0 ? (
                                     mostPlayedChampions.map((champion, index) => (
                                         <p key={index}>
                                             {champion}: {championWinRates[champion] || "0"}% 승률
                                         </p>
                                     ))
+                                ) : (
+                                    <p>챔피언 통계가 없습니다.</p>
                                 )}
                             </Stats>
                         </ProfileInfo>
                     </>
                 ) : (
-                    <ErrorMessage>회원정보를 찾을 수 없습니다.</ErrorMessage>
+                    <ErrorMessage>
+                        {dataLoadError ? "회원정보를 찾을 수 없습니다." : ""}
+                    </ErrorMessage>
                 )}
             </ProfileCard>
             <FormContainer>

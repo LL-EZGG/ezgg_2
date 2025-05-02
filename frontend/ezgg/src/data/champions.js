@@ -165,5 +165,11 @@ export const champions = [
   { id: 'Ziggs', name: '직스', image: 'Ziggs.png' },
   { id: 'Zilean', name: '질리언', image: 'Zilean.png' },
   { id: 'Zoe', name: '조이', image: 'Zoe.png' },
-  { id: 'Zyra', name: '자이라', image: 'Zyra.png' }
+  { id: 'Zyra', name: '자이라', image: 'Zyra.png' },
+  { id: 'Lee Sin', name: '리신', image: 'LeeSin.png' },
+  { id: 'Hwei', name: '흐웨이', image: 'Hwei.png' },
+  { id: 'Mel', name: '멜', image: 'Mel.png' },
+  { id: 'Ambessa', name: '암베사', image: 'Ambessa.png' }
 ]; 
+
+// 리신, 흐웨이, 멜, 암베사
