@@ -42,6 +42,3 @@ es:
 
 redis:
   host: "localhost"
-
-api:
-  key: RGAPI-1c4d9d5e-ced0-4c80-bfc3-d641845c4f9c
