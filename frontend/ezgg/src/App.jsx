@@ -196,6 +196,12 @@ const App = () => {
     }
   };
 
+  useEffect(() => {
+    if (userInfo) {
+      console.log('userInfo 변경됨:', userInfo);
+    }
+  }, [userInfo]);
+
   // 로그아웃 함수
   const handleLogout = async () => {
     console.log('로그아웃 처리 시작');
@@ -278,7 +284,8 @@ const App = () => {
               element={
                 <DuoFinder 
                   memberDataBundle={memberDataBundle} 
-                  isLoading={userDataLoading} 
+                  isLoading={userDataLoading}
+                  userInfo={userInfo}
                 />
               } 
               isLoggedIn={isLoggedIn} 
