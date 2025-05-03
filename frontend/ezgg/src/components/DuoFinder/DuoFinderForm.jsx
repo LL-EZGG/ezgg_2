@@ -219,9 +219,10 @@ const DuoFinderForm = ({ onSubmit }) => {
     }
   };
 
-  const { connect, sendMatchingRequest, isConnected } = useWebSocket({
+  const { connect, sendMatchingRequest } = useWebSocket({
     onMessage: (response) => {
       if (response.status === 'SUCCESS') {
+        alert('매칭 성공! 상대방 정보를 확인하세요.')
         setMatchResult(response.data);
       } else {
         console.error('매칭 실패:', response.message);
@@ -375,9 +376,14 @@ const DuoFinderForm = ({ onSubmit }) => {
     if (!isFormValid()) return;
 
     const payload = {
-      ...formData,
-      preferredLane: getServerLaneName(formData.preferredLane),
-      partnerLane: getServerLaneName(formData.partnerLane),
+      wantLine: {
+        myLine: formData.preferredLane,
+        partnerLine: formData.partnerLane,
+      },
+      championInfo: {
+        preferredChampions: formData.preferredChampions[0] || "",
+        unpreferredChampions: formData.bannedChampions[0] || ""
+      }
     };
 
     connect(() => {

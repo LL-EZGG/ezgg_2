@@ -65,36 +65,64 @@ const CriteriaItem = styled.div`
   }
 `;
 
-const MatchResult = ({ criteria, onCancel }) => {
-  return (
-    <Container>
-      <LoadingSpinner />
-      <Message>듀오를 찾는 중입니다...</Message>
-      
-      <CriteriaList>
-        <CriteriaItem>
-          <span>내 선호 라인:</span>
-          <span>{criteria.preferredLane}</span>
-        </CriteriaItem>
-        <CriteriaItem>
-          <span>상대방 선호 라인:</span>
-          <span>{criteria.partnerLane}</span>
-        </CriteriaItem>
-        <CriteriaItem>
-          <span>선호 챔피언:</span>
-          <span>{criteria.preferredChampions.map(champion => champion.name).join(', ') || '없음'}</span>
-        </CriteriaItem>
-        <CriteriaItem>
-          <span>비선호 챔피언:</span>
-          <span>{criteria.bannedChampions.map(champion => champion.name).join(', ') || '없음'}</span>
-        </CriteriaItem>
-      </CriteriaList>
+const MatchResult = ({ criteria, matchResult, onCancel }) => {
+    if (!matchResult) {
+        return (
+            <Container>
+                <LoadingSpinner />
+                <Message>듀오를 찾는 중입니다...</Message>
 
-      <CancelButton onClick={onCancel}>
-        매칭 취소
-      </CancelButton>
-    </Container>
-  );
+                <CriteriaList>
+                    <CriteriaItem>
+                        <span>내 선호 라인:</span>
+                        <span>{criteria.preferredLane}</span>
+                    </CriteriaItem>
+                    <CriteriaItem>
+                        <span>상대방 선호 라인:</span>
+                        <span>{criteria.partnerLane}</span>
+                    </CriteriaItem>
+                    <CriteriaItem>
+                        <span>선호 챔피언:</span>
+                        <span>{criteria.championInfo.preferredChampions || '없음'}</span>
+                    </CriteriaItem>
+                    <CriteriaItem>
+                        <span>비선호 챔피언:</span>
+                        <span>{criteria.championInfo.bannedChampions || '없음'}</span>
+                    </CriteriaItem>
+                </CriteriaList>
+
+                <CancelButton onClick={onCancel}>
+                    매칭 취소
+                </CancelButton>
+            </Container>
+        );
+    } else {
+        return (
+            <Container>
+                <SuccessBanner>🎉 매칭이 성공했습니다!</SuccessBanner>
+
+                <CriteriaList>
+                    <CriteriaItem>
+                        <span>상대 닉네임:</span>
+                        <span>{matchResult.nickname}</span>
+                    </CriteriaItem>
+                    <CriteriaItem>
+                        <span>상대 선호 라인:</span>
+                        <span>{matchResult.preferredLane}</span>
+                    </CriteriaItem>
+                    <CriteriaItem>
+                        <span>상대 선호 챔피언:</span>
+                        <span>{matchResult.preferredChampion || '없음'}</span>
+                    </CriteriaItem>
+                </CriteriaList>
+
+                <CancelButton onClick={onCancel}>
+                    돌아가기
+                </CancelButton>
+            </Container>
+        );
+    }
+
 };
 
 export default MatchResult; 
