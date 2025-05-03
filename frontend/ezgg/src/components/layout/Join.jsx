@@ -253,7 +253,7 @@ const Join = () => {
                         <Input
                             type="password"
                             name="password"
-                            placeholder="비밀번호를 입력하세요 (4~20자의 영문 대소문자, 숫자)"
+                            placeholder="비밀번호를 입력하세요 (6~20자의 영문 대소문자, 숫자)"
                             value={formData.password}
                             onChange={handleChange}
                             required
@@ -266,7 +266,7 @@ const Join = () => {
                         <Input
                             type="password"
                             name="confirmPassword"
-                            placeholder="비밀번호를 다시 입력하세요 (4~20자의 영문 대소문자, 숫자)"
+                            placeholder="비밀번호를 다시 입력하세요 (6~20자의 영문 대소문자, 숫자)"
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             required
