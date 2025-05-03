@@ -25,7 +25,7 @@ public class WinRateNTierDto {
 
 
 	public static WinRateNTierDto unranked(String puuid) {
-		return new WinRateNTierDto("RANKED_SOLO_5x5", puuid, 0, 0, "unranked", "unranked");
+		return new WinRateNTierDto("RANKED_SOLO_5x5", puuid, 0, 0, "UNRANKED", "0");
 	}
 
 }
