@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { champions } from '../../data/champions';
 import { useWebSocket } from "../../hooks/useWebSocket.js";
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Form = styled.form`
   display: flex;
@@ -213,18 +214,25 @@ const DuoFinderForm = ({ onSubmit }) => {
     setMatchResult(response);
     setIsMatching(false);
     
-    // 매칭 결과가 있으면 부모 컴포넌트에 전달
     if (onSubmit && response) {
       onSubmit(response);
     }
   };
 
-  // WebSocket 연결 설정
-  const { sendMessage } = useWebSocket({
-    userId: 1,
-    onMessage: handleWebSocketMessage,
-    onConnect: () => console.log('WebSocket 연결됨'),
-    onDisconnect: () => console.log('WebSocket 연결 끊김'),
+  const { connect, sendMatchingRequest, isConnected } = useWebSocket({
+    onMessage: (response) => {
+      if (response.status === 'SUCCESS') {
+        setMatchResult(response.data);
+      } else {
+        console.error('매칭 실패:', response.message);
+        setMatchResult({ error: true });
+      }
+      setIsMatching(false);
+    },
+    onDisconnect: () => {
+      console.log('연결 종료');
+      setIsMatching(false);
+    },
   });
 
   useEffect(() => {
@@ -362,41 +370,28 @@ const DuoFinderForm = ({ onSubmit }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isFormValid()) return;
+
     const payload = {
       ...formData,
       preferredLane: getServerLaneName(formData.preferredLane),
       partnerLane: getServerLaneName(formData.partnerLane),
     };
-    onSubmit(payload);
 
-    if (!isFormValid()) return;
-    
-    setIsMatching(true);
-    
-    // WebSocket을 통해 매칭 요청 전송
-    try {
-      const matchingRequest = {
-        userId: 1,
-        myLine: formData.preferredLane || '',
-        partnerLine: formData.partnerLane || '',
-        preferredChampions: formData.preferredChampions.map(champion => champion.id),
-        bannedChampions: formData.bannedChampions.map(champion => champion.id)
-      };
-      
-      console.log("매칭 요청 전송:", matchingRequest);
-      sendMessage('/app/matching/request', matchingRequest);
-      
-      // 기존 onSubmit 함수도 호출 (필요한 경우)
-      if (onSubmit) {
-        onSubmit(formData);
-      }
-    } catch (error) {
-      console.error("매칭 요청 중 오류 발생:", error);
-      setIsMatching(false);
-    }
-  };
+    connect(() => {
+      console.log("[DuoFinderForm]\n>>> 연결 후 매칭 요청 전송")
+      setIsMatching(true);
+      setMatchResult(null);
+      sendMatchingRequest(payload);
+      onSubmit(payload);
+    })
+    // } catch (err) {
+    //   console.error("웹소켓 연결 실패:", err);
+    //   setIsMatching(false);
+    // }
+  }
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -548,4 +543,4 @@ const DuoFinderForm = ({ onSubmit }) => {
   );
 };
 
-export default DuoFinderForm; 
+export default DuoFinderForm;
