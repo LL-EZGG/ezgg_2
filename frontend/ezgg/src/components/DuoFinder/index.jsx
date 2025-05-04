@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import styled from '@emotion/styled';
 import DuoFinderForm from './DuoFinderForm';
 import MatchResult from './MatchResult';
+import axios from "axios";
 
 const Container = styled.div`
     display: flex;
@@ -181,7 +182,7 @@ const ErrorMessage = styled.div`
     margin: 1rem 0;
 `;
 
-const DuoFinder = ({ memberDataBundle, isLoading }) => {
+const DuoFinder = ({ memberDataBundle, isLoading, userInfo }) => {
     const [isMatching, setIsMatching] = useState(false);
     const [matchingCriteria, setMatchingCriteria] = useState(null);
     const [mostPlayedChampions, setMostPlayedChampions] = useState([]);
@@ -221,11 +222,46 @@ const DuoFinder = ({ memberDataBundle, isLoading }) => {
         });
         setChampionWinRates(winRates);
     };
+    const handleSubmit = async (matchingCriteria) => {
+        console.log(matchingCriteria);
+        const token = localStorage.getItem('token');
+        console.log(token);
+        setMatchingCriteria(matchingCriteria);
+        try {
+            const response = await axios.post(
+                'http://localhost:8888/matching/start',
+                {
+                    wantLine: {
+                        myLine: matchingCriteria.preferredLane,
+                        partnerLine: matchingCriteria.partnerLane,
+                    },
+                    championInfo: {
+                        preferredChampion: matchingCriteria.preferredChampions[0]?.name || '',
+                        unpreferredChampion: matchingCriteria.bannedChampions[0]?.name || '',
+                    },
+                },
+                {
+                    headers: {
+                        Authorization: `${token}`,
+                    },
+                    withCredentials: true,
+                }
+            );
 
-    const handleSubmit = (criteria) => {
-        setMatchingCriteria(criteria);
-        setIsMatching(true);
+            const newToken = response.headers['authorization'];
+            setIsMatching(true);
+            if (response.status === 200 && newToken) {
+                localStorage.setItem('token', newToken);
+
+            }
+        } catch (error) {
+            alert('매칭에 실패하였습니다.');
+            console.error('Matching error:', error);
+            setIsMatching(false);
+        }
     };
+
+
 
     const getRankImageSrc = (tier) => {
         // 티어에 따른 이미지 경로 반환
@@ -277,7 +313,7 @@ const DuoFinder = ({ memberDataBundle, isLoading }) => {
             <ProfileCard>
                 {isLoading ? (
                     <LoadingSpinner>회원정보를 불러오는 중...</LoadingSpinner>
-                ) : hasValidData ? (
+                ) : (
                     <>
                         <ChampionImages>
                             {mostPlayedChampions && mostPlayedChampions.length > 0 ? (
@@ -294,7 +330,7 @@ const DuoFinder = ({ memberDataBundle, isLoading }) => {
                         </ChampionImages>
                         <ProfileInfo>
                             <ProfileTitle>
-                                {memberDataBundle?.memberInfo?.riotUsername || "사용자"}#{memberDataBundle?.memberInfo?.riotTag || "0000"}
+                                {userInfo?.riotUsername || "사용자"}#{userInfo?.riotTag || "0000"}
                             </ProfileTitle>
                             <RankBadge>
                                 <img
@@ -317,11 +353,10 @@ const DuoFinder = ({ memberDataBundle, isLoading }) => {
                             </Stats>
                         </ProfileInfo>
                     </>
-                ) : (
-                    <ErrorMessage>
-                        {dataLoadError ? "회원정보를 찾을 수 없습니다." : ""}
-                    </ErrorMessage>
                 )}
+                {!isLoading && !hasValidData && dataLoadError && (
+                <ErrorMessage>회원정보를 찾을 수 없습니다.</ErrorMessage>
+                 )}
             </ProfileCard>
             <FormContainer>
                 {!isMatching ? (
