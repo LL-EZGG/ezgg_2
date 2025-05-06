@@ -35,17 +35,22 @@ public class MatchingProcessor {
 
 			if (matchingUsers.isEmpty()) {
 				log.info("매칭 상대 없음 : {}", matchingFilterParsingDto.getMemberId());
+				redisStreamProducer.acknowledgeUser(matchingFilterParsingDto.getMemberId());
 				redisStreamProducer.retryLater(matchingFilterParsingDto);
+				return;
 			}
 
 			MatchingFilterParsingDto bestMatchingUser = matchingUsers.getFirst(); // 매칭 점수가 가장 높은 유저
 			log.info("매칭 성공! >>>>> {} : {}", matchingFilterParsingDto.getMemberId(), bestMatchingUser.getMemberId());
 
-			redisStreamProducer.acknowledgeBothUser(matchingFilterParsingDto.getMemberId(), bestMatchingUser.getMemberId());
+			redisStreamProducer.acknowledgeBothUser(matchingFilterParsingDto, bestMatchingUser);
 
 			// ES에서 매칭된 유저들의 데이터 삭제
 			esService.deleteDocByMemberId(matchingFilterParsingDto.getMemberId());
 			esService.deleteDocByMemberId(bestMatchingUser.getMemberId());
+
+			redisStreamProducer.removeRetryCandidate(matchingFilterParsingDto);
+			redisStreamProducer.removeRetryCandidate(bestMatchingUser);
 		} catch (Exception e) {
 			log.error("매칭 처리 중 에러 발생 : {}", e.getMessage());
 		}

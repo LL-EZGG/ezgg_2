@@ -21,6 +21,11 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
+import com.matching.ezgg.domain.matching.dto.MatchingSuccessResponse;
+import com.matching.ezgg.domain.matching.dto.MemberDataBundle;
+import com.matching.ezgg.domain.member.dto.MemberInfoDto;
+import com.matching.ezgg.domain.memberInfo.service.MemberDataBundleService;
+import com.matching.ezgg.domain.recentTwentyMatch.dto.RecentTwentyMatchDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +39,9 @@ public class RedisService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
     private final SimpMessagingTemplate messagingTemplate;
+	private final MemberDataBundleService memberDataBundleService;
 
-    public void saveMatchRequest(MatchingFilterParsingDto matchingFilterParsingDto) {
+	public void saveMatchRequest(MatchingFilterParsingDto matchingFilterParsingDto) {
         try {
             String memberId = String.valueOf(matchingFilterParsingDto.getMemberId());
             
@@ -70,29 +76,37 @@ public class RedisService {
 			dto1.getMemberInfoParsing().getTier().equals(dto2.getMemberInfoParsing().getTier());
 	}
 
-    public void acknowledgeMatch(Long memberId, Long matchedMemberId) {
+	public void acknowledgeMatch(Long memberId) {
         try {
-            String memberIdStr1 = String.valueOf(memberId);
-            String memberIdStr2 = String.valueOf(matchedMemberId);
-            String streamId1 = (String) redisTemplate.opsForHash().get(STREAM_ID_HASH_KEY.getValue(), memberIdStr1);
-            String streamId2 = (String) redisTemplate.opsForHash().get(STREAM_ID_HASH_KEY.getValue(), memberIdStr2);
+            String memberIdStr = String.valueOf(memberId);
+            String streamId = (String) redisTemplate.opsForHash().get(STREAM_ID_HASH_KEY.getValue(), memberIdStr);
 
-            if (streamId1 != null && streamId2 != null) {
-                redisTemplate.opsForStream().acknowledge(STREAM_KEY.getValue(), STREAM_GROUP.getValue(), streamId1);
-                redisTemplate.opsForStream().acknowledge(STREAM_KEY.getValue(), STREAM_GROUP.getValue(), streamId2);
-                redisTemplate.opsForStream().delete(STREAM_KEY.getValue(), streamId1);
-                redisTemplate.opsForStream().delete(STREAM_KEY.getValue(), streamId2);
-                redisTemplate.opsForHash().delete(STREAM_ID_HASH_KEY.getValue(), memberIdStr1);
-                redisTemplate.opsForHash().delete(STREAM_ID_HASH_KEY.getValue(), memberIdStr2);
-
-                // 각 유저에게 맞는 결과 전송
-                messagingTemplate.convertAndSendToUser(memberId.toString(), "/queue/matching", matchedMemberId);
-                messagingTemplate.convertAndSendToUser(matchedMemberId.toString(), "/queue/matching", memberId);
-            }
+			if (streamId != null) {
+				redisTemplate.opsForStream().acknowledge(STREAM_KEY.getValue(), STREAM_GROUP.getValue(), streamId);
+				redisTemplate.opsForStream().delete(STREAM_KEY.getValue(), streamId);
+				redisTemplate.opsForHash().delete(STREAM_ID_HASH_KEY.getValue(), memberIdStr);
+			}
         } catch (Exception e) {
-            log.error("Stream 처리 중 에러 발생 : {}", e.getMessage());
-        }
-    }
+			log.error("Stream 처리 중 에러 발생 : {}", e.getMessage());
+		}
+	}
+
+	private MatchingSuccessResponse getMatchingSuccessResponse(Long matchedMemberId) {
+		MemberDataBundle data = memberDataBundleService.getMemberDataBundleByMemberId(matchedMemberId);
+
+		return MatchingSuccessResponse.builder()
+			.status("SUCCESS")
+			.data(MatchingSuccessResponse.MatchedMemberData.builder()
+				.matchedMemberId(matchedMemberId)
+				.memberInfoDto(MemberInfoDto.toDto(data.getMemberInfo()))
+				.recentTwentyMatchDto(RecentTwentyMatchDto.toDto(data.getRecentTwentyMatch()))
+				.build())
+			.build();
+	}
+
+	public void sendMatchingSuccessResponse(Long memberId, Long matchedMemberId) {
+		messagingTemplate.convertAndSendToUser(memberId.toString(), "/queue/matching", getMatchingSuccessResponse(matchedMemberId));
+	}
 
 	public void retryMatchRequest(MatchingFilterParsingDto matchingFilterParsingDto) {
 		try {
