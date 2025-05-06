@@ -81,11 +81,11 @@ const MatchResult = ({ criteria, matchResult, onCancel }) => {
                 <CriteriaList>
                     <CriteriaItem>
                         <span>내 선호 라인:</span>
-                        <span>{criteria.preferredLane}</span>
+                        <span>{criteria.wantLine.myLine}</span>
                     </CriteriaItem>
                     <CriteriaItem>
                         <span>상대방 선호 라인:</span>
-                        <span>{criteria.partnerLane}</span>
+                        <span>{criteria.wantLine.partnerLine}</span>
                     </CriteriaItem>
                     <CriteriaItem>
                         <span>선호 챔피언:</span>
@@ -93,7 +93,7 @@ const MatchResult = ({ criteria, matchResult, onCancel }) => {
                     </CriteriaItem>
                     <CriteriaItem>
                         <span>비선호 챔피언:</span>
-                        <span>{criteria.championInfo.bannedChampions || '없음'}</span>
+                        <span>{criteria.championInfo.unpreferredChampions || '없음'}</span>
                     </CriteriaItem>
                 </CriteriaList>
 
