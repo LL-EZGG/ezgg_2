@@ -331,19 +331,20 @@ const DuoFinder = ({ memberDataBundle, isLoading, userInfo }) => {
         )}
       </ProfileCard>
       <FormContainer>
-        {!isMatching ? (
-          <DuoFinderForm
-              onSubmit={handleSubmit}
-              setMatchResult={setMatchResult}
-              setIsMatching={setIsMatching}
-          />
-        ) : (
-          <MatchResult 
+        {matchResult || isMatching ? (
+          <MatchResult
             criteria={matchingCriteria}
             matchResult={matchResult}
             onCancel={() => {
-              setIsMatching(false)
+              setMatchResult(null);
+              setIsMatching(false);
             }}
+          />
+        ) : (
+          <DuoFinderForm
+            onSubmit={handleSubmit}
+            setMatchResult={setMatchResult}
+            setIsMatching={setIsMatching}
           />
         )}
       </FormContainer>

@@ -89,7 +89,6 @@ const MatchResult = ({ criteria, matchResult, onCancel }) => {
       <Container>
         <LoadingSpinner />
         <Message>듀오를 찾는 중입니다...</Message>
-
         <CriteriaList>
           <CriteriaItem>
             <span>내 선호 라인:</span>
@@ -108,57 +107,38 @@ const MatchResult = ({ criteria, matchResult, onCancel }) => {
             <span>{criteria.championInfo.unpreferredChampion || '없음'}</span>
           </CriteriaItem>
         </CriteriaList>
-
+        <CancelButton onClick={onCancel}>
+            매칭 취소
+        </CancelButton>
+      </Container>
+    );
+    } else {
+        return (
+            <Container>
+                <CriteriaList>
+                    <CriteriaItem>
+                        <span>상대 닉네임:</span>
+                        <span>{matchResult.memberInfoDto.riotUsername} #{matchResult.memberInfoDto.riotTag}</span>
+                    </CriteriaItem>
+                    <CriteriaItem>
+                        <span>상대 시즌 정보:</span>
+                        <span>{matchResult.memberInfoDto.tier}</span>
+                    </CriteriaItem>
+                    <CriteriaItem>
+                        <span>승률 :</span>
+                        <p>{parseInt((matchResult.memberInfoDto.wins / (matchResult.memberInfoDto.wins + matchResult.memberInfoDto.losses) * 100))} %</p>
+                    </CriteriaItem>
+                    <CriteriaItem>
+                        <span>상대 선호 챔피언:</span>
+                        <span>{matchResult.preferredChampion || '없음'}</span>
+                    </CriteriaItem>
+                </CriteriaList>
         <CancelButton onClick={onCancel}>
           매칭 취소
         </CancelButton>
       </Container>
     );
   }
-
-  return (
-    <Container>
-      <PlayerInfo>
-        <PlayerTitle>내 정보</PlayerTitle>
-        <CriteriaList>
-          <CriteriaItem>
-            <span>선호 라인:</span>
-            <span>{criteria.wantLine.myLine}</span>
-          </CriteriaItem>
-          <CriteriaItem>
-            <span>선호 챔피언:</span>
-            <span>{criteria.championInfo.preferredChampion || '없음'}</span>
-          </CriteriaItem>
-          <CriteriaItem>
-            <span>비선호 챔피언:</span>
-            <span>{criteria.championInfo.unpreferredChampion || '없음'}</span>
-          </CriteriaItem>
-        </CriteriaList>
-      </PlayerInfo>
-
-      <PlayerInfo>
-        <PlayerTitle>상대방 정보</PlayerTitle>
-        <CriteriaList>
-          <CriteriaItem>
-            <span>닉네임:</span>
-            <span>{matchResult.nickname}</span>
-          </CriteriaItem>
-          <CriteriaItem>
-            <span>선호 라인:</span>
-            <span>{matchResult.preferredLane}</span>
-          </CriteriaItem>
-          <CriteriaItem>
-            <span>선호 챔피언:</span>
-            <span>{matchResult.preferredChampion || '없음'}</span>
-          </CriteriaItem>
-        </CriteriaList>
-      </PlayerInfo>
-
-      <CancelButton onClick={onCancel}>
-        돌아가기
-      </CancelButton>
-    </Container>
-  );
 };
 
 export default MatchResult; 

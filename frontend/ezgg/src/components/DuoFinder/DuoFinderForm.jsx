@@ -206,17 +206,6 @@ const DuoFinderForm = ({ onSubmit, setMatchResult, setIsMatching }) => {
   const preferredSuggestionsRef = useRef(null);
   const bannedSuggestionsRef = useRef(null);
 
-  // WebSocket 메시지 처리 함수
-  const handleWebSocketMessage = (response) => {
-    console.log("매칭 결과 수신:", response);
-    setMatchResult(response);
-    setIsMatching(false);
-    
-    if (onSubmit && response) {
-      onSubmit(response);
-    }
-  };
-
   const { connect, disconnect, sendMatchingRequest } = useWebSocket({
     onMessage: (response) => {
       console.log(response)
@@ -224,6 +213,7 @@ const DuoFinderForm = ({ onSubmit, setMatchResult, setIsMatching }) => {
         setMatchResult(response.data);
         alert('매칭 성공! 상대방 정보를 확인하세요.')
         disconnect()
+        setIsMatching(false);
       } else {
         console.error('매칭 실패:', response.message);
         alert('매칭에 실패하였습니다. 조건을 다시 설정해주세요.')
