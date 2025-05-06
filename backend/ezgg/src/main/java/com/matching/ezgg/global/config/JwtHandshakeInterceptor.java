@@ -20,7 +20,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 		URI uri = request.getURI();
 		String query = uri.getQuery(); // token=xxxx
 		if (query != null && query.contains("token=")) {
-			String token = query.substring(query.indexOf("token=") + 6);
+			String token = query.substring(query.indexOf("token=") + 13);
 			attributes.put("token", token);
 		}
 		return true;
