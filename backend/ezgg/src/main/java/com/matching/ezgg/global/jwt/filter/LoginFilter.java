@@ -100,6 +100,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		response.setCharacterEncoding("UTF-8");
 		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 		response.setHeader("Access-Control-Allow-Credentials", "true");
+		response.setHeader("Access-Control-Expose-Headers", "Authorization");
 
 		SuccessResponse<Object> successResponse = SuccessResponse.builder()
 			.code("200")
