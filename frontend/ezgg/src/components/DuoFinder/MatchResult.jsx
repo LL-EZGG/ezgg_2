@@ -138,11 +138,7 @@ const RankBadge = styled.div`
 const Stats = styled.div`
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.7);
-  margin-top: auto;
   padding: 0 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  width: 100%;
 
   p {
     margin: 0.8rem 0;
@@ -234,7 +230,7 @@ const MatchResult = ({ criteria, matchResult, onCancel }) => {
 
   if (!matchResult) {
     return (
-      <Container>
+      <>
         <LoadingSpinner />
         <Message>듀오를 찾는 중입니다...</Message>
         <Stats>
@@ -246,11 +242,11 @@ const MatchResult = ({ criteria, matchResult, onCancel }) => {
         <CancelButton onClick={onCancel}>
           매칭 취소
         </CancelButton>
-      </Container>
+      </>
     );
   } else {
     return (
-      <Container>
+      <>
         <ChampionImages>
           {mostPlayedChampions && mostPlayedChampions.length > 0 ? (
             mostPlayedChampions.map((champion, index) => (
@@ -295,7 +291,7 @@ const MatchResult = ({ criteria, matchResult, onCancel }) => {
         <CancelButton onClick={onCancel}>
           매칭 취소
         </CancelButton>
-      </Container>
+      </>
     );
   }
 };
