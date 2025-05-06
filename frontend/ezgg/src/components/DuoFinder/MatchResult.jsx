@@ -66,6 +66,12 @@ const CriteriaItem = styled.div`
 `;
 
 const MatchResult = ({ criteria, matchResult, onCancel }) => {
+  useEffect(() => {
+    console.log('matchResult : ', matchResult)
+    if (matchResult) {
+      console.log('matchResult : ', matchResult.memberInfoDto)
+    }
+  })
     if (!matchResult) {
         return (
             <Container>
@@ -102,11 +108,15 @@ const MatchResult = ({ criteria, matchResult, onCancel }) => {
                 <CriteriaList>
                     <CriteriaItem>
                         <span>상대 닉네임:</span>
-                        <span>{matchResult.nickname}</span>
+                        <span>{matchResult.memberInfoDto.riotUsername} {matchResult.memberInfoDto.riotTag}</span>
                     </CriteriaItem>
                     <CriteriaItem>
-                        <span>상대 선호 라인:</span>
-                        <span>{matchResult.preferredLane}</span>
+                        <span>상대 시즌 정보:</span>
+                        <span>{matchResult.memberInfoDto.tier}</span>
+                    </CriteriaItem>
+                    <CriteriaItem>
+                        <span>승률 :</span>
+                        <p>{parseInt((matchResult.memberInfoDto.wins / (matchResult.memberInfoDto.wins + matchResult.memberInfoDto.losses) * 100))} %</p>
                     </CriteriaItem>
                     <CriteriaItem>
                         <span>상대 선호 챔피언:</span>
