@@ -181,7 +181,7 @@ const ErrorMessage = styled.div`
     margin: 1rem 0;
 `;
 
-  const DuoFinder = ({ memberDataBundle, isLoading, userInfo }) => {
+const DuoFinder = ({ memberDataBundle, isLoading, userInfo }) => {
   const [isMatching, setIsMatching] = useState(false);
   const [matchingCriteria, setMatchingCriteria] = useState(null);
   const [mostPlayedChampions, setMostPlayedChampions] = useState([]);

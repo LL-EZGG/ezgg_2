@@ -2,7 +2,7 @@ import React,{ useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import styled from '@emotion/styled';
 import api from './utils/api';
-import DuoFinder from './components/DuoFinder';
+import DuoFinder from './components/DuoFinder/DuoFinder'
 import Login from './components/layout/Login';
 import Join from './components/layout/Join';
 
