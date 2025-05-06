@@ -39,9 +39,10 @@ public class RedisStreamConsumer {
 			List<MapRecord<String, Object, Object>> messages = redisService.getStringGroup();
 
 			if (messages == null || messages.isEmpty()) {
-				log.info("Redis Stream에서 읽은 메시지가 없습니다.");
 				return;
 			}
+
+			log.info("queue 개수 : {} ", messages.size());
 
 			for (MapRecord<String, Object, Object> message : messages) {
 				String json = (String)message.getValue().get("data");

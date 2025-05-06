@@ -2,8 +2,10 @@ package com.matching.ezgg.domain.matching.controller;
 
 import java.security.Principal;
 
+import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
 import com.matching.ezgg.domain.matching.dto.PreferredPartnerParsingDto;
@@ -19,7 +21,14 @@ public class MatchingController {
 
 	@MessageMapping("/matching/start")
 	public void startMatching(@Payload PreferredPartnerParsingDto preferredPartnerDto, Principal principal) {
+		if (principal == null) throw new IllegalArgumentException("로그인 정보가 없습니다.");
 		Long memberId = Long.valueOf(principal.getName());
 		matchingService.startMatching(memberId, preferredPartnerDto);
+	}
+
+	@MessageExceptionHandler
+	@SendToUser("/queue/errors")
+	public String handleException(Throwable throwable) {
+		return throwable.getMessage();
 	}
 }

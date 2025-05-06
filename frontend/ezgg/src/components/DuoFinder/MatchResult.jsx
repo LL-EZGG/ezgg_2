@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import styled from '@emotion/styled';
 
 const Container = styled.div`
@@ -99,8 +99,6 @@ const MatchResult = ({ criteria, matchResult, onCancel }) => {
     } else {
         return (
             <Container>
-                <SuccessBanner>🎉 매칭이 성공했습니다!</SuccessBanner>
-
                 <CriteriaList>
                     <CriteriaItem>
                         <span>상대 닉네임:</span>

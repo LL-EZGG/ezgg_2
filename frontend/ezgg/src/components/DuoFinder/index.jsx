@@ -167,6 +167,7 @@ const FormContainer = styled.div`
 
 const DuoFinder = () => {
   const [matchingCriteria, setMatchingCriteria] = useState(null);
+  const [matchResult, setMatchResult] = useState(null);
   const [isMatching, setIsMatching] = useState(false);
 
   const handleSubmit = async (matchingCriteria) => {
@@ -203,11 +204,18 @@ const DuoFinder = () => {
       </ProfileCard>
       <FormContainer>
         {!isMatching ? (
-          <DuoFinderForm onSubmit={handleSubmit} />
+          <DuoFinderForm
+              onSubmit={handleSubmit}
+              setMatchResult={setMatchResult}
+              setIsMatching={setIsMatching}
+          />
         ) : (
           <MatchResult 
             criteria={matchingCriteria}
-            onCancel={() => setIsMatching(false)}
+            matchResult={matchResult}
+            onCancel={() => {
+              setIsMatching(false)
+            }}
           />
         )}
       </FormContainer>

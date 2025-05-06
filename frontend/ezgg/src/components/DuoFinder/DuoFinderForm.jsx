@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { champions } from '../../data/champions';
 import { useWebSocket } from "../../hooks/useWebSocket.js";
-import { useNavigate, useLocation } from 'react-router-dom';
 
 const Form = styled.form`
   display: flex;
@@ -187,7 +186,7 @@ function getServerLaneName(lane) {
   return laneMap[lane] || lane;
 }
 
-const DuoFinderForm = ({ onSubmit }) => {
+const DuoFinderForm = ({ onSubmit, setMatchResult, setIsMatching }) => {
   const [formData, setFormData] = useState({
     preferredLane: '',
     partnerLane: '',
@@ -201,8 +200,7 @@ const DuoFinderForm = ({ onSubmit }) => {
   const [showBannedSuggestions, setShowBannedSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [bannedSelectedIndex, setBannedSelectedIndex] = useState(0);
-  const [isMatching, setIsMatching] = useState(false);
-  const [matchResult, setMatchResult] = useState(null);
+  // const [isMatching, setIsMatching] = useState(false);
   const searchRef = useRef(null);
   const bannedSearchRef = useRef(null);
   const preferredSuggestionsRef = useRef(null);
@@ -219,14 +217,16 @@ const DuoFinderForm = ({ onSubmit }) => {
     }
   };
 
-  const { connect, sendMatchingRequest } = useWebSocket({
+  const { connect, disconnect, sendMatchingRequest } = useWebSocket({
     onMessage: (response) => {
+      console.log(response)
       if (response.status === 'SUCCESS') {
         alert('매칭 성공! 상대방 정보를 확인하세요.')
         setMatchResult(response.data);
       } else {
         console.error('매칭 실패:', response.message);
-        setMatchResult({ error: true });
+        alert('매칭에 실패하였습니다. 조건을 다시 설정해주세요.')
+        disconnect();
       }
       setIsMatching(false);
     },
@@ -234,6 +234,10 @@ const DuoFinderForm = ({ onSubmit }) => {
       console.log('연결 종료');
       setIsMatching(false);
     },
+    onError: (message) => {
+      alert('에러 발생 : ' + message);
+      setIsMatching(false);
+    }
   });
 
   useEffect(() => {
@@ -389,7 +393,6 @@ const DuoFinderForm = ({ onSubmit }) => {
     connect(() => {
       console.log("[DuoFinderForm]\n>>> 연결 후 매칭 요청 전송")
       setIsMatching(true);
-      setMatchResult(null);
       sendMatchingRequest(payload);
       onSubmit(payload);
     })
@@ -533,18 +536,10 @@ const DuoFinderForm = ({ onSubmit }) => {
 
       <SubmitButton 
         type="submit"
-        disabled={!isFormValid() || isMatching}
+        disabled={!isFormValid()}
       >
-        {isMatching ? '매칭 중...' : '매칭 시작'}
+        매칭 시작
       </SubmitButton>
-      
-      {matchResult && (
-        <div style={{ marginTop: '1rem', color: 'white' }}>
-          <h3>매칭 결과</h3>
-          <p>상대방 ID: {matchResult.partnerId}</p>
-          <p>상대방 라인: {matchResult.partnerLine}</p>
-        </div>
-      )}
     </Form>
   );
 };

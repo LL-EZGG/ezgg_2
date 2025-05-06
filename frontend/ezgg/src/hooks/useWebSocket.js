@@ -2,7 +2,7 @@ import {useRef, useCallback, useState} from 'react';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
 
-export const useWebSocket = ({ onMessage, onConnect, onDisconnect }) => {
+export const useWebSocket = ({ onMessage, onConnect, onDisconnect, onError }) => {
     const stompClient = useRef(null);
     const [isConnected, setIsConnected] = useState(false);
 
@@ -13,7 +13,7 @@ export const useWebSocket = ({ onMessage, onConnect, onDisconnect }) => {
         return;
     }
 
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token');
     console.log("[useWebSocket.js]\ntoken: ", token);
     const socket = new SockJS(`http://localhost:8888/ws?token=${token}`);
     stompClient.current = Stomp.over(socket);
@@ -33,6 +33,10 @@ export const useWebSocket = ({ onMessage, onConnect, onDisconnect }) => {
             stompClient.current.subscribe(`/user/queue/matching`, (message) => {
                 const response = JSON.parse(message.body);
                 onMessage(response);
+            });
+
+            stompClient.current.subscribe(`/user/queue/error`, (message) => {
+                onError(message.body);
             });
 
             if (onConnect) onConnect();
