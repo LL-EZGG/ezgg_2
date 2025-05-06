@@ -110,9 +110,11 @@ public class RedisService {
 			// 새 retry 데이터 저장
 			String json = objectMapper.writeValueAsString(matchingFilterParsingDto);
 			long retryTime = System.currentTimeMillis() + 10000; // 10초 후 재시도
+			long delay = retryTime - System.currentTimeMillis(); // 실제 남은 시간 계산
 
 			redisTemplate.opsForZSet().add(RedisKey.RETRY_ZSET_KEY.getValue(), json, retryTime);
-			log.info("딜레이 큐에 등록 완료 ({}초 후 재시도 예정) : {}", retryTime / 1000, memberId);
+
+			log.info("딜레이 큐에 등록 완료 ({}초 후 재시도 예정) : {}", delay / 1000, memberId);
 		} catch (JsonProcessingException e) {
 			log.error("딜레이 큐 등록 실패 : {}", e.getMessage());
 		}

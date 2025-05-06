@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.es.service.EsMatchingFilter;
 import com.matching.ezgg.es.service.EsService;
@@ -22,6 +23,7 @@ public class MatchingProcessor {
 	private final RedisStreamProducer redisStreamProducer;
 	private final RedisService redisService;
 	private final EsService esService;
+	private final ObjectMapper objectMapper;
 
 	public boolean tryMatch(MatchingFilterParsingDto matchingFilterParsingDto) {
 		try {
@@ -37,6 +39,7 @@ public class MatchingProcessor {
 
 			if (matchingUsers.isEmpty()) {
 				log.info("매칭 상대 없음 : {}", matchingFilterParsingDto.getMemberId());
+				redisService.acknowledgeMatch(matchingFilterParsingDto.getMemberId());
 				redisStreamProducer.retryLater(matchingFilterParsingDto);
 				return false;
 			}
@@ -51,6 +54,10 @@ public class MatchingProcessor {
 			// Redis Stream에 매칭된 유저 정보 삭제
 			redisStreamProducer.acknowledgeBothUser(matchingFilterParsingDto.getMemberId(),
 				bestMatchingUser.getMemberId());
+
+			// Redis Zset에 매칭된 유저 정보 삭제
+			redisService.removeRetryCandidate(objectMapper.writeValueAsString(matchingFilterParsingDto));
+			redisService.removeRetryCandidate(objectMapper.writeValueAsString(bestMatchingUser));
 
 			return true;
 		} catch (Exception e) {
