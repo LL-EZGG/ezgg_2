@@ -386,8 +386,8 @@ const DuoFinderForm = ({ onSubmit, setMatchResult, setIsMatching }) => {
         partnerLine: formData.partnerLane,
       },
       championInfo: {
-        preferredChampions: formData.preferredChampions[0] || "",
-        unpreferredChampions: formData.bannedChampions[0] || ""
+        preferredChampions: formData.preferredChampions.length > 0 ? formData.preferredChampions[0].id : "",
+        unpreferredChampions: formData.bannedChampions.length > 0 ? formData.bannedChampions[0].id : ""
       }
     };
 
