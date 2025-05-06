@@ -10,11 +10,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.matching.ezgg.api.dto.WinRateNTierDto;
+import com.matching.ezgg.domain.member.repository.MemberRepository;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.domain.memberInfo.repository.MemberInfoRepository;
-import com.matching.ezgg.api.dto.WinRateNTierDto;
 import com.matching.ezgg.global.exception.MemberInfoNotFoundException;
-import com.matching.ezgg.domain.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,7 +81,8 @@ public class MemberInfoService {
 	}
 
 	@Transactional
-	public MemberInfo updateMemberInfo(Long memberId, WinRateNTierDto winRateNTierDto, List<String> fetchedMatchIds, boolean existsNewMatchIds){
+	public MemberInfo updateMemberInfo(Long memberId, WinRateNTierDto winRateNTierDto, List<String> fetchedMatchIds,
+		boolean existsNewMatchIds) {
 		log.info("MemberInfo 업데이트 시작");
 		MemberInfo memberInfo = getMemberInfoByMemberId(memberId);
 		memberInfo.update(

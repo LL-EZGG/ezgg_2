@@ -86,15 +86,19 @@ public class ApiService {
 
 			WinRateNTierDto[] dtoArr = krRestTemplate.getForObject(url, WinRateNTierDto[].class);
 
-			if (dtoArr == null || dtoArr.length == 0) {
+			if (dtoArr == null) {
 				throw new RiotTierNotFoundException(puuid);
+			}
+
+			if (dtoArr.length == 0) {
+				return WinRateNTierDto.unranked(puuid);
 			}
 
 			// Riot API에서 배열 구조로 게임 큐타입 단위로 티어/승률 객체 전송 -> 개인/2인 랭크 큐타입 데이터만 저장
 			WinRateNTierDto winRateNTierDto = Arrays.stream(dtoArr)
 				.filter(dto -> "RANKED_SOLO_5x5".equalsIgnoreCase(dto.getQueueType()))
 				.findFirst()
-				.orElseThrow(() -> new RiotTierNotFoundException(puuid));
+				.orElse(WinRateNTierDto.unranked(puuid));
 
 			log.info("승률/티어 조회 성공: {}", puuid);
 			return winRateNTierDto;
@@ -125,8 +129,13 @@ public class ApiService {
 				}
 			).getBody();
 
-			if (matchIdList == null || matchIdList.isEmpty()) {
+			if (matchIdList == null) {
 				throw new RiotMatchIdsNotFoundException(puuid);
+			}
+
+			if (matchIdList.isEmpty()) {
+				log.info("ranked MatchIds 없음: {}", puuid);
+				return matchIdList;
 			}
 
 			log.info("MatchIds 조회 성공: {}", puuid);

@@ -14,7 +14,7 @@ const Container = styled.div`
 
 const FormContainer = styled.div`
     width: 100%;
-    max-width: 400px;
+    max-width: 600px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     padding: 2rem;
@@ -114,9 +114,7 @@ const Join = () => {
         riotTag: '',
     });
 
-    const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isErrorOpen, setIsErrorOpen] = useState(false);
     const [errors, setErrors] = useState({
         memberUsername: '',
         password: '',
@@ -191,17 +189,16 @@ const Join = () => {
 
         console.log('회원가입 데이터:', formData);
         setIsLoading(true);
-        setMessage('');
 
         try {
             const response = await axios.post('http://localhost:8888/auth/signup', formData);
             console.log('회원가입 성공:', response.data);
-            alert('회원가입 성공')
-            navigate("/");
+            alert('회원가입에 성공했습니다!');
+            navigate("/login");
         } catch (error) {
             console.error('회원가입 오류:', error);
-            setMessage(error.response?.data?.message || '회원가입 중 오류가 발생했습니다.');
-            setIsErrorOpen(true);
+            const errorMsg = error.response?.data?.message || '회원가입 중 오류가 발생했습니다.';
+            alert(errorMsg);
         } finally {
             setIsLoading(false);
         }
@@ -256,7 +253,7 @@ const Join = () => {
                         <Input
                             type="password"
                             name="password"
-                            placeholder="비밀번호를 입력하세요"
+                            placeholder="비밀번호를 입력하세요 (6~20자의 영문 대소문자, 숫자)"
                             value={formData.password}
                             onChange={handleChange}
                             required
@@ -269,7 +266,7 @@ const Join = () => {
                         <Input
                             type="password"
                             name="confirmPassword"
-                            placeholder="비밀번호를 다시 입력하세요"
+                            placeholder="비밀번호를 다시 입력하세요 (6~20자의 영문 대소문자, 숫자)"
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             required
@@ -303,16 +300,11 @@ const Join = () => {
                         />
                         {errors.riotTag && <ErrorMessage>{errors.riotTag}</ErrorMessage>}
                     </InputGroup>
-                    <SubmitButton type="submit">회원가입</SubmitButton>
-                    {isErrorOpen && (
-                        <div className="modal">
-                            <p>{message}</p>
-                            <button onClick={() => setIsErrorOpen(false)}>닫기</button>
-                        </div>
-                    )}
+                    <SubmitButton type="submit" disabled={isLoading}>
+                        {isLoading ? '처리 중...' : '회원가입'}
+                    </SubmitButton>
                 </Form>
-                <LoginLink to="/">홈으로</LoginLink>
-                {message && <SuccessMessage>{message}</SuccessMessage>} {/* 메시지 표시 */}
+                <LoginLink to="/login">이미 계정이 있으신가요? 로그인</LoginLink>
             </FormContainer>
         </Container>
     );

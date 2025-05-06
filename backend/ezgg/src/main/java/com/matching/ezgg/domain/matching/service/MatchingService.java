@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.api.dto.MatchDto;
 import com.matching.ezgg.api.dto.WinRateNTierDto;
 import com.matching.ezgg.api.service.ApiService;
@@ -108,7 +105,7 @@ public class MatchingService {
 
 		RecentTwentyMatchParsingDto recentTwentyMatchparsingDto = new RecentTwentyMatchParsingDto();
 
-		if (memberDataBundle.getRecentTwentyMatch().getChampionStats().isEmpty()) {
+		if (memberDataBundle.getRecentTwentyMatch().getChampionStats() == null || memberDataBundle.getRecentTwentyMatch().getChampionStats().isEmpty()) {
 			recentTwentyMatchparsingDto.setKills(0);
 			recentTwentyMatchparsingDto.setDeaths(0);
 			recentTwentyMatchparsingDto.setAssists(0);
@@ -144,5 +141,4 @@ public class MatchingService {
 			.recentTwentyMatchParsing(recentTwentyMatchparsingDto)
 			.build();
 	}
-
 }

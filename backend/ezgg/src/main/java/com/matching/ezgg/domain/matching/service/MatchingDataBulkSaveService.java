@@ -25,6 +25,10 @@ public class MatchingDataBulkSaveService {
 	private final RecentTwentyMatchService recentTwentyMatchService;
 	private final RecentTwentyMatchBuilderService recentTwentyMatchBuilderService;
 
+	public RecentTwentyMatch getRecentTwentyMatchByMemberId(Long memberId) {
+		return recentTwentyMatchService.getRecentTwentyMatchByMemberId(memberId);
+	}
+
 	@Transactional
 	public MemberInfo saveAllAggregatedData(
 		Long memberId,

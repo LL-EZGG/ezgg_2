@@ -7,10 +7,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.matching.ezgg.global.exception.EsQueryException;
-import com.matching.ezgg.global.exception.MatchingUserNoTFoundException;
 import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.domain.matching.dto.RecentTwentyMatchParsingDto;
+import com.matching.ezgg.global.exception.EsQueryException;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -26,7 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 public class EsMatchingFilter {
 	private final ElasticsearchClient esClient;
 
-	public List<MatchingFilterParsingDto> findMatchingUsers(String myLine, String partnerLine, String tier, Long myMemberId,
+	public List<MatchingFilterParsingDto> findMatchingUsers(String myLine, String partnerLine, String tier,
+		Long myMemberId,
 		String preferredChampion, String unpreferredChampion) {
 		Query query = Query.of(q -> q
 			.bool(b -> b
@@ -59,16 +59,12 @@ public class EsMatchingFilter {
 		);
 
 		try {
-			SearchResponse<MatchingFilterParsingDto> response = esClient.search(searchRequest, MatchingFilterParsingDto.class);
+			SearchResponse<MatchingFilterParsingDto> response = esClient.search(searchRequest,
+				MatchingFilterParsingDto.class);
 			List<MatchingFilterParsingDto> users = response.hits().hits().stream()
 				.map(Hit::source)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
-
-			if (users.isEmpty()) {
-				log.warn("매칭 대상이 없습니다. ");
-				throw new MatchingUserNoTFoundException();
-			}
 
 			// 가중치를 추가하여 매칭할 대상들을 정렬
 			return users.stream()
@@ -86,8 +82,10 @@ public class EsMatchingFilter {
 	}
 
 	// 가중치 계산 로직
-	private int calculateUserWeight(MatchingFilterParsingDto user, String preferredChampion, String unpreferredChampion) {
-		List<RecentTwentyMatchParsingDto.MostChampion> mostChampionList = user.getRecentTwentyMatchParsing().getMostChampions();
+	private int calculateUserWeight(MatchingFilterParsingDto user, String preferredChampion,
+		String unpreferredChampion) {
+		List<RecentTwentyMatchParsingDto.MostChampion> mostChampionList = user.getRecentTwentyMatchParsing()
+			.getMostChampions();
 
 		// 내가 선호하는 챔피언과 비선호하는 챔피언이 상대방의 모스트 챔피언 목록에 있는지 확인
 		int preferredChampionWeight = getChampionWeight(preferredChampion, true, mostChampionList);
