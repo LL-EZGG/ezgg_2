@@ -94,6 +94,7 @@ public class SecurityConfig {
 		configuration.addAllowedOrigin("http://3.37.41.3:80");
 		configuration.addAllowedOrigin("http://eezgg.kro.kr");
 		configuration.addAllowedOrigin("http://eezgg.kro.kr:80");
+		configuration.addAllowedOrigin("http://eezgg.kro.kr:5173");
 		configuration.addAllowedMethod("*");
 		configuration.addAllowedHeader("*");
 		configuration.addExposedHeader("Authorization");

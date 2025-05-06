@@ -22,4 +22,10 @@ public class WinRateNTierDto {
 	private String tier;
 	@JsonProperty("rank")
 	private String tierNum;
+
+
+	public static WinRateNTierDto unranked(String puuid) {
+		return new WinRateNTierDto("RANKED_SOLO_5x5", puuid, 0, 0, "UNRANKED", "0");
+	}
+
 }

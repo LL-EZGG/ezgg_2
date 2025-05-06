@@ -105,7 +105,7 @@ public class MatchingService {
 
 		RecentTwentyMatchParsingDto recentTwentyMatchparsingDto = new RecentTwentyMatchParsingDto();
 
-		if (memberDataBundle.getRecentTwentyMatch().getChampionStats().isEmpty()) {
+		if (memberDataBundle.getRecentTwentyMatch().getChampionStats() == null || memberDataBundle.getRecentTwentyMatch().getChampionStats().isEmpty()) {
 			recentTwentyMatchparsingDto.setKills(0);
 			recentTwentyMatchparsingDto.setDeaths(0);
 			recentTwentyMatchparsingDto.setAssists(0);
