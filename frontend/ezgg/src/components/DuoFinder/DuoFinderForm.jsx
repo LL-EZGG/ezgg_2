@@ -221,8 +221,9 @@ const DuoFinderForm = ({ onSubmit, setMatchResult, setIsMatching }) => {
     onMessage: (response) => {
       console.log(response)
       if (response.status === 'SUCCESS') {
-        alert('매칭 성공! 상대방 정보를 확인하세요.')
         setMatchResult(response.data);
+        alert('매칭 성공! 상대방 정보를 확인하세요.')
+        disconnect()
       } else {
         console.error('매칭 실패:', response.message);
         alert('매칭에 실패하였습니다. 조건을 다시 설정해주세요.')
