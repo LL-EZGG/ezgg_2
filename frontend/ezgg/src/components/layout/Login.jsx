@@ -162,12 +162,13 @@ const Login = ({setIsLoggedIn, onLoginSuccess}) => {
 
             // 토큰 확인 (Authorization 헤더에서 획득)
             let token = response.headers['authorization'];
-
+            console.log('token : ', token)
+            
             // 토큰이 없는 경우 response.headers에서 대소문자 구분 없이 찾기
             if (!token) {
                 const headerNames = Object.keys(response.headers);
                 console.log('사용 가능한 헤더:', headerNames);
-
+                
                 for (const header of headerNames) {
                     if (header.toLowerCase() === 'authorization') {
                         token = response.headers[header];
@@ -179,24 +180,24 @@ const Login = ({setIsLoggedIn, onLoginSuccess}) => {
 
             if (response.status === 200 && token) {
                 console.log('로그인 성공, 토큰 저장:', token);
-
+                
                 // Bearer 접두사가 없으면 추가
                 if (!token.startsWith('Bearer ')) {
                     token = `Bearer ${token}`;
                 }
-
+                
                 localStorage.setItem('token', token);
                 console.log('로컬 스토리지에 저장된 토큰:', localStorage.getItem('token'));
-
+                
                 // 로그인 상태 업데이트
                 setIsLoggedIn(true);
-
+                
                 // 사용자 정보 가져오기
                 if (onLoginSuccess) {
                     console.log('사용자 정보 가져오기 함수 호출');
                     onLoginSuccess();
                 }
-
+                
                 // 로그인 성공 후, 원래 가려던 페이지로 리다이렉트 (없으면 홈으로)
                 const from = location.state?.from?.pathname || '/';
                 console.log('리다이렉트 경로:', from);
@@ -212,7 +213,7 @@ const Login = ({setIsLoggedIn, onLoginSuccess}) => {
             }
         } catch (error) {
             console.error('로그인 오류 상세 정보:', error.response || error);
-
+            
             // 서버에서 오는 오류 메시지 있으면 표시
             if (error.response && error.response.data && error.response.data.message) {
                 alert(`로그인 오류: ${error.response.data.message}`);
