@@ -22,11 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 public class JWTUtil {
 
 	private final SecretKey key;
-	private final MemberRepository memberRepository;
 
-	public JWTUtil(@Value("${jwt.secret}") String key, MemberRepository memberRepository) {
+	public JWTUtil(@Value("${jwt.secret}") String key) {
 		this.key = new SecretKeySpec(key.getBytes(UTF_8), HS256.key().build().getAlgorithm());
-		this.memberRepository = memberRepository;
 	}
 
 	// 토큰 파싱 -> Claims 객체로 변환 (claims란 JWT의 payload에 해당하는 부분)
