@@ -98,7 +98,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		response.setStatus(HttpStatus.OK.value());
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
-		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+		response.setHeader("Access-Control-Allow-Origin", "http://eezgg.kro.kr");
 		response.setHeader("Access-Control-Allow-Credentials", "true");
 		response.setHeader("Access-Control-Expose-Headers", "Authorization");
 
@@ -119,7 +119,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		response.setStatus(HttpStatus.UNAUTHORIZED.value());
 		response.setContentType("application/json");
 		response.setCharacterEncoding("UTF-8");
-		response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+		response.setHeader("Access-Control-Allow-Origin", "http://eezgg.kro.kr");
 		response.setHeader("Access-Control-Allow-Credentials", "true");
 
 		ErrorResponse errorResponse = ErrorResponse.builder()

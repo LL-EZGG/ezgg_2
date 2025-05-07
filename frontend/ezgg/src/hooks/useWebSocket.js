@@ -15,7 +15,7 @@ export const useWebSocket = ({ onMessage, onConnect, onDisconnect, onError }) =>
 
     const token = localStorage.getItem('token');
     console.log("[useWebSocket.js]\ntoken: ", token);
-    const socket = new SockJS(`http://localhost:8888/ws?token=${token}`);
+    const socket = new SockJS(`http://eezgg.kro.kr:8888/ws?token=${token}`);
     stompClient.current = Stomp.over(socket);
 
     socket.onclose = () => {
