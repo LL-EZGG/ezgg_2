@@ -181,7 +181,7 @@ const ErrorMessage = styled.div`
     margin: 1rem 0;
 `;
 
-  const DuoFinder = ({ memberDataBundle, isLoading, userInfo }) => {
+const DuoFinder = ({ memberDataBundle, isLoading, userInfo }) => {
   const [isMatching, setIsMatching] = useState(false);
   const [matchingCriteria, setMatchingCriteria] = useState(null);
   const [mostPlayedChampions, setMostPlayedChampions] = useState([]);
@@ -331,19 +331,20 @@ const ErrorMessage = styled.div`
         )}
       </ProfileCard>
       <FormContainer>
-        {!isMatching ? (
-          <DuoFinderForm
-              onSubmit={handleSubmit}
-              setMatchResult={setMatchResult}
-              setIsMatching={setIsMatching}
-          />
-        ) : (
-          <MatchResult 
+        {matchResult || isMatching ? (
+          <MatchResult
             criteria={matchingCriteria}
             matchResult={matchResult}
             onCancel={() => {
-              setIsMatching(false)
+              setMatchResult(null);
+              setIsMatching(false);
             }}
+          />
+        ) : (
+          <DuoFinderForm
+            onSubmit={handleSubmit}
+            setMatchResult={setMatchResult}
+            setIsMatching={setIsMatching}
           />
         )}
       </FormContainer>
