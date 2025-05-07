@@ -149,10 +149,11 @@ const FormContainer = styled.div`
     width: 100%;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 12px;
-    padding: 2rem;
+    overflow: hidden;
     display: flex;
-    min-height: 635px;
     flex-direction: column;
+    min-height: 635px;
+    padding: 2rem;
 
     @media (max-width: 1024px) {
         max-width: 100%;

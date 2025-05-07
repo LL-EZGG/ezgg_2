@@ -15,6 +15,7 @@ public class MemberInfoDto {
 	private String riotUsername;
 	private String riotTag;
 	private String tier;
+	private String tierNum;
 	private Integer wins;
 	private Integer losses;
 
@@ -23,6 +24,7 @@ public class MemberInfoDto {
 			.riotUsername(memberInfo.getRiotUsername())
 			.riotTag(memberInfo.getRiotTag())
 			.tier(memberInfo.getTier())
+			.tierNum(memberInfo.getTierNum())
 			.wins(memberInfo.getWins())
 			.losses(memberInfo.getLosses())
 			.build();
