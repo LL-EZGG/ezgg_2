@@ -162,6 +162,7 @@ const Login = ({setIsLoggedIn, onLoginSuccess}) => {
 
             // 토큰 확인 (Authorization 헤더에서 획득)
             let token = response.headers['authorization'];
+            console.log('token : ', token)
             
             // 토큰이 없는 경우 response.headers에서 대소문자 구분 없이 찾기
             if (!token) {

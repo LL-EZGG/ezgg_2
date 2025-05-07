@@ -69,7 +69,7 @@ public class RefreshController {
 		redisRefreshTokenRepository.deleteByMemberId(memberUsername);
 		redisRefreshTokenRepository.save(memberUsername, newRefreshToken, refreshTokenExpiry);
 
-		response.setHeader("Authorization", newAccessToken);
+		response.setHeader("Authorization", "Bearer " + newAccessToken);
 		response.addCookie(createCookie("Refresh", newRefreshToken));
 
 		return ResponseEntity.ok(SuccessResponse.<Void>builder()

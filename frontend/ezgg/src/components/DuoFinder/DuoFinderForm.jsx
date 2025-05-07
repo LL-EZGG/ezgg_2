@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { champions } from '../../data/champions';
+import { useWebSocket } from "../../hooks/useWebSocket.js";
 
 const Form = styled.form`
   display: flex;
@@ -185,7 +186,7 @@ function getServerLaneName(lane) {
   return laneMap[lane] || lane;
 }
 
-const DuoFinderForm = ({ onSubmit }) => {
+const DuoFinderForm = ({ onSubmit, setMatchResult, setIsMatching }) => {
   const [formData, setFormData] = useState({
     preferredLane: '',
     partnerLane: '',
@@ -199,10 +200,36 @@ const DuoFinderForm = ({ onSubmit }) => {
   const [showBannedSuggestions, setShowBannedSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [bannedSelectedIndex, setBannedSelectedIndex] = useState(0);
+  // const [isMatching, setIsMatching] = useState(false);
   const searchRef = useRef(null);
   const bannedSearchRef = useRef(null);
   const preferredSuggestionsRef = useRef(null);
   const bannedSuggestionsRef = useRef(null);
+
+  const { connect, disconnect, sendMatchingRequest } = useWebSocket({
+    onMessage: (response) => {
+      console.log(response)
+      if (response.status === 'SUCCESS') {
+        setMatchResult(response.data);
+        alert('매칭 성공! 상대방 정보를 확인하세요.')
+        disconnect()
+        setIsMatching(false);
+      } else {
+        console.error('매칭 실패:', response.message);
+        alert('매칭에 실패하였습니다. 조건을 다시 설정해주세요.')
+        disconnect();
+      }
+      setIsMatching(false);
+    },
+    onDisconnect: () => {
+      console.log('연결 종료');
+      setIsMatching(false);
+    },
+    onError: (message) => {
+      alert('에러 발생 : ' + message);
+      setIsMatching(false);
+    }
+  });
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -339,15 +366,32 @@ const DuoFinderForm = ({ onSubmit }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isFormValid()) return;
+
     const payload = {
-      ...formData,
-      preferredLane: getServerLaneName(formData.preferredLane),
-      partnerLane: getServerLaneName(formData.partnerLane),
+      wantLine: {
+        myLine: formData.preferredLane,
+        partnerLine: formData.partnerLane,
+      },
+      championInfo: {
+        preferredChampion: formData.preferredChampions.length > 0 ? formData.preferredChampions[0].id : "",
+        unpreferredChampion: formData.bannedChampions.length > 0 ? formData.bannedChampions[0].id : ""
+      }
     };
-    onSubmit(payload);
-  };
+
+    connect(() => {
+      console.log("[DuoFinderForm]\n>>> 연결 후 매칭 요청 전송")
+      setIsMatching(true);
+      sendMatchingRequest(payload);
+      onSubmit(payload);
+    })
+    // } catch (err) {
+    //   console.error("웹소켓 연결 실패:", err);
+    //   setIsMatching(false);
+    // }
+  }
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -491,4 +535,4 @@ const DuoFinderForm = ({ onSubmit }) => {
   );
 };
 
-export default DuoFinderForm; 
+export default DuoFinderForm;
