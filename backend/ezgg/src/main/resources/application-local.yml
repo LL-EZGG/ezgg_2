@@ -19,3 +19,26 @@ spring:
       enabled: true
       settings:
         web-allow-others: true
+  sql:
+    init:
+      mode: never
+
+  elasticsearch:
+    uris: http://localhost:9200
+    username:
+    password:
+    connection-timeout: 5s
+    socket-timeout: 10s
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+jwt:
+  secret: "e2e75389fd5685da14c6dc2ef6c20226401e8da66c04a1b62f439cfcd53b47a1207305e292fb48a1fc5b74f91798795617bc8ff243f996d530fa23294cf515ed"
+
+es:
+  httpHost: "localhost"
+
+redis:
+  host: "localhost"
