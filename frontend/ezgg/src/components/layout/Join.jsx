@@ -155,7 +155,7 @@ const Join = () => {
             if (/[^A-Za-z0-9]/.test(formData.password)) {
                 newErrors.password = '비밀번호에는 특수문자를 사용할 수 없습니다';
             } else {
-                newErrors.password = '비밀번호는 6~20자의 영문 대소문자와 숫자를 포함해야 합니다';
+                newErrors.password = '영문 대소문자와 숫자를 포함해야 합니다';
             }
             isValid = false;
         }
