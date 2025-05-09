@@ -28,7 +28,7 @@ public class RefreshController {
 		String refreshToken = refreshService.validateAndExtractRefreshToken(request);
 		RefreshService.TokenPair newTokens = refreshService.generateAndDeleteAndSaveNewTokens(refreshToken);
 
-		response.setHeader("Authorization", "Bearer " + newTokens.accessToken());
+		response.setHeader("Authorization", newTokens.accessToken());
 		response.addCookie(createCookie("Refresh", newTokens.refreshToken()));
 
 		return ResponseEntity.ok(SuccessResponse.<Void>builder()
