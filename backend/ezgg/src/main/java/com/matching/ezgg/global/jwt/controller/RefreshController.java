@@ -26,7 +26,7 @@ public class RefreshController {
 	@PostMapping("/refresh")
 	public ResponseEntity<SuccessResponse<Void>> refresh(HttpServletRequest request, HttpServletResponse response) {
 		String refreshToken = refreshService.validateAndExtractRefreshToken(request);
-		RefreshService.TokenPair newTokens = refreshService.generateNewTokens(refreshToken);
+		RefreshService.TokenPair newTokens = refreshService.generateAndDeleteAndSaveNewTokens(refreshToken);
 
 		response.setHeader("Authorization", "Bearer " + newTokens.accessToken());
 		response.addCookie(createCookie("Refresh", newTokens.refreshToken()));
