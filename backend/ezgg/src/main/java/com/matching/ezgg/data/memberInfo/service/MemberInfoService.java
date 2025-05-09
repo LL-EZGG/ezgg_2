@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.matching.ezgg.data.riotApi.dto.WinRateNTierDto;
 import com.matching.ezgg.data.memberInfo.repository.MemberInfoRepository;
-import com.matching.ezgg.member.repository.MemberRepository;
+import com.matching.ezgg.member.dto.MemberInfoDto;
 import com.matching.ezgg.data.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.global.exception.MemberInfoNotFoundException;
 
@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MemberInfoService {
 	private final MemberInfoRepository memberInfoRepository;
-	private final MemberRepository memberRepository;
 
 	// memberId로 puuid 조회
 	public String getMemberPuuidByMemberId(Long memberId) {
@@ -95,5 +94,11 @@ public class MemberInfoService {
 		); // 영속성 상태에서 Dirty Checking을 해 자동으로 db에 커밋됨
 		log.info("MemberInfo 업데이트 종료");
 		return memberInfo;
+	}
+
+	public MemberInfoDto findByMemberId(Long memberId) {
+		return MemberInfoDto.toDto(
+			memberInfoRepository.findByMemberId(memberId).
+				orElseThrow(MemberInfoNotFoundException::new));
 	}
 }
