@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.matching.ezgg.api.dto.MatchDto;
+import com.matching.ezgg.data.riotApi.dto.MatchDto;
 
 import lombok.RequiredArgsConstructor;
 
