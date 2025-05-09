@@ -191,8 +191,8 @@ const DuoFinder = ({memberDataBundle, isLoading, userInfo}) => {
 
     // memberDataBundle가 변경될 때마다 챔피언 데이터 처리
     useEffect(() => {
-        if (memberDataBundle && memberDataBundle.recentTwentyMatch && memberDataBundle.recentTwentyMatch.championStats) {
-            processChampionData(memberDataBundle.recentTwentyMatch.championStats);
+        if (memberDataBundle && memberDataBundle.recentTwentyMatchDto && memberDataBundle.recentTwentyMatchDto.championStats) {
+            processChampionData(memberDataBundle.recentTwentyMatchDto.championStats);
         } else if (memberDataBundle) {
             // 데이터는 있지만 championStats가 없는 경우
             setMostPlayedChampions([]);
@@ -266,7 +266,7 @@ const DuoFinder = ({memberDataBundle, isLoading, userInfo}) => {
     };
 
     // 데이터가 없는 경우 기본 데이터 활용
-    const hasValidData = memberDataBundle && memberDataBundle.memberInfo;
+    const hasValidData = memberDataBundle && memberDataBundle.memberInfoDto;
     const dataLoadError = !hasValidData && !isLoading;
 
     const handleSubmit = async (matchingCriteria) => {
@@ -307,13 +307,13 @@ const DuoFinder = ({memberDataBundle, isLoading, userInfo}) => {
                             </ProfileTitle>
                             <RankBadge>
                                 <img
-                                    src={getRankImageSrc(memberDataBundle?.memberInfo?.tier)}
-                                    alt={memberDataBundle?.memberInfo?.tier || "Unranked"}
+                                    src={getRankImageSrc(memberDataBundle?.memberInfoDto?.tier)}
+                                    alt={memberDataBundle?.memberInfoDto?.tier || "Unranked"}
                                 />
-                                <span>{memberDataBundle?.memberInfo?.tier || "Unranked"} {memberDataBundle?.memberInfo?.tierNum || ""}</span>
+                                <span>{memberDataBundle?.memberInfoDto?.tier || "Unranked"} {memberDataBundle?.memberInfo?.tierNum || ""}</span>
                             </RankBadge>
                             <Stats>
-                                <p>승률: {memberDataBundle?.recentTwentyMatch?.winRate || "0"}%</p>
+                                <p>승률: {memberDataBundle?.recentTwentyMatchDto?.winRate || "0"}%</p>
                                 {mostPlayedChampions && mostPlayedChampions.length > 0 ? (
                                     mostPlayedChampions.map((champion, index) => (
                                         <p key={index}>

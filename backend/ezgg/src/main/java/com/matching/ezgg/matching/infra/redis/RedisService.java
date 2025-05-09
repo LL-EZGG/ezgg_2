@@ -97,8 +97,8 @@ public class RedisService {
 			.status("SUCCESS")
 			.data(MatchingSuccessResponse.MatchedMemberData.builder()
 				.matchedMemberId(matchedMemberId)
-				.memberInfoDto(MemberInfoDto.toDto(data.getMemberInfo()))
-				.recentTwentyMatchDto(RecentTwentyMatchDto.toDto(data.getRecentTwentyMatch()))
+				.memberInfoDto(data.getMemberInfoDto())
+				.recentTwentyMatchDto(data.getRecentTwentyMatchDto())
 				.build())
 			.build();
 	}

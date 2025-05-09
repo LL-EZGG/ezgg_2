@@ -14,6 +14,7 @@ import com.matching.ezgg.data.recentTwentyMatch.service.RecentTwentyMatchService
 import com.matching.ezgg.data.riotApi.dto.MatchDto;
 import com.matching.ezgg.data.recentTwentyMatch.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.data.riotApi.dto.WinRateNTierDto;
+import com.matching.ezgg.member.dto.MemberInfoDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,7 +27,7 @@ public class MatchingDataBulkSaveService {
 	private final RecentTwentyMatchBuilderService recentTwentyMatchBuilderService;
 
 	@Transactional
-	public MemberInfo saveAllAggregatedData(
+	public MemberInfoDto saveAllAggregatedData(
 		Long memberId,
 		WinRateNTierDto winRateNTierDto,
 		List<String> fetchedMatchIds,
@@ -42,11 +43,11 @@ public class MatchingDataBulkSaveService {
 			matchService.save(matchDto);
 		}
 
-		return memberInfo;
+		return MemberInfoDto.toDto(memberInfo);
 	}
 
 	// recentTwentyMatch 계산 후 저장
-	public RecentTwentyMatch calculateAndSaveRecentTwentyMatch(boolean existsNewMatchIds, String puuid, Long memberId){
+	public RecentTwentyMatchDto calculateAndSaveRecentTwentyMatch(boolean existsNewMatchIds, String puuid, Long memberId){
 
 		// recentTwentyMatch 계산
 		RecentTwentyMatchDto recentTwentyMatchDto = new RecentTwentyMatchDto();
@@ -59,7 +60,7 @@ public class MatchingDataBulkSaveService {
 		} else {
 			recentTwentyMatch = recentTwentyMatchService.getRecentTwentyMatchByMemberId(memberId);
 		}
-		return recentTwentyMatch;
+		return RecentTwentyMatchDto.toDto(recentTwentyMatch);
 	}
 
 

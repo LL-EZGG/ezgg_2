@@ -73,12 +73,12 @@ public class MatchingService {
 		MemberDataBundle memberDataBundle = new MemberDataBundle();
 
 		// api로 받아온 데이터 한 트랜잭션으로 저장하고 memberInfo 리턴
-		memberDataBundle.setMemberInfo(matchingDataBulkSaveService.saveAllAggregatedData(
+		memberDataBundle.setMemberInfoDto(matchingDataBulkSaveService.saveAllAggregatedData(
 			memberId, memberWinRateNTier, fetchedMatchIds, matchDtoList, existsNewMatchIds
 		));
 
 		// recentTwentyMatch 저장
-		memberDataBundle.setRecentTwentyMatch(matchingDataBulkSaveService.calculateAndSaveRecentTwentyMatch(
+		memberDataBundle.setRecentTwentyMatchDto(matchingDataBulkSaveService.calculateAndSaveRecentTwentyMatch(
 			existsNewMatchIds, puuid, memberId
 		));
 
@@ -95,23 +95,23 @@ public class MatchingService {
 	public MatchingFilterParsingDto convertToMatchingFilterDto(MemberDataBundle memberDataBundle, Long memberId,
 		PreferredPartnerParsingDto preferredPartnerParsingDto) {
 		MemberInfoParsingDto memberInfoParsingDto = MemberInfoParsingDto.builder()
-			.riotUsername(memberDataBundle.getMemberInfo().getRiotUsername())
-			.riotTag(memberDataBundle.getMemberInfo().getRiotTag())
-			.tier(memberDataBundle.getMemberInfo().getTier())
-			.tierNum(memberDataBundle.getMemberInfo().getTierNum())
-			.wins(memberDataBundle.getMemberInfo().getWins())
-			.losses(memberDataBundle.getMemberInfo().getLosses())
+			.riotUsername(memberDataBundle.getMemberInfoDto().getRiotUsername())
+			.riotTag(memberDataBundle.getMemberInfoDto().getRiotTag())
+			.tier(memberDataBundle.getMemberInfoDto().getTier())
+			.tierNum(memberDataBundle.getMemberInfoDto().getTierNum())
+			.wins(memberDataBundle.getMemberInfoDto().getWins())
+			.losses(memberDataBundle.getMemberInfoDto().getLosses())
 			.build();
 
 		RecentTwentyMatchParsingDto recentTwentyMatchparsingDto = new RecentTwentyMatchParsingDto();
 
-		if (memberDataBundle.getRecentTwentyMatch().getChampionStats() == null || memberDataBundle.getRecentTwentyMatch().getChampionStats().isEmpty()) {
+		if (memberDataBundle.getRecentTwentyMatchDto().getChampionStats() == null || memberDataBundle.getRecentTwentyMatchDto().getChampionStats().isEmpty()) {
 			recentTwentyMatchparsingDto.setKills(0);
 			recentTwentyMatchparsingDto.setDeaths(0);
 			recentTwentyMatchparsingDto.setAssists(0);
 			recentTwentyMatchparsingDto.setMostChampions(null);
 		} else {
-			Map<String, ChampionStat> championStats = memberDataBundle.getRecentTwentyMatch().getChampionStats();
+			Map<String, ChampionStat> championStats = memberDataBundle.getRecentTwentyMatchDto().getChampionStats();
 			List<RecentTwentyMatchParsingDto.MostChampion> mostChampions = new ArrayList<>();
 
 			for (ChampionStat value : championStats.values()) {
@@ -128,9 +128,9 @@ public class MatchingService {
 					.build());
 			}
 
-			recentTwentyMatchparsingDto.setKills(memberDataBundle.getRecentTwentyMatch().getSumKills());
-			recentTwentyMatchparsingDto.setDeaths(memberDataBundle.getRecentTwentyMatch().getSumDeaths());
-			recentTwentyMatchparsingDto.setAssists(memberDataBundle.getRecentTwentyMatch().getSumAssists());
+			recentTwentyMatchparsingDto.setKills(memberDataBundle.getRecentTwentyMatchDto().getSumKills());
+			recentTwentyMatchparsingDto.setDeaths(memberDataBundle.getRecentTwentyMatchDto().getSumDeaths());
+			recentTwentyMatchparsingDto.setAssists(memberDataBundle.getRecentTwentyMatchDto().getSumAssists());
 			recentTwentyMatchparsingDto.setMostChampions(mostChampions);
 		}
 
