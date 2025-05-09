@@ -124,6 +124,8 @@ const Join = () => {
         riotTag: '',
     });
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,20}$/;
+
     const validateForm = () => {
         let isValid = true;
         const newErrors = {
@@ -148,6 +150,9 @@ const Join = () => {
             isValid = false;
         } else if (formData.password.length < 6) {
             newErrors.password = '비밀번호는 6자 이상이어야 합니다';
+            isValid = false;
+        } else if (!passwordRegex.test(formData.password)) {
+            newErrors.password = '비밀번호는 영문 대문자, 소문자, 숫자, 특수문자를 각각 하나 이상 포함해야 하며, 6~20자 사이여야 합니다';
             isValid = false;
         }
 
@@ -253,7 +258,7 @@ const Join = () => {
                         <Input
                             type="password"
                             name="password"
-                            placeholder="비밀번호를 입력하세요 (6~20자의 영문 대소문자, 숫자)"
+                            placeholder="비밀번호를 입력하세요.(영문 대소문자, 숫자, 특수문자 하나이상 포함)"
                             value={formData.password}
                             onChange={handleChange}
                             required
@@ -266,7 +271,7 @@ const Join = () => {
                         <Input
                             type="password"
                             name="confirmPassword"
-                            placeholder="비밀번호를 다시 입력하세요 (6~20자의 영문 대소문자, 숫자)"
+                            placeholder="비밀번호를 다시 입력하세요.(영문 대소문자, 숫자, 특수문자 하나이상 포함)"
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             required

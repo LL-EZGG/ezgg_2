@@ -44,7 +44,8 @@ public class MemberService {
 			throw new MemberPassWordNotEqualsException();
 		}
 
-		if (!signupRequest.getPassword().matches("^(?=.*[A-Z])(?=.[a-z])(?=.*\\d)[A-Za-z\\d]{4,20}$")) {
+		if (!signupRequest.getPassword()
+			.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,20}$")) {
 			throw new PasswordBadRequestException();
 		}
 
