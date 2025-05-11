@@ -6,7 +6,7 @@ import com.matching.ezgg.data.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.data.recentTwentyMatch.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.data.recentTwentyMatch.service.RecentTwentyMatchService;
 import com.matching.ezgg.matching.dto.MemberDataBundleDto;
-import com.matching.ezgg.member.dto.MemberInfoDto;
+import com.matching.ezgg.data.memberInfo.dto.MemberInfoDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

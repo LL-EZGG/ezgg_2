@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.matching.ezgg.data.riotApi.dto.WinRateNTierDto;
 import com.matching.ezgg.data.memberInfo.repository.MemberInfoRepository;
-import com.matching.ezgg.member.dto.MemberInfoDto;
+import com.matching.ezgg.data.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.data.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.global.exception.MemberInfoNotFoundException;
 

@@ -14,7 +14,7 @@ import com.matching.ezgg.data.recentTwentyMatch.service.RecentTwentyMatchService
 import com.matching.ezgg.data.riotApi.dto.MatchDto;
 import com.matching.ezgg.data.recentTwentyMatch.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.data.riotApi.dto.WinRateNTierDto;
-import com.matching.ezgg.member.dto.MemberInfoDto;
+import com.matching.ezgg.data.memberInfo.dto.MemberInfoDto;
 
 import lombok.RequiredArgsConstructor;
 

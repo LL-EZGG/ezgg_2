@@ -1,4 +1,4 @@
-package com.matching.ezgg.member.dto;
+package com.matching.ezgg.data.memberInfo.dto;
 
 import com.matching.ezgg.data.memberInfo.entity.MemberInfo;
 
