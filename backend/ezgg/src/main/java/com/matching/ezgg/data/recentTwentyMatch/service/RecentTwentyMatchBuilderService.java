@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.data.matchInfo.entity.MatchInfo;
-import com.matching.ezgg.data.matchInfo.service.MatchService;
+import com.matching.ezgg.data.matchInfo.service.MatchInfoService;
 import com.matching.ezgg.data.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.data.recentTwentyMatch.entity.model.ChampionStat;
 import com.matching.ezgg.data.recentTwentyMatch.dto.RecentTwentyMatchDto;
@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RecentTwentyMatchBuilderService {
 
 	private final MemberInfoService memberInfoService;
-	private final MatchService matchService;
+	private final MatchInfoService matchInfoService;
 
 	// recentTwentyMatchDto 생성
 	public RecentTwentyMatchDto buildDto(String puuid) {
@@ -78,7 +78,7 @@ public class RecentTwentyMatchBuilderService {
 
 		// 최근 20 경기의 matchId들로 RecentTwentyMatch 업데이트
 		for (String matchId : matchIds) {
-			MatchInfo matchInfo = matchService.getMatchByMemberIdAndRiotMatchId(memberId, matchId);
+			MatchInfo matchInfo = matchInfoService.getMatchByMemberIdAndRiotMatchId(memberId, matchId);
 
 			result.sumKills += matchInfo.getKills();
 			result.sumDeaths += matchInfo.getDeaths();

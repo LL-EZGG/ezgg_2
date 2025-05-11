@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matching.ezgg.data.matchInfo.service.MatchService;
+import com.matching.ezgg.data.matchInfo.service.MatchInfoService;
 import com.matching.ezgg.data.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.data.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.data.recentTwentyMatch.entity.RecentTwentyMatch;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MatchingDataBulkSaveService {
 	private final MemberInfoService memberInfoService;
-	private final MatchService matchService;
+	private final MatchInfoService matchInfoService;
 	private final RecentTwentyMatchService recentTwentyMatchService;
 	private final RecentTwentyMatchBuilderService recentTwentyMatchBuilderService;
 
@@ -40,7 +40,7 @@ public class MatchingDataBulkSaveService {
 		// matchInfo 업데이트
 		// 어떤 matchInfo 저장 중 에러가 나왔는지 판단하기 위해 saveAll 적용X
 		for (MatchDto matchDto : matchDtoList) {
-			matchService.save(matchDto);
+			matchInfoService.save(matchDto);
 		}
 
 		return MemberInfoDto.toDto(memberInfo);

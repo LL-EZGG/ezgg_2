@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matching.ezgg.data.matchInfo.entity.MatchInfo;
-import com.matching.ezgg.data.matchInfo.repository.MatchRepository;
+import com.matching.ezgg.data.matchInfo.repository.MatchInfoRepository;
 import com.matching.ezgg.data.riotApi.dto.MatchDto;
 import com.matching.ezgg.global.exception.MatchNotFoundException;
 
@@ -14,8 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MatchService {
-	private final MatchRepository matchRepository;
+public class MatchInfoService {
+	private final MatchInfoRepository matchInfoRepository;
 
 	@Transactional
 	public void save(MatchDto matchDto) {
@@ -31,12 +31,12 @@ public class MatchService {
 			.win(matchDto.isWin())
 			.build();
 
-		matchRepository.save(matchInfo);
+		matchInfoRepository.save(matchInfo);
 		log.info("match 저장 종료: {}", matchDto.getRiotMatchId());
 	}
 
 	public MatchInfo getMatchByMemberIdAndRiotMatchId(Long memberId, String matchId) {
-		return matchRepository.findByMemberIdAndRiotMatchId(memberId, matchId)
+		return matchInfoRepository.findByMemberIdAndRiotMatchId(memberId, matchId)
 			.orElseThrow(MatchNotFoundException::new);
 	}
 }
