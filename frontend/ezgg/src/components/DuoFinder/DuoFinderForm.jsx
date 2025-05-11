@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { champions } from '../../data/champions';
-import { useWebSocket } from "../../hooks/useWebSocket.js";
 
 const lines = ['TOP', 'JUG', 'MID', 'AD', 'SUP'];
 const lineMap = {
@@ -12,28 +11,11 @@ const lineMap = {
   SUP: 'UTILITY',
 };
 
-function getServerLineName(line) {
-  return lineMap[line] || line;
-}
-
 const DuoFinderForm = (
   {
     matchingCriteria,
     setMatchingCriteria,
   }) => {
-  // const [formData, setFormData] = useState({
-  //   myLine: {
-  //     myLine: '',
-  //     partnerLine: '',
-  //   },
-  //   selectedChampions: {
-  //     preferredChampions: [],
-  //     bannedChampions: [],
-  //   }
-  // });
-
-
-  const [formData, setFormData] = useState(matchingCriteria);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [bannedSearchTerm, setBannedSearchTerm] = useState('');
@@ -41,36 +23,10 @@ const DuoFinderForm = (
   const [showBannedSuggestions, setShowBannedSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [bannedSelectedIndex, setBannedSelectedIndex] = useState(0);
-  // const [isMatching, setIsMatching] = useState(false);
   const searchRef = useRef(null);
   const bannedSearchRef = useRef(null);
   const preferredSuggestionsRef = useRef(null);
   const bannedSuggestionsRef = useRef(null);
-
-  const { connect, disconnect, sendMatchingRequest } = useWebSocket({
-    onMessage: (response) => {
-      console.log(response)
-      if (response.status === 'SUCCESS') {
-        setMatchResult(response.data);
-        alert('매칭 성공! 상대방 정보를 확인하세요.')
-        disconnect()
-        setIsMatching(false);
-      } else {
-        console.error('매칭 실패:', response.message);
-        alert('매칭에 실패하였습니다. 조건을 다시 설정해주세요.')
-        disconnect();
-      }
-      setIsMatching(false);
-    },
-    onDisconnect: () => {
-      console.log('연결 종료');
-      setIsMatching(false);
-    },
-    onError: (message) => {
-      alert('에러 발생 : ' + message);
-      setIsMatching(false);
-    }
-  });
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -119,66 +75,23 @@ const DuoFinderForm = (
     }
   };
 
-  // const isFormValid = () => {
-  //   return (
-  //     formData.preferredLane !== '' &&
-  //     formData.partnerLane !== ''
-  //   );
-  // };
-
-  // const handleLineSelect = (type, line) => {
-  //   console.log(type, line)
-  //   if (type === 'partnerLine' && line === matchingCriteria.wantLine.myLine) {
-  //     return; // 내가 선택한 라인은 상대방이 선택할 수 없음
-  //   }
-  //   if (type === 'myLine' && line === matchingCriteria.wantLine.partnerLine) {
-  //     return; // 상대방이 선택한 라인은 내가 선택할 수 없음
-  //   }
-  //
-  //   const newCriteria = {
-  //     wantLine: {
-  //       type: line,
-  //       ...matchingCriteria.wantLine,
-  //     }
-  //   }
-  //
-  //   console.log(newCriteria)
-  //
-  //   onCriteriaChange(newCriteria);
-  //
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [type]: prev[type] === line ? '' : line
-  //   }));
-  // };
-
   const handleLineSelect = (type, line) => {
-    // 1. 현재 선택값 가져오기 (안전한 null 처리)
     const currentWantLine = matchingCriteria?.wantLine || {};
     const currentMyLine = currentWantLine.myLine || '';
     const currentPartnerLine = currentWantLine.partnerLine || '';
 
-    // 2. 유효성 검사 로직
     if (type === 'partnerLine' && line === currentMyLine) return;
     if (type === 'myLine' && line === currentPartnerLine) return;
 
-    // 3. 새로운 조건 객체 생성 (동적 키 사용)
     const newWantLine = {
       ...currentWantLine,
-      [type]: currentWantLine[type] === line ? '' : line // ✅ [type]으로 동적 키 접근
+      [type]: currentWantLine[type] === line ? '' : line
     };
 
-    // 4. 상위 컴포넌트에 변경사항 전달
     setMatchingCriteria({
       ...matchingCriteria,
       wantLine: newWantLine
     });
-
-    // 5. 로컬 폼 데이터 업데이트
-    setFormData(prev => ({
-      ...prev,
-      [type]: prev[type] === line ? '' : line
-    }));
   };
 
   const handleKeyDown = (e, type) => {
@@ -215,7 +128,7 @@ const DuoFinderForm = (
   };
 
   const filterChampions = (term) => {
-    if (!term) return [];
+    if (!term) return champions;
     const lowerTerm = term.toLowerCase();
     return champions.filter(champion => 
       champion.name.toLowerCase().includes(lowerTerm) ||
@@ -225,12 +138,29 @@ const DuoFinderForm = (
 
   const handleChampionSelect = (champion, type) => {
     const key = type === 'preferred' ? 'preferredChampions' : 'bannedChampions';
-    if (!formData[key].find(c => c.id === champion.id)) {
-      setFormData(prev => ({
-        ...prev,
-        [key]: [...prev[key], champion]
-      }));
+    const otherKey = type === 'preferred' ? 'bannedChampions' : 'preferredChampions';
+    const currentChampions = [...(matchingCriteria?.selectedChampions?.[key] || [])];
+    const otherChampions = [...(matchingCriteria?.selectedChampions?.[otherKey] || [])];
+
+    // 1. 이미 선택된 경우(같은 리스트) 중복 방지
+    if (currentChampions.some(c => c.id === champion.id)) return;
+
+    // 2. 다른 리스트에 이미 있으면 추가 불가
+    if (otherChampions.some(c => c.id === champion.id)) {
+      alert('동일한 챔피언이 선택되었습니다. 다시 확인해주세요.');
+      return;
     }
+
+    const newCriteria = {
+      ...matchingCriteria,
+      selectedChampions: {
+        ...matchingCriteria?.selectedChampions,
+        [key]: [...currentChampions, champion]
+      }
+    };
+
+    setMatchingCriteria(newCriteria);
+
     if (type === 'preferred') {
       setSearchTerm('');
       setShowSuggestions(false);
@@ -242,10 +172,16 @@ const DuoFinderForm = (
 
   const handleRemoveChampion = (championId, type) => {
     const key = type === 'preferred' ? 'preferredChampions' : 'bannedChampions';
-    setFormData(prev => ({
-      ...prev,
-      [key]: prev[key].filter(c => c.id !== championId)
-    }));
+
+    const newCriteria = {
+      ...matchingCriteria,
+      selectedChampions: {
+        ...matchingCriteria.selectedChampions,
+        [key]: matchingCriteria.selectedChampions[key].filter(c => c.id !== championId)
+      }
+    };
+
+    setMatchingCriteria(newCriteria);
   };
 
   // const handleSubmit = async (e) => {
@@ -277,7 +213,6 @@ const DuoFinderForm = (
 
   return (
     <Form>
-    {/*<Form onSubmit={handleSubmit}>*/}
       <Section>
         <Label>라인 선택</Label>
         <LaneGroup>
@@ -329,7 +264,7 @@ const DuoFinderForm = (
               onKeyDown={(e) => handleKeyDown(e, 'preferred')}
             />
           </SearchInput>
-          {showSuggestions && searchTerm && (
+          {showSuggestions && (
             <Suggestions ref={preferredSuggestionsRef}>
               {filterChampions(searchTerm).map((champion, index) => (
                 <SuggestionItem
@@ -344,7 +279,7 @@ const DuoFinderForm = (
             </Suggestions>
           )}
           <ChampionTags>
-            {formData.selectedChampions.preferredChampions.map(champion => (
+            {matchingCriteria.selectedChampions.preferredChampions.map(champion => (
               <ChampionTag key={champion.id}>
                 <img src={`/champions/${champion.image}`} alt={champion.name} />
                 {champion.name}
@@ -377,7 +312,7 @@ const DuoFinderForm = (
               onKeyDown={(e) => handleKeyDown(e, 'banned')}
             />
           </SearchInput>
-          {showBannedSuggestions && bannedSearchTerm && (
+          {showBannedSuggestions && (
             <Suggestions ref={bannedSuggestionsRef}>
               {filterChampions(bannedSearchTerm).map((champion, index) => (
                 <SuggestionItem
@@ -392,7 +327,7 @@ const DuoFinderForm = (
             </Suggestions>
           )}
           <ChampionTags>
-            {formData.selectedChampions.bannedChampions.map(champion => (
+            {matchingCriteria.selectedChampions.bannedChampions.map(champion => (
               <ChampionTag key={champion.id}>
                 <img src={`/champions/${champion.image}`} alt={champion.name} />
                 {champion.name}

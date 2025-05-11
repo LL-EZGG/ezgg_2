@@ -1,21 +1,11 @@
 import {useEffect, useState} from 'react';
 import { isValidCriteria } from '../utils/validation.js';
 import {useWebSocket} from "./useWebSocket.js";
-
-const criteria = {
-  wantLine: {
-    myLine: '',
-    partnerLine: '',
-  },
-  selectedChampions: {
-    preferredChampions: [],
-    bannedChampions: [],
-  }
-};
+import {getInitialCriteria} from "../utils/initialStates.js";
 
 export const useMatchingSystem = () => {
   const [matchResult, setMatchResult] = useState(null);
-  const [matchingCriteria, setMatchingCriteria] = useState(criteria);
+  const [matchingCriteria, setMatchingCriteria] = useState(getInitialCriteria());
   const [isMatching, setIsMatching] = useState(false);
 
   const { connect, disconnect, sendMatchingRequest } = useWebSocket({
@@ -63,7 +53,7 @@ export const useMatchingSystem = () => {
     disconnect();
     setMatchResult(null);
     setIsMatching(false);
-    setMatchingCriteria(criteria);
+    setMatchingCriteria(getInitialCriteria());
   };
 
   useEffect(() => {
