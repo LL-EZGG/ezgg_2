@@ -9,7 +9,11 @@ export const useMatchingSystem = () => {
   const [isMatching, setIsMatching] = useState(false);
 
   const { connect, disconnect, sendMatchingRequest } = useWebSocket({
-    onMessage: (message) => setMatchResult(message),
+    onMessage: (response) => {
+      alert('매칭 성공! 상대방 정보를 확인해주세요.');
+      setMatchResult(response)
+      disconnect();
+    },
     onDisconnect: () => handleMatchCancel()
     // onMessage: (response) => {
     //   console.log(response)
@@ -42,7 +46,6 @@ export const useMatchingSystem = () => {
     }
 
     setIsMatching(() => true);
-    console.log(isMatching)
     connect(() => {
       sendMatchingRequest(criteria);
       setMatchingCriteria(criteria);

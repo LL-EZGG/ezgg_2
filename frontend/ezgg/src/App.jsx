@@ -42,7 +42,6 @@ const App = () => {
     matchingCriteria,
     setMatchingCriteria,
     isMatching,
-    setIsMatching,
     handleMatchStart,
     handleMatchCancel
   } = useMatchingSystem();
@@ -202,6 +201,7 @@ const App = () => {
                   isLoading={userDataLoading}
                   userInfo={userInfo}
                   matchingCriteria={matchingCriteria}
+                  isMatching={isMatching}
                   setMatchingCriteria={setMatchingCriteria}
                   matchResult={matchResult}
                 />
@@ -212,30 +212,6 @@ const App = () => {
                   onStart={() => handleMatchStart(matchingCriteria)}
                   onCancel={handleMatchCancel}
                 />
-                {/* 완료 시 제거 */}
-                {/*<div style={{*/}
-                {/*  display: 'flex',*/}
-                {/*  justifyContent: 'center',*/}
-                {/*  alignItems: 'center',*/}
-                {/*  minHeight: '150px',*/}
-                {/*  width: '100vw', // 부모가 꽉 차도록*/}
-                {/*}}>*/}
-                {/*  {!matchingCriteria && !matchResult && (*/}
-                {/*    <button onClick={() => handleMatchStart(/!* 조건 *!/)}>*/}
-                {/*      매칭 시작*/}
-                {/*    </button>*/}
-                {/*  )}*/}
-                {/*  {matchingCriteria && !matchResult && (*/}
-                {/*    <button onClick={handleMatchCancel}>*/}
-                {/*      매칭 중지*/}
-                {/*    </button>*/}
-                {/*  )}*/}
-                {/*  {matchResult && (*/}
-                {/*    <button onClick={handleMatchCancel}>*/}
-                {/*      돌아가기*/}
-                {/*    </button>*/}
-                {/*  )}*/}
-                {/*</div>*/}
               </>
               } 
               isLoggedIn={isLoggedIn} 
