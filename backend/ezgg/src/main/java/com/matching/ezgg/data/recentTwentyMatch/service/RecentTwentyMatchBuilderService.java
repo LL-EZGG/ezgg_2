@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.matching.ezgg.data.matchInfo.entity.MatchInfo;
 import com.matching.ezgg.data.matchInfo.service.MatchService;
 import com.matching.ezgg.data.memberInfo.entity.MemberInfo;
-import com.matching.ezgg.data.recentTwentyMatch.ChampionStat;
+import com.matching.ezgg.data.recentTwentyMatch.entity.model.ChampionStat;
 import com.matching.ezgg.data.recentTwentyMatch.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.data.memberInfo.service.MemberInfoService;
 

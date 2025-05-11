@@ -16,7 +16,7 @@ import com.matching.ezgg.data.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.data.riotApi.dto.MatchDto;
 import com.matching.ezgg.data.riotApi.dto.PuuidDto;
 import com.matching.ezgg.data.riotApi.dto.WinRateNTierDto;
-import com.matching.ezgg.global.common.MatchMapper;
+import com.matching.ezgg.data.riotApi.util.MatchMapper;
 import com.matching.ezgg.global.exception.RiotMatchIdsNotFoundException;
 import com.matching.ezgg.global.exception.RiotAccountNotFoundException;
 import com.matching.ezgg.global.exception.RiotApiException;

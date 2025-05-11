@@ -2,8 +2,8 @@ package com.matching.ezgg.data.recentTwentyMatch.entity;
 
 import java.util.Map;
 
-import com.matching.ezgg.data.recentTwentyMatch.ChampionStat;
-import com.matching.ezgg.global.common.ChampionStatsConvert;
+import com.matching.ezgg.data.recentTwentyMatch.entity.model.ChampionStat;
+import com.matching.ezgg.data.recentTwentyMatch.util.ChampionStatsConvert;
 import com.matching.ezgg.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;

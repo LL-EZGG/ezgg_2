@@ -1,4 +1,4 @@
-package com.matching.ezgg.global.common;
+package com.matching.ezgg.data.riotApi.util;
 
 import org.springframework.stereotype.Component;
 

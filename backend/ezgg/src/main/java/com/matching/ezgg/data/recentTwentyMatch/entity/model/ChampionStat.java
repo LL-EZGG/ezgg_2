@@ -1,4 +1,4 @@
-package com.matching.ezgg.data.recentTwentyMatch;
+package com.matching.ezgg.data.recentTwentyMatch.entity.model;
 
 import com.matching.ezgg.data.matchInfo.entity.MatchInfo;
 

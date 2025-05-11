@@ -1,4 +1,4 @@
-package com.matching.ezgg.global.common;
+package com.matching.ezgg.data.recentTwentyMatch.util;
 
 import java.io.IOException;
 import java.util.Map;
@@ -6,7 +6,7 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.matching.ezgg.data.recentTwentyMatch.ChampionStat;
+import com.matching.ezgg.data.recentTwentyMatch.entity.model.ChampionStat;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
