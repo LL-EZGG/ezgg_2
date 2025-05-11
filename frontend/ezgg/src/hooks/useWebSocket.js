@@ -60,17 +60,27 @@ export const useWebSocket = ({ onMessage, onConnect, onDisconnect, onError }) =>
   }, [onDisconnect]);
 
   const sendMatchingRequest = useCallback((payload) => {
-      console.log("[useWebSocket.js]\nsendMatchingRequest", payload);
-      console.log("[useWebSocket.js]\nisConnected : ", isConnected);
+    if (!stompClient.current?.connected) {
+      connect(() => { // 연결 보장 후 전송
+        stompClient.current.send('/app/matching/start', {}, JSON.stringify(payload));
+      });
+      return;
+    }
+    stompClient.current.send('/app/matching/start', {}, JSON.stringify(payload));
+  }, [connect]);
 
-      if (stompClient.current?.connected) {
-          console.log(">>> 연결 후 send 호출")
-          stompClient.current.send('/app/matching/start', {}, JSON.stringify(payload));
-      } else {
-          console.warn("[useWebSocket - sendMatchingRequest] 아직 연결되지 않음");
-      }
-
-  }, [isConnected]);
+  // const sendMatchingRequest = useCallback((payload) => {
+  //     console.log("[useWebSocket.js]\nsendMatchingRequest", payload);
+  //     console.log("[useWebSocket.js]\nisConnected : ", isConnected);
+  //
+  //     if (stompClient.current?.connected) {
+  //         console.log(">>> 연결 후 send 호출")
+  //         stompClient.current.send('/app/matching/start', {}, JSON.stringify(payload));
+  //     } else {
+  //         console.warn("[useWebSocket - sendMatchingRequest] 아직 연결되지 않음");
+  //     }
+  //
+  // }, [isConnected]);
 
   return { connect, disconnect, sendMatchingRequest, isConnected };
 };

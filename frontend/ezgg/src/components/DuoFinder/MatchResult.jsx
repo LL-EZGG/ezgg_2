@@ -154,7 +154,7 @@ const Stats = styled.div`
   }
 `;
 
-const MatchResult = ({ criteria, matchResult, onCancel }) => {
+const MatchResult = ({ criteria, matchResult, onMatchCancel }) => {
   const [mostPlayedChampions, setMostPlayedChampions] = useState([]);
   const [championWinRates, setChampionWinRates] = useState({});
 
@@ -239,7 +239,7 @@ const MatchResult = ({ criteria, matchResult, onCancel }) => {
           <p>선호 챔피언: {criteria.championInfo.preferredChampion || '없음'}</p>
           <p>비선호 챔피언: {criteria.championInfo.unpreferredChampion || '없음'}</p>
         </Stats>
-        <CancelButton onClick={onCancel}>
+        <CancelButton onClick={onMatchCancel}>
           매칭 취소
         </CancelButton>
       </>
@@ -288,9 +288,6 @@ const MatchResult = ({ criteria, matchResult, onCancel }) => {
             )}
           </Stats>
         </ProfileInfo>
-        <CancelButton onClick={onCancel}>
-          매칭 취소
-        </CancelButton>
       </>
     );
   }

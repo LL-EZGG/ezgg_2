@@ -6,8 +6,6 @@ import styled from '@emotion/styled';
 import React from "react";
 
 export const UserProfileCard = ({ userInfo, memberDataBundle, isLoading }) => {
-  console.log('memberDataBundle : ', memberDataBundle)
-
   const { mostPlayedChampions, championWinRates } = memberDataBundle || {};
 
   return (

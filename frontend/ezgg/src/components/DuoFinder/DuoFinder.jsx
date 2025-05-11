@@ -1,11 +1,19 @@
 import React from 'react';
 import styled from '@emotion/styled';
-import {useMatchingSystem} from "../../hooks/MatchingSystem.js";
 import {UserProfileCard} from "../UserProfileCard.jsx";
 import {MatchingInterface} from "../MatchingInterface.jsx";
 
-const DuoFinder = ({memberDataBundle, isLoading, userInfo}) => {
-  const { isMatching, matchResult, handleMatchStart, handleMatchCancel} = useMatchingSystem();
+const DuoFinder = (
+  {
+    memberDataBundle,
+    isLoading,
+    userInfo,
+    matchingCriteria,
+    setMatchingCriteria,
+    matchResult
+  }
+) => {
+
     // const [isMatching, setIsMatching] = useState(false);
     // const [matchingCriteria, setMatchingCriteria] = useState(null);
     // const [mostPlayedChampions, setMostPlayedChampions] = useState([]);
@@ -71,12 +79,19 @@ const DuoFinder = ({memberDataBundle, isLoading, userInfo}) => {
           isLoading={isLoading}
         />
 
-        <MatchingInterface
-          isMatching={isMatching}
-          matchResult={matchResult}
-          onMatchStart={handleMatchStart}
-          onCancel={handleMatchCancel}
-        />
+        {matchResult ? (
+          <UserProfileCard
+            userInfo={userInfo}
+            memberDataBundle={memberDataBundle}
+            isLoading={isLoading}
+          />
+        ) : (
+          <MatchingInterface
+            matchResult={matchResult}
+            matchingCriteria={matchingCriteria}
+            setMatchingCriteria={setMatchingCriteria}
+          />
+        )}
       </Container>
     )
     // return (
@@ -137,7 +152,6 @@ const Container = styled.div`
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
-    min-height: calc(100vh - 4rem);
     align-items: center;
     justify-content: center;
 

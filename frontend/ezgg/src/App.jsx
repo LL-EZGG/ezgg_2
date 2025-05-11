@@ -5,109 +5,13 @@ import api from './utils/api';
 import DuoFinder from './components/DuoFinder/DuoFinder'
 import Login from './components/layout/Login';
 import Join from './components/layout/Join';
-
-const AppContainer = styled.div`
-  min-height: 100vh;
-  background: #0F0F0F;
-`;
-
-const Header = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-`;
-
-const Logo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  
-  h1 {
-    color: white;
-    font-size: 1.5rem;
-    font-weight: 800;
-  }
-`;
-
-const LogoIcon = styled.div`
-  width: 28px;
-  height: 28px;
-  background: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  svg {
-    width: 18px;
-    height: 18px;
-    fill: black;
-  }
-`;
-
-const UserSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: white;
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  transition: background 0.2s;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
-`;
-
-const LoginButton = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: white;
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  background: #FF416C;
-  text-decoration: none;
-  transition: opacity 0.2s;
-
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
-const LogoutButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: white;
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  background: #FF416C;
-  text-decoration: none;
-  transition: opacity 0.2s;
-
-  &:hover {
-    opacity: 0.9;
-  }
-`;
+import {useMatchingSystem} from "./hooks/useMatchingSystem.js";
+import {MatchingButtonPanel} from "./components/MatchingButtonPanel.jsx";
 
 // 로그인 상태에 따라 리다이렉트하는 보호된 라우트 컴포넌트
 const ProtectedRoute = ({ element, isLoggedIn }) => {
   const location = useLocation();
-  
+
   // 현재 위치가 /login 페이지이면서 이미 로그인 상태라면 홈으로 리다이렉트
   if (location.pathname === '/login' && isLoggedIn) {
     return <Navigate to="/" replace />;
@@ -132,6 +36,16 @@ const App = () => {
   const [memberDataBundle, setMemberDataBundle] = useState(null);
   const [userDataLoading, setUserDataLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const {
+    matchResult,
+    setMatchResult,
+    matchingCriteria,
+    setMatchingCriteria,
+    isMatching,
+    setIsMatching,
+    handleMatchStart,
+    handleMatchCancel
+  } = useMatchingSystem();
 
   // 앱 시작 시 로컬 스토리지에서 토큰을 확인하여 로그인 상태 유지
   useEffect(() => {
@@ -282,11 +196,47 @@ const App = () => {
           <Route path="/" element={
             <ProtectedRoute 
               element={
-                <DuoFinder 
-                  memberDataBundle={memberDataBundle} 
+              <>
+                <DuoFinder
+                  memberDataBundle={memberDataBundle}
                   isLoading={userDataLoading}
                   userInfo={userInfo}
+                  matchingCriteria={matchingCriteria}
+                  setMatchingCriteria={setMatchingCriteria}
+                  matchResult={matchResult}
                 />
+                <MatchingButtonPanel
+                  matchingCriteria={matchingCriteria}
+                  matchResult={matchResult}
+                  isMatching={isMatching}
+                  onStart={() => handleMatchStart(matchingCriteria)}
+                  onCancel={handleMatchCancel}
+                />
+                {/* 완료 시 제거 */}
+                {/*<div style={{*/}
+                {/*  display: 'flex',*/}
+                {/*  justifyContent: 'center',*/}
+                {/*  alignItems: 'center',*/}
+                {/*  minHeight: '150px',*/}
+                {/*  width: '100vw', // 부모가 꽉 차도록*/}
+                {/*}}>*/}
+                {/*  {!matchingCriteria && !matchResult && (*/}
+                {/*    <button onClick={() => handleMatchStart(/!* 조건 *!/)}>*/}
+                {/*      매칭 시작*/}
+                {/*    </button>*/}
+                {/*  )}*/}
+                {/*  {matchingCriteria && !matchResult && (*/}
+                {/*    <button onClick={handleMatchCancel}>*/}
+                {/*      매칭 중지*/}
+                {/*    </button>*/}
+                {/*  )}*/}
+                {/*  {matchResult && (*/}
+                {/*    <button onClick={handleMatchCancel}>*/}
+                {/*      돌아가기*/}
+                {/*    </button>*/}
+                {/*  )}*/}
+                {/*</div>*/}
+              </>
               } 
               isLoggedIn={isLoggedIn} 
             />
@@ -300,3 +250,101 @@ const App = () => {
 };
 
 export default App;
+
+const AppContainer = styled.div`
+  min-height: 100vh;
+  background: #0F0F0F;
+`;
+
+const Header = styled.header`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+`;
+
+const Logo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  h1 {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+`;
+
+const LogoIcon = styled.div`
+  width: 28px;
+  height: 28px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: black;
+  }
+`;
+
+const UserSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+`;
+
+const LoginButton = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background: #FF416C;
+  text-decoration: none;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const LogoutButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background: #FF416C;
+  text-decoration: none;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;

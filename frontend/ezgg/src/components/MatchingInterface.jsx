@@ -2,17 +2,22 @@ import MatchResult from "./DuoFinder/MatchResult.jsx";
 import DuoFinderForm from "./DuoFinder/DuoFinderForm.jsx";
 import styled from '@emotion/styled';
 
-export const MatchingInterface = ({ isMatching, matchResult, onMatchStart, onCancel }) => (
+export const MatchingInterface = (
+  {
+    matchResult,
+    matchingCriteria,
+    setMatchingCriteria,
+  }) => (
   <FormContainer>
-    {matchResult || isMatching ? (
+    {matchResult ? (
       <MatchResult
         criteria={matchingCriteria}
         matchResult={matchResult}
-        onCancel={onCancel}
       />
     ) : (
       <DuoFinderForm
-        onSubmit={onMatchStart}
+        matchingCriteria={matchingCriteria}
+        setMatchingCriteria={setMatchingCriteria}
       />
     )}
   </FormContainer>
