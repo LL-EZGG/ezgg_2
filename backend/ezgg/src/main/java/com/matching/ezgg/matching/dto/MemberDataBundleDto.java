@@ -11,12 +11,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class MemberDataBundle {
+public class MemberDataBundleDto {
 	private MemberInfoDto memberInfoDto;
 	private RecentTwentyMatchDto recentTwentyMatchDto;
 
 	@Builder
-	public MemberDataBundle(MemberInfoDto memberInfoDto, RecentTwentyMatchDto recentTwentyMatchDto){
+	public MemberDataBundleDto(MemberInfoDto memberInfoDto, RecentTwentyMatchDto recentTwentyMatchDto){
 		this.memberInfoDto = memberInfoDto;
 		this.recentTwentyMatchDto = recentTwentyMatchDto; // 한판도 안한 경우 빈 객체가 나옴
 	}

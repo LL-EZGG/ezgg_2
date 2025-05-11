@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matching.ezgg.matching.dto.MemberDataBundle;
+import com.matching.ezgg.matching.dto.MemberDataBundleDto;
 import com.matching.ezgg.member.dto.SignupRequest;
 import com.matching.ezgg.member.dto.SignupResponse;
 import com.matching.ezgg.member.service.MemberService;
@@ -117,14 +117,14 @@ public class MemberController {
 	}
 
 	@GetMapping("/memberdatabundle")
-	public ResponseEntity<SuccessResponse<MemberDataBundle>> getMemberDataBundle(@LoginUser Long memberId) {
+	public ResponseEntity<SuccessResponse<MemberDataBundleDto>> getMemberDataBundle(@LoginUser Long memberId) {
 		// 로그인한 사용자의 ID를 사용하여 회원 정보를 조회
-		MemberDataBundle loggedMemberDataBundle = memberDataBundleService.getMemberDataBundleByMemberId(memberId);
+		MemberDataBundleDto loggedMemberDataBundleDto = memberDataBundleService.getMemberDataBundleByMemberId(memberId);
 
-		return ResponseEntity.ok(SuccessResponse.<MemberDataBundle>builder()
+		return ResponseEntity.ok(SuccessResponse.<MemberDataBundleDto>builder()
 			.code("200")
 			.message("회원정보 조회 성공")
-			.data(loggedMemberDataBundle)
+			.data(loggedMemberDataBundleDto)
 			.build());
 	}
 }

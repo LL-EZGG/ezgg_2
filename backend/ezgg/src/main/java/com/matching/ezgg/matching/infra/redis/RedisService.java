@@ -21,10 +21,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.matching.dto.MatchingSuccessResponse;
-import com.matching.ezgg.matching.dto.MemberDataBundle;
-import com.matching.ezgg.member.dto.MemberInfoDto;
+import com.matching.ezgg.matching.dto.MemberDataBundleDto;
 import com.matching.ezgg.data.memberInfo.service.MemberDataBundleService;
-import com.matching.ezgg.data.recentTwentyMatch.dto.RecentTwentyMatchDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -91,7 +89,7 @@ public class RedisService {
 	}
 
 	private MatchingSuccessResponse getMatchingSuccessResponse(Long matchedMemberId) {
-		MemberDataBundle data = memberDataBundleService.getMemberDataBundleByMemberId(matchedMemberId);
+		MemberDataBundleDto data = memberDataBundleService.getMemberDataBundleByMemberId(matchedMemberId);
 
 		return MatchingSuccessResponse.builder()
 			.status("SUCCESS")

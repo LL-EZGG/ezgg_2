@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.data.recentTwentyMatch.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.data.recentTwentyMatch.service.RecentTwentyMatchService;
-import com.matching.ezgg.matching.dto.MemberDataBundle;
+import com.matching.ezgg.matching.dto.MemberDataBundleDto;
 import com.matching.ezgg.member.dto.MemberInfoDto;
 
 import lombok.RequiredArgsConstructor;
@@ -18,13 +18,13 @@ public class MemberDataBundleService {
 	private final MemberInfoService memberInfoService;
 	private final RecentTwentyMatchService recentTwentyMatchService;
 
-	public MemberDataBundle getMemberDataBundleByMemberId(Long memberId) {
+	public MemberDataBundleDto getMemberDataBundleByMemberId(Long memberId) {
 		log.info("memberId : {}", memberId);
 
 		// memberId로 MemberInfo 및  RecentTwentyMatch 조회
 		MemberInfoDto memberInfoDto = memberInfoService.findByMemberId(memberId);
 		RecentTwentyMatchDto recentTwentyMatchDto = RecentTwentyMatchDto.toDto(recentTwentyMatchService.getRecentTwentyMatchByMemberId(memberId));
 
-		return new MemberDataBundle(memberInfoDto, recentTwentyMatchDto);
+		return new MemberDataBundleDto(memberInfoDto, recentTwentyMatchDto);
 	}
 }
