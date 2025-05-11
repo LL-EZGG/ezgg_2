@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.matching.dto.MatchingSuccessResponse;
 import com.matching.ezgg.matching.dto.MemberDataBundleDto;
-import com.matching.ezgg.data.memberInfo.service.MemberDataBundleService;
+import com.matching.ezgg.matching.service.MemberDataBundleService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

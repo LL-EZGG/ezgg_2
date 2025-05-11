@@ -12,7 +12,7 @@ import com.matching.ezgg.member.dto.SignupRequest;
 import com.matching.ezgg.member.dto.SignupResponse;
 import com.matching.ezgg.member.service.MemberService;
 import com.matching.ezgg.data.memberInfo.entity.MemberInfo;
-import com.matching.ezgg.data.memberInfo.service.MemberDataBundleService;
+import com.matching.ezgg.matching.service.MemberDataBundleService;
 import com.matching.ezgg.data.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.global.annotation.LoginUser;
 import com.matching.ezgg.member.jwt.filter.JWTUtil;

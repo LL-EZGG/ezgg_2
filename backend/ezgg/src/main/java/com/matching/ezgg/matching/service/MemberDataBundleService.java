@@ -1,7 +1,8 @@
-package com.matching.ezgg.data.memberInfo.service;
+package com.matching.ezgg.matching.service;
 
 import org.springframework.stereotype.Service;
 
+import com.matching.ezgg.data.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.data.recentTwentyMatch.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.data.recentTwentyMatch.service.RecentTwentyMatchService;
 import com.matching.ezgg.matching.dto.MemberDataBundleDto;
