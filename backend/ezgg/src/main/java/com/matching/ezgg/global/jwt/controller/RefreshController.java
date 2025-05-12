@@ -4,11 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matching.ezgg.global.exception.InvalidTokenException;
-import com.matching.ezgg.global.jwt.filter.JWTUtil;
-import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
-import com.matching.ezgg.global.jwt.sevice.RefreshService;
 import com.matching.ezgg.global.response.SuccessResponse;
+import com.matching.ezgg.member.jwt.sevice.RefreshService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
