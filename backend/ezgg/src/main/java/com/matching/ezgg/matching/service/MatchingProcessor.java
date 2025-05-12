@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.matching.infra.es.service.EsMatchingFilter;
 import com.matching.ezgg.matching.infra.es.service.EsService;
-import com.matching.ezgg.matching.infra.redis.RedisStreamProducer;
+import com.matching.ezgg.matching.infra.redis.stream.RedisStreamProducer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

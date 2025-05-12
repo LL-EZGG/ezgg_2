@@ -17,7 +17,7 @@ import com.matching.ezgg.matching.dto.RecentTwentyMatchParsingDto;
 import com.matching.ezgg.matchCore.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.matchCore.recentTwentyMatch.entity.model.ChampionStat;
 import com.matching.ezgg.matching.infra.es.service.EsService;
-import com.matching.ezgg.matching.infra.redis.RedisStreamProducer;
+import com.matching.ezgg.matching.infra.redis.stream.RedisStreamProducer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
