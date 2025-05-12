@@ -1,10 +1,10 @@
-package com.matching.ezgg.member.jwt.sevice;
+package com.matching.ezgg.global.jwt.sevice;
 
 import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.global.exception.InvalidTokenException;
-import com.matching.ezgg.member.jwt.filter.JWTUtil;
-import com.matching.ezgg.member.jwt.repository.RedisRefreshTokenRepository;
+import com.matching.ezgg.global.jwt.filter.JWTUtil;
+import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
