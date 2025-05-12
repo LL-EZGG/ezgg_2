@@ -1,5 +1,7 @@
 package com.matching.ezgg.matchCore.memberInfo.dto;
 
+import java.util.List;
+
 import com.matching.ezgg.matchCore.memberInfo.entity.MemberInfo;
 
 import lombok.AllArgsConstructor;
@@ -18,6 +20,7 @@ public class MemberInfoDto {
 	private String tierNum;
 	private Integer wins;
 	private Integer losses;
+	private List<String> matchIds;
 
 	public static MemberInfoDto toDto(MemberInfo memberInfo) {
 		return MemberInfoDto.builder()
@@ -27,6 +30,7 @@ public class MemberInfoDto {
 			.tierNum(memberInfo.getTierNum())
 			.wins(memberInfo.getWins())
 			.losses(memberInfo.getLosses())
+			.matchIds(memberInfo.getMatchIds())
 			.build();
 	}
 }
