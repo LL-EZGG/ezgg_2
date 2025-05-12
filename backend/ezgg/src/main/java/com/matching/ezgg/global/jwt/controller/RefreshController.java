@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.matching.ezgg.global.exception.InvalidTokenException;
 import com.matching.ezgg.global.jwt.filter.JWTUtil;
 import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
+import com.matching.ezgg.global.jwt.sevice.RefreshService;
 import com.matching.ezgg.global.response.SuccessResponse;
 
 import jakarta.servlet.http.Cookie;
@@ -20,57 +21,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RefreshController {
 
-	private final JWTUtil jwtUtil;
-	private final RedisRefreshTokenRepository redisRefreshTokenRepository;
+	private final RefreshService refreshService;
 
 	@PostMapping("/refresh")
 	public ResponseEntity<SuccessResponse<Void>> refresh(HttpServletRequest request, HttpServletResponse response) {
-		String refreshToken = null;
+		String refreshToken = refreshService.validateAndExtractRefreshToken(request);
+		RefreshService.TokenPair newTokens = refreshService.generateAndDeleteAndSaveNewTokens(refreshToken);
 
-		Cookie[] cookies = request.getCookies();
-		if (cookies != null) {
-			for (Cookie cookie : cookies) {
-				if (cookie.getName().equals("Refresh")) {
-					refreshToken = cookie.getValue();
-				}
-			}
-		}
-
-		if (refreshToken == null) {
-			log.info(">>>>> refresh-token이 없습니다.");
-			throw new InvalidTokenException();
-		}
-
-		if (!jwtUtil.getCategory(refreshToken).equals("refresh")) {
-			log.error(">>>>> refresh-token이 아닙니다.");
-			throw new InvalidTokenException();
-		}
-
-		String memberUsername = jwtUtil.getMemberUsername(refreshToken);
-		
-		// Redis에서 저장된 리프레시 토큰 조회
-		String savedRefreshToken = redisRefreshTokenRepository.findByMemberId(memberUsername);
-		
-		if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
-			log.error(">>>>> 존재하지 않는 refresh-token입니다.");
-			throw new InvalidTokenException();
-		}
-
-		String role = jwtUtil.getRole(refreshToken);
-		Long memberId = jwtUtil.getMemberId(refreshToken);
-
-		long accessTokenExpiry = 60 * 60 * 1000L; // 1시간 유효 
-		long refreshTokenExpiry = 24 * 60 * 60 * 1000L; // 1일 유효
-
-		String newAccessToken = jwtUtil.createJwt("access", memberId, memberUsername, role, accessTokenExpiry);
-		String newRefreshToken = jwtUtil.createJwt("refresh", memberId, memberUsername, role, refreshTokenExpiry);
-
-		// Redis에서 기존 토큰 삭제 후 새 토큰 저장
-		redisRefreshTokenRepository.deleteByMemberId(memberUsername);
-		redisRefreshTokenRepository.save(memberUsername, newRefreshToken, refreshTokenExpiry);
-
-		response.setHeader("Authorization", "Bearer " + newAccessToken);
-		response.addCookie(createCookie("Refresh", newRefreshToken));
+		response.setHeader("Authorization", newTokens.accessToken());
+		response.addCookie(createCookie("Refresh", newTokens.refreshToken()));
 
 		return ResponseEntity.ok(SuccessResponse.<Void>builder()
 			.code("200")
