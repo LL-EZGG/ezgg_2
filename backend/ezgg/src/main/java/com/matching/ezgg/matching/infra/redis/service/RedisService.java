@@ -1,4 +1,4 @@
-package com.matching.ezgg.matching.infra.redis;
+package com.matching.ezgg.matching.infra.redis.service;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.matching.dto.MatchingSuccessResponse;
 import com.matching.ezgg.matching.dto.MemberDataBundleDto;
+import com.matching.ezgg.matching.infra.redis.key.RedisKey;
 import com.matching.ezgg.matching.service.MemberDataBundleService;
 
 import lombok.RequiredArgsConstructor;

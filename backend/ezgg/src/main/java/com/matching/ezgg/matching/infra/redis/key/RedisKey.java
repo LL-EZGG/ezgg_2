@@ -1,4 +1,4 @@
-package com.matching.ezgg.matching.infra.redis;
+package com.matching.ezgg.matching.infra.redis.key;
 
 public enum RedisKey {
     STREAM_KEY("matching-stream"),

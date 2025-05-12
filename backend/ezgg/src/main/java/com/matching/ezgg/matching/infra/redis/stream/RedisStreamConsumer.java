@@ -1,4 +1,4 @@
-package com.matching.ezgg.matching.infra.redis;
+package com.matching.ezgg.matching.infra.redis.stream;
 
 import java.util.List;
 
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
+import com.matching.ezgg.matching.infra.redis.service.RedisService;
 import com.matching.ezgg.matching.service.MatchingProcessor;
 
 import jakarta.annotation.PostConstruct;

@@ -1,4 +1,4 @@
-package com.matching.ezgg.matching.infra.redis;
+package com.matching.ezgg.matching.infra.redis.queue;
 
 import java.util.Set;
 
@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
+import com.matching.ezgg.matching.infra.redis.service.RedisService;
+import com.matching.ezgg.matching.infra.redis.stream.RedisStreamProducer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
