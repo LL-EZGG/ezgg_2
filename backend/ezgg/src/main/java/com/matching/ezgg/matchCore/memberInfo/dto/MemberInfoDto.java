@@ -20,8 +20,6 @@ public class MemberInfoDto {
 	private String tierNum;
 	private Integer wins;
 	private Integer losses;
-	private List<String> matchIds;
-	private Long memberId;
 
 	public static MemberInfoDto toDto(MemberInfo memberInfo) {
 		return MemberInfoDto.builder()
@@ -31,8 +29,6 @@ public class MemberInfoDto {
 			.tierNum(memberInfo.getTierNum())
 			.wins(memberInfo.getWins())
 			.losses(memberInfo.getLosses())
-			.matchIds(memberInfo.getMatchIds())
-			.memberId(memberInfo.getMemberId())
 			.build();
 	}
 }
