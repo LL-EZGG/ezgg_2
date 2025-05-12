@@ -5,7 +5,7 @@ import {LoadingSpinner} from "../../layout/LoadingSpinner.jsx";
 import styled from '@emotion/styled';
 
 export const UserProfileCard = ({ userInfo, memberDataBundle, isLoading }) => {
-  const { memberInfo, recentTwentyMatch } = memberDataBundle || {};
+  const { memberInfoDto, recentTwentyMatchDto } = memberDataBundle || {};
 
   return (
     <ProfileCard>
@@ -13,18 +13,18 @@ export const UserProfileCard = ({ userInfo, memberDataBundle, isLoading }) => {
         <LoadingSpinner type={'user'}/>
       ) : (
         <>
-          <ChampionGallery champions = {recentTwentyMatch?.championStats} />
+          <ChampionGallery champions = {recentTwentyMatchDto?.championStats} />
           <ProfileInfo>
             <ProfileTitle>
               {userInfo?.riotUsername || "사용자"} #{userInfo?.riotTag || "0000"}
             </ProfileTitle>
             <RankBadge
-              tier={memberDataBundle?.memberInfo?.tier}
-              tierNum={memberDataBundle?.memberInfo?.tierNum}
+              tier={memberInfoDto?.tier}
+              tierNum={memberInfoDto?.tierNum}
             />
             <WinRateStats
-              winRate={Math.round(memberInfo?.wins / (memberInfo?.wins + memberInfo?.losses) * 100)}
-              champions={recentTwentyMatch?.championStats}
+              winRate={Math.round(memberInfoDto?.wins / (memberInfoDto?.wins + memberInfoDto?.losses) * 100)}
+              champions={recentTwentyMatchDto?.championStats}
             />
           </ProfileInfo>
         </>
