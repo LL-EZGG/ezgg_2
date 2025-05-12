@@ -27,9 +27,6 @@ public class MemberDataBundleService {
 		RecentTwentyMatchDto recentTwentyMatchDto = RecentTwentyMatchDto.toDto(
 			recentTwentyMatchService.getRecentTwentyMatchByMemberId(memberId));
 
-		return MemberDataBundleDto.builder()
-			.memberInfoDto(memberInfoDto)
-			.recentTwentyMatchDto(recentTwentyMatchDto)
-			.build();
+		return MemberDataBundleDto.toDto(memberInfoDto, recentTwentyMatchDto);
 	}
 }
