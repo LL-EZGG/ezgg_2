@@ -29,18 +29,4 @@ const RankBadgeContainer = styled.div`
         font-size: 1.5rem;
         font-weight: 500;
     }
-
-    @media (max-width: 768px) {
-        padding: 1rem;
-        gap: 0.8rem;
-
-        img {
-            width: 50px;
-            height: 50px;
-        }
-
-        span {
-            font-size: 1.2rem;
-        }
-    }
 `;

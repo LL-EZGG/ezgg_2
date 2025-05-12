@@ -1,12 +1,12 @@
 import styled from '@emotion/styled';
 
-export const WinRateStats = ({ stats, champions }) => (
+export const WinRateStats = ({ winRate, champions }) => (
   <StatsContainer>
-    <StatItem>승률: {stats?.winRate || "0"}%</StatItem>
-    {champions?.length > 0 ? (
-      champions.map((champion, index) => (
+    <StatItem>승률: {winRate || "0"}%</StatItem>
+    {champions && Object.keys(champions).length > 0 ? (
+      Object.values(champions).map((champion, index) => (
         <StatItem key={index}>
-          {champion}: {stats[champion] || "0"}% 승률
+          {champion.championName}: {champion.winRateOfChampion || "0"}% 승률
         </StatItem>
       ))
     ) : (

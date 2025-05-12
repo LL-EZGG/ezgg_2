@@ -53,14 +53,8 @@ const Container = styled.div`
     justify-content: center;
 
     @media (max-width: 1024px) {
-        width: 90%;
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    @media (max-width: 768px) {
         width: 95%;
-        padding: 1rem;
-        gap: 1rem;
+        flex-direction: column;
+        align-items: center;
     }
 `;

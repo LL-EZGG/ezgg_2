@@ -3,9 +3,10 @@ import { ChampionPortrait } from './ChampionPortrait.jsx';
 
 export const ChampionGallery = ({ champions }) => (
   <Gallery>
-    {champions && champions.length > 0 ? (
-      champions.map((champion) => (
-        <ChampionPortrait key={champion} champion={champion} />
+    {
+      champions && Object.keys(champions).length > 0 ? (
+        Object.values(champions).map((champion) => (
+        <ChampionPortrait key={champion.championName} champion={champion.championName} />
       ))
     ) : (
       <>
@@ -26,9 +27,5 @@ const Gallery = styled.div`
   & > * {
     flex: 1;
     min-width: 0;
-  }
-  @media (max-width: 768px) {
-    height: 160px;
-    margin: 0 -1rem;
   }
 `;

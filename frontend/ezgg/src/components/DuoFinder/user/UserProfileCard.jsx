@@ -3,10 +3,9 @@ import {RankBadge} from "./RankBadge.jsx";
 import {WinRateStats} from "./WinRateStats.jsx";
 import {LoadingSpinner} from "../../layout/LoadingSpinner.jsx";
 import styled from '@emotion/styled';
-import React from "react";
 
 export const UserProfileCard = ({ userInfo, memberDataBundle, isLoading }) => {
-  const { mostPlayedChampions, championWinRates } = memberDataBundle || {};
+  const { memberInfo, recentTwentyMatch } = memberDataBundle || {};
 
   return (
     <ProfileCard>
@@ -14,18 +13,18 @@ export const UserProfileCard = ({ userInfo, memberDataBundle, isLoading }) => {
         <LoadingSpinner type={'user'}/>
       ) : (
         <>
-          <ChampionGallery champion = {mostPlayedChampions} />
+          <ChampionGallery champions = {recentTwentyMatch?.championStats} />
           <ProfileInfo>
             <ProfileTitle>
-              {userInfo?.riotUsername || "사용자"}#{userInfo?.riotTag || "0000"}
+              {userInfo?.riotUsername || "사용자"} #{userInfo?.riotTag || "0000"}
             </ProfileTitle>
             <RankBadge
               tier={memberDataBundle?.memberInfo?.tier}
               tierNum={memberDataBundle?.memberInfo?.tierNum}
             />
             <WinRateStats
-              stats={championWinRates}
-              champions={mostPlayedChampions}
+              winRate={Math.round(memberInfo?.wins / (memberInfo?.wins + memberInfo?.losses) * 100)}
+              champions={recentTwentyMatch?.championStats}
             />
           </ProfileInfo>
         </>
@@ -48,31 +47,20 @@ const ProfileCard = styled.div`
     @media (max-width: 1024px) {
         max-width: 100%;
     }
-
-    @media (max-width: 768px) {
-        padding: 1rem;
-    }
 `;
 
 const ProfileInfo = styled.div`
-    padding: 2rem 0 0;
     color: white;
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    gap: 1.7rem;
+    justify-content: center;
+    gap: 0.9rem;
 `;
 
 const ProfileTitle = styled.h3`
     font-size: 1.6rem;
     color: white;
-    padding: 0 1.5rem;
+    padding: 1rem 1.5rem 0;
     font-weight: 800;
-
-    @media (max-width: 768px) {
-        font-size: 1.2rem;
-        padding: 0 1rem;
-        margin-bottom: 1.5rem;
-    }
 `;

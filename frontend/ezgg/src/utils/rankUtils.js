@@ -1,6 +1,6 @@
 export const getRankImageSrc = (tier) => {
   const tierLower = (tier || "").toLowerCase();
-  const validTiers = ["iron", "bronze", "..."]; // 전체 티어 목록
+  const validTiers = ["iron", "bronze", "silver", "gold", "platinum", "emerald", "diamond", "master", "grandmaster", "challenger"];
 
   return validTiers.includes(tierLower)
     ? `/ranks/${tierLower}.png`
