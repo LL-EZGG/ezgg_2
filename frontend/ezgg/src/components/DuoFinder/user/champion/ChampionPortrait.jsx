@@ -1,4 +1,4 @@
-import { getChampionImageSrc } from '../utils/championUtils';
+import { getChampionImageSrc } from '../../../../utils/championUtils.js';
 
 export const ChampionPortrait = ({ champion }) => (
   <img

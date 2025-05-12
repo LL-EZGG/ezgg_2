@@ -1,6 +1,6 @@
-import DuoFinderForm from "./DuoFinder/DuoFinderForm.jsx";
+import DuoFinderForm from "../DuoFinderForm.jsx";
 import styled from '@emotion/styled';
-import MatchingLoading from "./DuoFinder/MatchingLoading.jsx";
+import MatchingCriteriaInfo from "./MatchingCriteriaInfo.jsx";
 
 export const MatchingInterface = (
   {
@@ -11,7 +11,7 @@ export const MatchingInterface = (
   }) => (
   <FormContainer>
     {isMatching ? (
-      <MatchingLoading
+      <MatchingCriteriaInfo
         matchingCriteria={matchingCriteria}
         matchResult={matchResult}
       />
@@ -35,6 +35,7 @@ const FormContainer = styled.div`
     flex-direction: column;
     min-height: 635px;
     padding: 2rem;
+    justify-content: center;
 
     @media (max-width: 1024px) {
         max-width: 100%;

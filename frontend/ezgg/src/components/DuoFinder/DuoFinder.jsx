@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from '@emotion/styled';
-import {UserProfileCard} from "../UserProfileCard.jsx";
-import {MatchingInterface} from "../MatchingInterface.jsx";
+import {UserProfileCard} from "./user/UserProfileCard.jsx";
+import {MatchingInterface} from "./matching/MatchingInterface.jsx";
 
 const DuoFinder = (
   {

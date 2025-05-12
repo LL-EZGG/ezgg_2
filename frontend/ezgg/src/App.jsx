@@ -3,10 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } f
 import styled from '@emotion/styled';
 import api from './utils/api';
 import DuoFinder from './components/DuoFinder/DuoFinder'
-import Login from './components/layout/Login';
-import Join from './components/layout/Join';
+import Login from './components/auth/Login';
+import Join from './components/auth/Join';
 import {useMatchingSystem} from "./hooks/useMatchingSystem.js";
-import {MatchingButtonPanel} from "./components/MatchingButtonPanel.jsx";
+import {MatchingButtonPanel} from "./components/DuoFinder/matching/MatchingButtonPanel.jsx";
 
 // 로그인 상태에 따라 리다이렉트하는 보호된 라우트 컴포넌트
 const ProtectedRoute = ({ element, isLoggedIn }) => {

@@ -1,7 +1,7 @@
-import {ChampionGallery} from "./ChampionGallery.jsx";
+import {ChampionGallery} from "./champion/ChampionGallery.jsx";
 import {RankBadge} from "./RankBadge.jsx";
 import {WinRateStats} from "./WinRateStats.jsx";
-import {LoadingSpinner} from "./LoadingSpinner.jsx";
+import {LoadingSpinner} from "../../layout/LoadingSpinner.jsx";
 import styled from '@emotion/styled';
 import React from "react";
 

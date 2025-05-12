@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { getRankImageSrc, formatTierText } from '../utils/rankUtils';
+import { getRankImageSrc, formatTierText } from '../../../utils/rankUtils.js';
 
 export const RankBadge = ({ tier, tierNum }) => (
   <RankBadgeContainer>

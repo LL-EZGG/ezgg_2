@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 
-const MatchingLoading = ({ matchingCriteria }) => {
+const MatchingCriteriaInfo = ({ matchingCriteria }) => {
   return (
     <Container>
       <LoadingSpinner />
@@ -27,7 +27,7 @@ const MatchingLoading = ({ matchingCriteria }) => {
   );
 };
 
-export default MatchingLoading;
+export default MatchingCriteriaInfo;
 
 const Container = styled.div`
   flex: 1;
@@ -37,7 +37,6 @@ const Container = styled.div`
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  //min-height: 635px;
 
   @media (max-width: 1024px) {
     max-width: 100%;
