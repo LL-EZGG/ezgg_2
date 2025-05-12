@@ -6,16 +6,16 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.matching.ezgg.data.riotApi.dto.MatchDto;
-import com.matching.ezgg.data.riotApi.dto.WinRateNTierDto;
-import com.matching.ezgg.data.riotApi.service.ApiService;
+import com.matching.ezgg.matchCore.riotApi.dto.MatchDto;
+import com.matching.ezgg.matchCore.riotApi.dto.WinRateNTierDto;
+import com.matching.ezgg.matchCore.riotApi.service.ApiService;
 import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.matching.dto.MemberDataBundleDto;
 import com.matching.ezgg.matching.dto.MemberInfoParsingDto;
 import com.matching.ezgg.matching.dto.PreferredPartnerParsingDto;
 import com.matching.ezgg.matching.dto.RecentTwentyMatchParsingDto;
-import com.matching.ezgg.data.memberInfo.service.MemberInfoService;
-import com.matching.ezgg.data.recentTwentyMatch.entity.model.ChampionStat;
+import com.matching.ezgg.matchCore.memberInfo.service.MemberInfoService;
+import com.matching.ezgg.matchCore.recentTwentyMatch.entity.model.ChampionStat;
 import com.matching.ezgg.matching.infra.es.service.EsService;
 import com.matching.ezgg.matching.infra.redis.RedisStreamProducer;
 

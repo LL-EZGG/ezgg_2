@@ -5,16 +5,16 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matching.ezgg.data.matchInfo.service.MatchInfoService;
-import com.matching.ezgg.data.memberInfo.entity.MemberInfo;
-import com.matching.ezgg.data.memberInfo.service.MemberInfoService;
-import com.matching.ezgg.data.recentTwentyMatch.entity.RecentTwentyMatch;
-import com.matching.ezgg.data.recentTwentyMatch.service.RecentTwentyMatchBuilderService;
-import com.matching.ezgg.data.recentTwentyMatch.service.RecentTwentyMatchService;
-import com.matching.ezgg.data.riotApi.dto.MatchDto;
-import com.matching.ezgg.data.recentTwentyMatch.dto.RecentTwentyMatchDto;
-import com.matching.ezgg.data.riotApi.dto.WinRateNTierDto;
-import com.matching.ezgg.data.memberInfo.dto.MemberInfoDto;
+import com.matching.ezgg.matchCore.matchInfo.service.MatchInfoService;
+import com.matching.ezgg.matchCore.memberInfo.entity.MemberInfo;
+import com.matching.ezgg.matchCore.memberInfo.service.MemberInfoService;
+import com.matching.ezgg.matchCore.recentTwentyMatch.entity.RecentTwentyMatch;
+import com.matching.ezgg.matchCore.recentTwentyMatch.service.RecentTwentyMatchBuilderService;
+import com.matching.ezgg.matchCore.recentTwentyMatch.service.RecentTwentyMatchService;
+import com.matching.ezgg.matchCore.riotApi.dto.MatchDto;
+import com.matching.ezgg.matchCore.recentTwentyMatch.dto.RecentTwentyMatchDto;
+import com.matching.ezgg.matchCore.riotApi.dto.WinRateNTierDto;
+import com.matching.ezgg.matchCore.memberInfo.dto.MemberInfoDto;
 
 import lombok.RequiredArgsConstructor;
 
