@@ -4,7 +4,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import com.matching.ezgg.global.response.SuccessResponse;
 import com.matching.ezgg.member.jwt.sevice.RefreshService;
 
