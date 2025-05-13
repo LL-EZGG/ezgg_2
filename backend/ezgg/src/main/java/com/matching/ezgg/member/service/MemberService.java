@@ -68,9 +68,6 @@ public class MemberService {
 		MemberInfo memberInfo = memberInfoService.createNewMemberInfo(member.getId(), signupRequest.getRiotUsername(),
 			signupRequest.getRiotTag(), newPuuid);
 
-		// 외부 API로부터 모든 데이터 업데이트
-		matchingService.updateAllAttributesOfMember(member.getId());
-
 		return SignupResponse.builder()
 			.memberUsername(member.getMemberUsername())
 			.email(member.getEmail())

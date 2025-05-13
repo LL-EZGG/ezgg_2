@@ -22,10 +22,11 @@ public class MemberDataBundleService {
 	public MemberDataBundleDto getMemberDataBundleByMemberId(Long memberId) {
 		log.info("memberId : {}", memberId);
 
-		// memberId로 MemberInfo 및  RecentTwentyMatch 조회
+		// memberId로 MemberInfo 및 RecentTwentyMatch 조회
 		MemberInfoDto memberInfoDto = memberInfoService.findByMemberId(memberId);
-		RecentTwentyMatchDto recentTwentyMatchDto = RecentTwentyMatchDto.toDto(recentTwentyMatchService.getRecentTwentyMatchByMemberId(memberId));
+		RecentTwentyMatchDto recentTwentyMatchDto = RecentTwentyMatchDto.toDto(
+			recentTwentyMatchService.getRecentTwentyMatchByMemberId(memberId));
 
-		return new MemberDataBundleDto(memberInfoDto, recentTwentyMatchDto);
+		return MemberDataBundleDto.toDto(memberInfoDto, recentTwentyMatchDto);
 	}
 }

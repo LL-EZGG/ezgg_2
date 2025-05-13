@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.matching.infra.es.service.EsMatchingFilter;
-import com.matching.ezgg.matching.infra.es.service.EsService;
 import com.matching.ezgg.matching.infra.redis.stream.RedisStreamProducer;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,6 @@ public class MatchingProcessor {
 
 	private final EsMatchingFilter esMatchingFilter;
 	private final RedisStreamProducer redisStreamProducer;
-	private final EsService esService;
 
 	public void tryMatch(MatchingFilterParsingDto matchingFilterParsingDto) {
 		try {
@@ -44,11 +42,6 @@ public class MatchingProcessor {
 			log.info("매칭 성공! >>>>> {} : {}", matchingFilterParsingDto.getMemberId(), bestMatchingUser.getMemberId());
 
 			redisStreamProducer.acknowledgeBothUser(matchingFilterParsingDto, bestMatchingUser);
-
-			// ES에서 매칭된 유저들의 데이터 삭제
-			esService.deleteDocByMemberId(matchingFilterParsingDto.getMemberId());
-			esService.deleteDocByMemberId(bestMatchingUser.getMemberId());
-
 			redisStreamProducer.removeRetryCandidate(matchingFilterParsingDto);
 			redisStreamProducer.removeRetryCandidate(bestMatchingUser);
 		} catch (Exception e) {
