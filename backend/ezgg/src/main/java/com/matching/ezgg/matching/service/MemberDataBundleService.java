@@ -2,11 +2,11 @@ package com.matching.ezgg.matching.service;
 
 import org.springframework.stereotype.Service;
 
-import com.matching.ezgg.matchCore.memberInfo.service.MemberInfoService;
-import com.matching.ezgg.matchCore.recentTwentyMatch.dto.RecentTwentyMatchDto;
-import com.matching.ezgg.matchCore.recentTwentyMatch.service.RecentTwentyMatchService;
+import com.matching.ezgg.dataProcessor.memberInfo.service.MemberInfoService;
+import com.matching.ezgg.dataProcessor.recentTwentyMatch.dto.RecentTwentyMatchDto;
+import com.matching.ezgg.dataProcessor.recentTwentyMatch.service.RecentTwentyMatchService;
 import com.matching.ezgg.matching.dto.MemberDataBundleDto;
-import com.matching.ezgg.matchCore.memberInfo.dto.MemberInfoDto;
+import com.matching.ezgg.dataProcessor.memberInfo.dto.MemberInfoDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

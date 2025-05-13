@@ -1,7 +1,7 @@
 package com.matching.ezgg.matching.dto;
 
-import com.matching.ezgg.matchCore.recentTwentyMatch.dto.RecentTwentyMatchDto;
-import com.matching.ezgg.matchCore.memberInfo.dto.MemberInfoDto;
+import com.matching.ezgg.dataProcessor.recentTwentyMatch.dto.RecentTwentyMatchDto;
+import com.matching.ezgg.dataProcessor.memberInfo.dto.MemberInfoDto;
 
 import lombok.Builder;
 import lombok.Getter;
