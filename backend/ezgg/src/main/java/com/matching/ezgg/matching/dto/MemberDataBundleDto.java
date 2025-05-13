@@ -1,23 +1,21 @@
 package com.matching.ezgg.matching.dto;
 
-import com.matching.ezgg.data.recentTwentyMatch.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.data.memberInfo.dto.MemberInfoDto;
+import com.matching.ezgg.data.recentTwentyMatch.dto.RecentTwentyMatchDto;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@Builder
 public class MemberDataBundleDto {
 	private MemberInfoDto memberInfoDto;
 	private RecentTwentyMatchDto recentTwentyMatchDto;
 
-	@Builder
-	public MemberDataBundleDto(MemberInfoDto memberInfoDto, RecentTwentyMatchDto recentTwentyMatchDto){
-		this.memberInfoDto = memberInfoDto;
-		this.recentTwentyMatchDto = recentTwentyMatchDto; // 한판도 안한 경우 빈 객체가 나옴
+	public static MemberDataBundleDto toDto(MemberInfoDto memberInfoDto, RecentTwentyMatchDto recentTwentyMatchDto) {
+		return MemberDataBundleDto.builder()
+			.memberInfoDto(memberInfoDto)
+			.recentTwentyMatchDto(recentTwentyMatchDto)
+			.build();
 	}
 }
