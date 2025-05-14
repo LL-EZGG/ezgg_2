@@ -59,15 +59,6 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
         }
     }, [onDisconnect]);
 
-    // const sendMatchingRequest = useCallback((payload) => {
-    //   if (!stompClient.current?.connected) {
-    //     connect(() => { // 연결 보장 후 전송
-    //       stompClient.current.send('/app/matching/start', {}, JSON.stringify(payload));
-    //     });
-    //     return;
-    //   }
-    //   stompClient.current.send('/app/matching/start', {}, JSON.stringify(payload));
-    // }, [connect]);
     const sendMatchingRequest = useCallback((payload) => {
         // 필요한 데이터만 추출하여 최적화된 페이로드 생성
         const optimizedPayload = {
