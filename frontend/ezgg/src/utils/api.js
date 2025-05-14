@@ -9,7 +9,7 @@ const api = axios.create({
 // 토큰 관련 유틸리티 함수들
 const tokenUtils = {
   get: () => localStorage.getItem('token'),
-  set: (token) => localStorage.setItem('token', token),
+  set: (token) => localStorage.setItem('token', 'Bearer ' + token),
   remove: () => localStorage.removeItem('token'),
   format: (token) => token.startsWith('Bearer ') ? token : `Bearer ${token}`,
 };

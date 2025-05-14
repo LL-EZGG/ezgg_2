@@ -67,7 +67,7 @@ public class SecurityConfig {
 
 		// URL 접근 권한 설정
 		http.authorizeHttpRequests((auth) -> auth
-			.requestMatchers("/auth/**", "/login", "/refresh", "/riotapi/**", "/es/**", "/redis/**", "/matching/**", "/ws/**", "/ws").permitAll() // 해당 요청 은 인증 없이 접근 가능
+			.requestMatchers("/auth/**", "/login", "/refresh", "/ws/**", "/ws").permitAll() // 해당 요청 은 인증 없이 접근 가능
 			.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 			.anyRequest().hasAnyAuthority("ROLE_USER")); // 나머지 요청은 ROLE_USER 권한이 있어야 접근 가능
 
@@ -99,22 +99,4 @@ public class SecurityConfig {
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
 	}
-
-	// @Bean
-	// public CorsFilter corsFilter() {
-	// 	// CORS 설정
-	// 	CorsConfiguration configuration = new CorsConfiguration();
-	//
-	// 	configuration.addAllowedOrigin("http://localhost:3000");
-	// 	configuration.addAllowedOrigin("http://localhost:5173");
-	// 	configuration.addAllowedMethod("*");
-	// 	configuration.addAllowedHeader("*");
-	// 	configuration.addExposedHeader("Authorization");
-	// 	configuration.setAllowCredentials(true);
-	//
-	// 	UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-	// 	source.registerCorsConfiguration("/**", configuration);
-	//
-	// 	return new CorsFilter(source);
-	// }
 }

@@ -1,15 +1,42 @@
 import {useRef, useCallback, useState} from 'react';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
+import api from '../utils/api';
 
 export const useWebSocket = ({ onMessage, onConnect, onDisconnect, onError }) => {
     const stompClient = useRef(null);
     const [isConnected, setIsConnected] = useState(false);
 
-    const connect = useCallback((onConnectedCallback) => {
+    // 토큰 유효성 검증 함수
+    const validateToken = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if(!token) {
+          console.log("[useWebSocket.js]\nToken not found");
+          return false;
+        }
+        // 단순히 API 요청을 보내서 토큰 검증
+        // 401이 떨어지면 api.js의 인터셉터가 자동으로 토큰을 재발급 받음
+        await api.get('/auth/memberinfo');
+        return true;
+      } catch (error) {
+        console.log('[useWebSocket.js] Token validation or refresh failed:', error);
+        return false;
+      }
+    }
+
+    const connect = useCallback(async(onConnectedCallback) => {
       if (stompClient.current && stompClient.current.connected) {
         // 이미 연결된 경우 바로 콜백 실행
         onConnectedCallback?.();
+        return;
+      }
+
+      // 웹소켓 연결 전 토큰 유효성 검증
+      const isTokenValid = await validateToken();
+      if (!isTokenValid) {
+        console.error('[useWebSocket.js] Invalid or expired token and refresh failed');
+        if (onError) onError('인증이 만료되었습니다. 다시 로그인해주세요.');
         return;
       }
 
@@ -43,12 +70,12 @@ export const useWebSocket = ({ onMessage, onConnect, onDisconnect, onError }) =>
           onConnectedCallback?.();
         },
         (error) => {
-          console.error("WebSocket error", error);
+          console.error("[useWebSocket.js] WebSocket error", error);
           setIsConnected(false);
           if (onDisconnect) onDisconnect();
         }
       );
-    }, [onConnect, onMessage, onDisconnect]);
+    }, [onConnect, onMessage, onDisconnect, onError]);
 
   const disconnect = useCallback(() => {
     if (stompClient.current) {
@@ -59,8 +86,14 @@ export const useWebSocket = ({ onMessage, onConnect, onDisconnect, onError }) =>
     }
   }, [onDisconnect]);
 
-  const sendMatchingRequest = useCallback((payload) => {
+  const sendMatchingRequest = useCallback(async (payload) => {
     if (!stompClient.current?.connected) {
+      // 연결 전에 토큰 유효성 검증
+      const isTokenValid = await validateToken();
+      if (!isTokenValid) {
+        if (onError) onError('인증이 만료되었습니다');
+        return;
+      }
       connect(() => { // 연결 보장 후 전송
         stompClient.current.send('/app/matching/start', {}, JSON.stringify(payload));
       });
