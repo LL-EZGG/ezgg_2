@@ -27,7 +27,7 @@ public class EsMatchingFilter {
 
 	public List<MatchingFilterParsingDto> findMatchingUsers(String myLine, String partnerLine, String tier,
 		Long myMemberId,
-		String preferredChampion, String unpreferredChampion) {
+		List<String> preferredChampion, List<String> unpreferredChampion) {
 		Query query = Query.of(q -> q
 			.bool(b -> b
 				.filter(
@@ -82,14 +82,54 @@ public class EsMatchingFilter {
 	}
 
 	// 가중치 계산 로직
-	private int calculateUserWeight(MatchingFilterParsingDto user, String preferredChampion,
-		String unpreferredChampion) {
+	private int calculateUserWeight(MatchingFilterParsingDto user, List<String> preferredChampion,
+		List<String> unpreferredChampion) {
 		List<RecentTwentyMatchParsingDto.MostChampion> mostChampionList = user.getRecentTwentyMatchParsing()
 			.getMostChampions();
 
 		// 내가 선호하는 챔피언과 비선호하는 챔피언이 상대방의 모스트 챔피언 목록에 있는지 확인
-		int preferredChampionWeight = getChampionWeight(preferredChampion, true, mostChampionList);
-		int unpreferredChampionWeight = getChampionWeight(unpreferredChampion, false, mostChampionList);
+		if (preferredChampion != null && !preferredChampion.isEmpty()) {
+			for (String champion : preferredChampion) {
+				if (champion != null && !champion.isEmpty() &&
+					mostChampionList.stream()
+						.noneMatch(championInfo -> championInfo.getChampionName().equals(champion))) {
+					log.debug("선호 챔피언 {}가 상대방의 모스트 챔피언 목록에 없습니다.", champion);
+					return 0; // 선호 챔피언이 없으면 가중치 0
+				}
+			}
+		}
+
+		if (unpreferredChampion != null && !unpreferredChampion.isEmpty()) {
+			for (String champion : unpreferredChampion) {
+				if (champion != null && !champion.isEmpty() &&
+					mostChampionList.stream()
+						.anyMatch(championInfo -> championInfo.getChampionName().equals(champion))) {
+					log.debug("비선호 챔피언 {}가 상대방의 모스트 챔피언 목록에 있습니다.", champion);
+					return 0; // 비선호 챔피언이 있으면 가중치 0
+				}
+			}
+		}
+
+		int preferredChampionWeight = 0;
+		int unpreferredChampionWeight = 0;
+
+		// 각 선호 챔피언에 대한 가중치 합산
+		if (preferredChampion != null) {
+			for (String champion : preferredChampion) {
+				if (champion != null && !champion.isEmpty()) {
+					preferredChampionWeight += getChampionWeight(champion, true, mostChampionList);
+				}
+			}
+		}
+
+		// 각 비선호 챔피언에 대한 가중치 합산
+		if (unpreferredChampion != null) {
+			for (String champion : unpreferredChampion) {
+				if (champion != null && !champion.isEmpty()) {
+					unpreferredChampionWeight += getChampionWeight(champion, false, mostChampionList);
+				}
+			}
+		}
 
 		// 최종 매칭 점수 계산: 선호 챔피언 가중치 - 비선호 챔피언 가중치
 		// 음수가 나올수 잇음 ( 비선호 챔피언에 가중치가 더 높을 경우 )
@@ -114,7 +154,8 @@ public class EsMatchingFilter {
 		int championRank = getChampionRank(championName, mostChampions);
 
 		// 승률 가중치 (승률이 높을수록 가중치 증가)
-		int winRateWeight = championInfo.getWinRateOfChampion() / 10; // 승률을 10으로 나눠 0~10 범위의 가중치로 변환
+		// int winRateWeight = championInfo.getWinRateOfChampion() / 10; // 승률을 10으로 나눠 0~10 범위의 가중치로 변환
+		int winRateWeight = 0; // 승률관련 가중치 정해진게 없어 0으로 처리
 
 		// 순위 가중치
 		int rankWeight = 0;
