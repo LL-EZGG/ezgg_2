@@ -52,14 +52,15 @@ public class JWTUtil {
 
 	// 토큰 만료 여부 확인
 	public Boolean isExpired(String token) {
+
 		return parseClaims(token).getExpiration().before(new java.util.Date());
 	}
-	
+
 	// 토큰의 만료 시간 가져오기 (밀리초 단위)
 	public long getExpirationTime(String token) {
 		return parseClaims(token).getExpiration().getTime();
 	}
-	
+
 	// HTTP 요청 헤더에서 토큰 추출하기
 	public String extractTokenFromRequest(HttpServletRequest request) {
 		String token = request.getHeader("Authorization");

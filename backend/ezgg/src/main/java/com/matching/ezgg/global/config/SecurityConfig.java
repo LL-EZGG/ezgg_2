@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
@@ -58,6 +60,7 @@ public class SecurityConfig {
 
 		// 기본 설정 비활성화
 		http
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable);
@@ -83,10 +86,8 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public CorsFilter corsFilter() {
-		// CORS 설정
+	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-
 		configuration.addAllowedOrigin("http://localhost:3000");
 		configuration.addAllowedOrigin("http://localhost:5173");
 		configuration.addAllowedMethod("*");
@@ -96,7 +97,24 @@ public class SecurityConfig {
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
-
-		return new CorsFilter(source);
+		return source;
 	}
+
+	// @Bean
+	// public CorsFilter corsFilter() {
+	// 	// CORS 설정
+	// 	CorsConfiguration configuration = new CorsConfiguration();
+	//
+	// 	configuration.addAllowedOrigin("http://localhost:3000");
+	// 	configuration.addAllowedOrigin("http://localhost:5173");
+	// 	configuration.addAllowedMethod("*");
+	// 	configuration.addAllowedHeader("*");
+	// 	configuration.addExposedHeader("Authorization");
+	// 	configuration.setAllowCredentials(true);
+	//
+	// 	UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	// 	source.registerCorsConfiguration("/**", configuration);
+	//
+	// 	return new CorsFilter(source);
+	// }
 }
