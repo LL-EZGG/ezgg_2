@@ -10,7 +10,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
     // 토큰 유효성 검증 함수
     const validateToken = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = tokenUtils.get();
         if(!token) {
           console.log("[useWebSocket.js]\nToken not found");
           return false;
@@ -40,7 +40,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
         return;
       }
 
-      const token = localStorage.getItem('token');
+      const token = tokenUtils.get();
       console.log("[useWebSocket.js]\ntoken: ", token);
       const socket = new SockJS(`http://localhost:8888/ws?token=${token}`);
       stompClient.current = Stomp.over(socket);
@@ -86,7 +86,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
         }
     }, [onDisconnect]);
 
-    const sendMatchingRequest = useCallback((payload) => {
+    const sendMatchingRequest = useCallback(async(payload) => {
         // 필요한 데이터만 추출하여 최적화된 페이로드 생성
         const optimizedPayload = {
             wantLine: payload.wantLine,

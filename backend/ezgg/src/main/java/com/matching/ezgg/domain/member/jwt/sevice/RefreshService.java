@@ -23,7 +23,7 @@ public class RefreshService {
 	private final RedisRefreshTokenRepository redisRefreshTokenRepository;
 	private final MemberService memberService;
 
-	private final static long ACCESS_TOKEN_EXPIRY = 20 * 1000L; // 1시간
+	private final static long ACCESS_TOKEN_EXPIRY = 60 * 60 * 1000L; // 1시간
 	private final static long REFRESH_TOKEN_EXPIRY = 24 * 60 * 60 * 1000L; // 24시간
 
 	/**

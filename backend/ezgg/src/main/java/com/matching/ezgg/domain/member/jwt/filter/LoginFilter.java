@@ -84,7 +84,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		GrantedAuthority auth = iterator.next();
 		String role = auth.getAuthority();
 
-		long accessTokenExpiry = 20 * 1000L; // 1시간 유효
+		long accessTokenExpiry = 60 * 60 * 1000L; // 1시간 유효
 		long refreshTokenExpiry = 24 * 60 * 60 * 1000L; // 1일 유효
 		String UUID = java.util.UUID.randomUUID().toString();
 

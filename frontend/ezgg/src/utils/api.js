@@ -75,8 +75,7 @@ api.interceptors.response.use(
     if (shouldRefresh) {
       try {
         error.config._retry = true;
-        const newToken = await refreshToken();
-        error.config.headers['Authorization'] = newToken;
+        error.config.headers['Authorization'] = await refreshToken();
         return api(error.config);
       } catch (refreshError) {
         return Promise.reject(refreshError);
