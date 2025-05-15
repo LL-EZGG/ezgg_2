@@ -2,7 +2,7 @@
  * SectionSelector.jsx
  * -----------------------------------------------------------------------------
  * 매칭 조건 설정 폼에서 사용되는 다목적 셀렉터 컴포넌트.
- * - 라인(TOP/JUG/MID/AD/SUP) 선택과 챔피언 선호/비선호 목록 선택 두 가지 모드를 가짐.
+ * - 라인(TOP/JUG/MID/AD/SUP) 선택, 챔피언 선호/비선호 선택, 사용자 메모(30자) 입력 세 가지 모드를 가짐.
  * - props 로 전달받은 matchingCriteria 를 직접 수정하지 않고, 반드시 setMatchingCriteria
  *   콜백을 통해 상위 상태를 업데이트한다.
  * ---------------------------------------------------------------------------*/
@@ -14,6 +14,8 @@ import {champions} from "../../data/champions.js";
 
 // 라인 버튼에 표시될 라벨 목록
 const lines = ['TOP', 'JUG', 'MID', 'AD', 'SUP'];
+// 사용자 메모 최대 글자 수
+const TEXT_LIMIT = 30;
 
 /* ------------- 보조 함수: 라인 선택 -------------------------------------------------------- */
 
@@ -56,7 +58,7 @@ const handleLineSelect = (type, line, matchingCriteria, setMatchingCriteria) => 
  * @prop {object}   matchingCriteria          - 상위 컴포넌트의 상태 객체
  * @prop {Function} setMatchingCriteria       - 상태 변경 함수(상태를 불변성 지켜 갱신)
 
- * @prop {'line'|'champion'} type             - 라인 선택 모드 or 챔피언 선택 모드
+ * @prop {'line'|'champion'|'userPreferenceText'} type - 라인 선택 모드 or 챔피언 선택 모드 or 텍스트 입력 모드
  * @prop {'my'|'partner'|'preferred'|'banned'} kind - 세부 유형(라인: my/partner, 챔피언: preferred/banned)
 
  * @prop {string}   selectedValue             - (라인 모드) 현재 선택된 값
@@ -65,7 +67,7 @@ const handleLineSelect = (type, line, matchingCriteria, setMatchingCriteria) => 
 const SectionSelector = ({
                            matchingCriteria,
                            setMatchingCriteria,
-                           type, // 'line' | 'champion'
+                           type, // 'line' | 'champion' | 'userPreferenceText'
                            kind, // 'my' | 'partner' | 'preferred' | 'banned'
                            selectedValue,
                            disabledValue,
@@ -369,6 +371,27 @@ const SectionSelector = ({
         </SearchContainer>
       </Section>
     );
+  } else if (type === 'userPreferenceText'){
+
+    /* ---------------- 렌더링: 사용자 메모 입력 ------------------------------ */
+
+    return (
+        <Section>
+          <Label>원하는 상대의 플레이 스타일</Label>
+          <TextInput
+              type="text"
+              maxLength={TEXT_LIMIT}
+              placeholder="ex) 탱커를 잘함, 로밍을 잘감, ..."
+              value={matchingCriteria.userPreferenceText || ''}
+              onChange={(e) =>
+                  setMatchingCriteria({
+                    ...matchingCriteria,
+                    userPreferenceText: e.target.value.slice(0, TEXT_LIMIT),
+                  })
+              }
+          />
+        </Section>
+    );
   }
 
   return null;  // 방어 코드
@@ -524,4 +547,16 @@ const ChampionTag = styled.div`
       color: white;
     }
   }
+`;
+
+const TextInput = styled.input`
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.9rem;
+  &::placeholder { color: rgba(255, 255, 255, 0.5); }
+  &:focus { outline: none; }
 `;

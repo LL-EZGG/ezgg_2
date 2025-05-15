@@ -1,11 +1,34 @@
+// useWebSocket.js
+// -----------------------------------------------------------------------------
+// STOMP WebSocket 커스텀 훅
+// - UI에서 사용하는 ViewModel(criteria)을 DTO로 변환 후 서버로 전송
+// - onMessage/onConnect/onDisconnect/onError 콜백 지원
+// -----------------------------------------------------------------------------
 import {useCallback, useRef, useState} from 'react';
 import SockJS from 'sockjs-client';
 import {Stomp} from '@stomp/stompjs';
 
+// ---------------- ViewModel → DTO 변환기 --------------------------------------
+/**
+ * 매칭 조건 ViewModel을 DTO로 변환하는 함수.
+ *  - 챔피언 객체 → id 문자열 배열로 축소
+ *  - 불필요 필드는 제거
+ */
+export const criteriaToDTO = (vm) => ({
+  wantLine: vm.wantLine,
+  userPreferenceText: vm.userPreferenceText,
+  selectedChampions: {
+    preferredChampions: vm.selectedChampions?.preferredChampions?.map((c) => c.id) ?? [],
+    bannedChampions: vm.selectedChampions?.bannedChampions?.map((c) => c.id) ?? [],
+  }
+});
+
+// ---------------- 커스텀 훅 -----------------------------------------------------
 export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
     const stompClient = useRef(null);
     const [isConnected, setIsConnected] = useState(false);
 
+    /** STOMP 서버 연결 함수 */
     const connect = useCallback((onConnectedCallback) => {
         if (stompClient.current && stompClient.current.connected) {
             // 이미 연결된 경우 바로 콜백 실행
@@ -35,6 +58,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
                     onMessage(response);
                 });
 
+                // 에러 구독
                 stompClient.current.subscribe(`/user/queue/error`, (message) => {
                     onError(message.body);
                 });
@@ -50,6 +74,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
         );
     }, [onConnect, onMessage, onDisconnect]);
 
+    /** 연결 해제 함수 */
     const disconnect = useCallback(() => {
         if (stompClient.current) {
             stompClient.current.disconnect(() => {
@@ -59,24 +84,26 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
         }
     }, [onDisconnect]);
 
-    const sendMatchingRequest = useCallback((payload) => {
-        // 필요한 데이터만 추출하여 최적화된 페이로드 생성
-        const optimizedPayload = {
-            wantLine: payload.wantLine,
-            selectedChampions: {
-                preferredChampions: payload.selectedChampions?.preferredChampions?.map(champ => champ.id) || [],
-                bannedChampions: payload.selectedChampions?.bannedChampions?.map(champ => champ.id) || []
-            }
-        };
+  /**
+   * 매칭 요청 전송 함수.
+   *  - ViewModel → DTO 변환 후 JSON 직렬화하여 전송
+   */
+  const sendMatchingRequest = useCallback((criteriaVM) => {
+      const dtoPayload = criteriaToDTO(criteriaVM);
+      const json = JSON.stringify(dtoPayload);
 
-        if (!stompClient.current?.connected) {
-            connect(() => { // 연결 보장 후 전송
-                stompClient.current.send('/app/matching/start', {}, JSON.stringify(optimizedPayload));
-            });
-            return;
-        }
-        stompClient.current.send('/app/matching/start', {}, JSON.stringify(optimizedPayload));
-    }, [connect]);
+      if (!stompClient.current?.connected) {// 연결이 없으면 먼저 connect 후 전송
+        connect(() => {
+          stompClient.current.send('/app/matching/start', {}, json);
+        });
+        return;
+      }
 
-    return {connect, disconnect, sendMatchingRequest, isConnected};
+      // 이미 연결된 경우 바로 전송
+      stompClient.current.send('/app/matching/start', {}, json);
+    },
+    [connect],
+  );
+
+  return { connect, disconnect, sendMatchingRequest, isConnected };
 };

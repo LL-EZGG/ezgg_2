@@ -37,6 +37,11 @@ const DuoFinderForm = (
                 type={'champion'}
                 kind={'banned'}
             />
+            <SectionSelector
+                matchingCriteria={matchingCriteria}
+                setMatchingCriteria={setMatchingCriteria}
+                type={'userPreferenceText'}
+            />
         </Form>
     );
 };
