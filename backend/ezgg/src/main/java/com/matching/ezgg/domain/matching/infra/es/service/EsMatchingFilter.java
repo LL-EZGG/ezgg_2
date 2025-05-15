@@ -1,6 +1,7 @@
 package com.matching.ezgg.domain.matching.infra.es.service;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -61,19 +62,14 @@ public class EsMatchingFilter {
 		try {
 			SearchResponse<MatchingFilterParsingDto> response = esClient.search(searchRequest,
 				MatchingFilterParsingDto.class);
-			List<MatchingFilterParsingDto> users = response.hits().hits().stream()
+
+			return response.hits().hits().stream()
 				.map(Hit::source)
 				.filter(Objects::nonNull)
+				.map(user -> updateUserMatchingScore(user, preferredChampion, unpreferredChampion))
+				.sorted(Comparator.comparing(MatchingFilterParsingDto::getMatchingScore).reversed())
 				.collect(Collectors.toList());
 
-			// 가중치를 추가하여 매칭할 대상들을 정렬
-			return users.stream()
-				.sorted((user1, user2) -> {
-					int score1 = calculateUserWeight(user1, preferredChampion, unpreferredChampion);
-					int score2 = calculateUserWeight(user2, preferredChampion, unpreferredChampion);
-					return Integer.compare(score2, score1); // 높은 점수 순으로 정렬
-				})
-				.collect(Collectors.toList());
 		} catch (IOException e) {
 			log.error("Elasticsearch 조건 조회 중 오류 발생: " + e.getMessage());
 			e.printStackTrace();
@@ -82,8 +78,10 @@ public class EsMatchingFilter {
 	}
 
 	// 가중치 계산 로직
-	private int calculateUserWeight(MatchingFilterParsingDto user, List<String> preferredChampion,
-		List<String> unpreferredChampion) {
+
+	private MatchingFilterParsingDto updateUserMatchingScore(MatchingFilterParsingDto user, String preferredChampion,
+		String unpreferredChampion) {
+
 		List<RecentTwentyMatchParsingDto.MostChampion> mostChampionList = user.getRecentTwentyMatchParsing()
 			.getMostChampions();
 
@@ -135,8 +133,9 @@ public class EsMatchingFilter {
 		// 음수가 나올수 잇음 ( 비선호 챔피언에 가중치가 더 높을 경우 )
 		int matchingScore = preferredChampionWeight - unpreferredChampionWeight;
 
-		user.setMatchingScore(matchingScore);
-		return matchingScore;
+		return user.toBuilder()
+			.matchingScore(matchingScore)
+			.build();
 	}
 
 	public int getChampionWeight(String championName, boolean isPreferred,

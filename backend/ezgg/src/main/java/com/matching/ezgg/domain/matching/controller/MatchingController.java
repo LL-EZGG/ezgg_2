@@ -20,8 +20,10 @@ public class MatchingController {
 	private final MatchingService matchingService;
 
 	@MessageMapping("/matching/start")
-	public void startMatching(@Payload PreferredPartnerParsingDto preferredPartnerDto, Principal principal) {
-		if (principal == null) throw new IllegalArgumentException("로그인 정보가 없습니다.");
+	public void startMatching(@Payload
+	PreferredPartnerParsingDto preferredPartnerDto, Principal principal) {
+		if (principal == null)
+			throw new IllegalArgumentException("로그인 정보가 없습니다.");
 		Long memberId = Long.valueOf(principal.getName());
 		matchingService.startMatching(memberId, preferredPartnerDto);
 	}
