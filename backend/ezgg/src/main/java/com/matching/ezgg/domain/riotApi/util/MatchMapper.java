@@ -32,16 +32,16 @@ public class MatchMapper {
 			boolean win = targetMemberNode.path("win").asBoolean();
 
 			// Dto 생성, memberId는 따로 추가해야된다!
-			return new MatchDto(
-				memberId,
-				riotMatchId,
-				kills,
-				deaths,
-				assists,
-				teamPosition,
-				championName,
-				win
-			);
+			return MatchDto.builder()
+				.memberId(memberId)
+				.riotMatchId(riotMatchId)
+				.kills(kills)
+				.deaths(deaths)
+				.assists(assists)
+				.teamPosition(teamPosition)
+				.championName(championName)
+				.win(win)
+				.build();
 
 		} catch (JsonProcessingException e) {
 			throw new IllegalArgumentException("JSON → MatchDto 변환 실패", e);
