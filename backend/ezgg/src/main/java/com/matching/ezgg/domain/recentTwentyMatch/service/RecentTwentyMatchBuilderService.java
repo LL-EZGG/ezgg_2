@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 import com.matching.ezgg.domain.matchInfo.entity.MatchInfo;
 import com.matching.ezgg.domain.matchInfo.service.MatchInfoService;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
-import com.matching.ezgg.domain.recentTwentyMatch.entity.model.ChampionStat;
-import com.matching.ezgg.domain.recentTwentyMatch.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
+import com.matching.ezgg.domain.recentTwentyMatch.dto.RecentTwentyMatchDto;
+import com.matching.ezgg.domain.recentTwentyMatch.entity.model.ChampionStat;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,14 +47,14 @@ public class RecentTwentyMatchBuilderService {
 		// most 3 챔피언들로 championStat 압축
 		Map<String, ChampionStat> most3ChampionStats = extractMost3ChampionStats(result.allChampionStats);
 
-		RecentTwentyMatchDto recentTwentyMatchDto = new RecentTwentyMatchDto();
-
-		recentTwentyMatchDto.setMemberId(memberId);
-		recentTwentyMatchDto.setSumKills(result.sumKills);
-		recentTwentyMatchDto.setSumDeaths(result.sumDeaths);
-		recentTwentyMatchDto.setSumAssists(result.sumAssists);
-		recentTwentyMatchDto.setWinRate(winRate);
-		recentTwentyMatchDto.setChampionStats(most3ChampionStats);
+		RecentTwentyMatchDto recentTwentyMatchDto = RecentTwentyMatchDto.builder()
+			.memberId(memberId)
+			.sumKills(result.sumKills)
+			.sumDeaths(result.sumDeaths)
+			.sumAssists(result.sumAssists)
+			.winRate(winRate)
+			.championStats(most3ChampionStats)
+			.build();
 
 		log.info("recentTwentyMatch 계산 종료");
 		return recentTwentyMatchDto;
