@@ -1,4 +1,4 @@
-package com.matching.ezgg.domain.matchInfo.keyword;
+package com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo;
 
 import lombok.Getter;
 

@@ -1,4 +1,6 @@
-package com.matching.ezgg.domain.matchInfo.keyword;
+package com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo;
+
+import lombok.Getter;
 
 public enum ChampionRole {
 	AD_BRUISER("AD 브루저"),
@@ -13,6 +15,10 @@ public enum ChampionRole {
 	AP_DEALER("AP 딜러"),
 	AD_DEALER("AD 딜러");
 
+	@Getter
+	private final String koreanRoleName;
+
 	ChampionRole(String koreanRoleName) {
+		this.koreanRoleName = koreanRoleName;
 	}
 }
