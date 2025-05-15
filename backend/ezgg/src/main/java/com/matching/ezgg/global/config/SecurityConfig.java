@@ -19,10 +19,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.matching.ezgg.member.jwt.filter.JWTFilter;
-import com.matching.ezgg.member.jwt.filter.JWTUtil;
-import com.matching.ezgg.member.jwt.filter.LoginFilter;
-import com.matching.ezgg.member.jwt.repository.RedisRefreshTokenRepository;
+import com.matching.ezgg.domain.member.jwt.filter.JWTFilter;
+import com.matching.ezgg.domain.member.jwt.filter.JWTUtil;
+import com.matching.ezgg.domain.member.jwt.filter.LoginFilter;
+import com.matching.ezgg.domain.member.jwt.repository.RedisRefreshTokenRepository;
 
 import lombok.RequiredArgsConstructor;
 
