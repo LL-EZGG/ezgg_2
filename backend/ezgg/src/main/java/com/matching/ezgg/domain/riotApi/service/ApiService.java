@@ -17,9 +17,9 @@ import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 import com.matching.ezgg.domain.riotApi.dto.PuuidDto;
 import com.matching.ezgg.domain.riotApi.dto.WinRateNTierDto;
 import com.matching.ezgg.domain.riotApi.util.MatchMapper;
-import com.matching.ezgg.global.exception.RiotMatchIdsNotFoundException;
 import com.matching.ezgg.global.exception.RiotAccountNotFoundException;
 import com.matching.ezgg.global.exception.RiotApiException;
+import com.matching.ezgg.global.exception.RiotMatchIdsNotFoundException;
 import com.matching.ezgg.global.exception.RiotMatchNotFoundException;
 import com.matching.ezgg.global.exception.RiotTierNotFoundException;
 
@@ -105,7 +105,7 @@ public class ApiService {
 
 		} catch (HttpClientErrorException.NotFound e) {
 			throw new RiotTierNotFoundException(puuid);
-		} catch (RestClientException e){
+		} catch (RestClientException e) {
 			throw new RiotApiException("승률/티어 조회 Riot Api 실패");
 		}
 	}
@@ -141,7 +141,7 @@ public class ApiService {
 			log.info("MatchIds 조회 성공: {}", puuid);
 			return matchIdList;
 
-		} catch (RiotMatchIdsNotFoundException e){
+		} catch (RiotMatchIdsNotFoundException e) {
 			throw new RiotMatchIdsNotFoundException(puuid);
 		} catch (RestClientException e) {
 			throw new RiotApiException("MatchIds 조회 Riot Api 실패");
@@ -163,14 +163,16 @@ public class ApiService {
 			// MatchDto 형식으로 매핑
 			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
 			// MemberId를 MatchDto에 따로 지정
-			matchDto.setMemberId(memberInfoService.getMemberIdByPuuid(puuid));
+			matchDto = matchDto.toBuilder()
+				.memberId(memberInfoService.getMemberIdByPuuid(puuid))
+				.build();
 
 			log.info("matchInfo 조회 성공: puuid = {} matchId = {}", puuid, matchId);
 			return matchDto;
 
-		} catch (RiotMatchNotFoundException e){
+		} catch (RiotMatchNotFoundException e) {
 			throw new RiotMatchNotFoundException(matchId);
-		} catch (RiotApiException e){
+		} catch (RiotApiException e) {
 			throw new RiotApiException("Match 조회 Riot Api 실패");
 		}
 	}
