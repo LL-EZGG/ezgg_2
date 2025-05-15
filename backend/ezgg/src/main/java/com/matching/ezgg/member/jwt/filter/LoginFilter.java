@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -82,17 +84,18 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 		GrantedAuthority auth = iterator.next();
 		String role = auth.getAuthority();
 
-		long accessTokenExpiry = 60 * 60 * 1000L; // 1시간 유효
+		long accessTokenExpiry = 20 * 1000L; // 1시간 유효
 		long refreshTokenExpiry = 24 * 60 * 60 * 1000L; // 1일 유효
+		String UUID = java.util.UUID.randomUUID().toString();
 
-		String accessToken = jwtUtil.createJwt("access", memberId, memberUsername, role, accessTokenExpiry);
-		String refreshToken = jwtUtil.createJwt("refresh", memberId, memberUsername, role, refreshTokenExpiry);
-		
+		String accessToken = jwtUtil.accessCreateJwt("access", memberId, memberUsername, role, accessTokenExpiry);
+		Map<String, String> refreshMap = jwtUtil.refreshCreateJwt("refresh", UUID, refreshTokenExpiry);
+
 		// Redis에 Refresh Token 저장
-		redisRefreshTokenRepository.save(memberUsername, refreshToken, refreshTokenExpiry);
+		redisRefreshTokenRepository.save(refreshMap.get("uuid"), memberUsername, refreshMap.get("refreshToken"), refreshTokenExpiry);
 
 		response.setHeader("Authorization", accessToken);
-		response.addCookie(createCookie("Refresh", refreshToken));
+		response.addCookie(createCookie("Refresh", refreshMap.get("refreshToken")));
 
 		response.setStatus(HttpStatus.OK.value());
 		response.setContentType("application/json");

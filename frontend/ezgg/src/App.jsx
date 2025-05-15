@@ -97,13 +97,7 @@ const App = () => {
         }
       }
     } catch (error) {
-      // console.error('사용자 정보 가져오기 실패:', error);
-      
-      // // 401 또는 403 에러인 경우 로그아웃 처리
-      // if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      //   console.log('토큰이 유효하지 않아 로그아웃합니다.');
-      //   handleLogout();
-      // }
+      console.error('사용자 정보 가져오기 실패:', error);
     } finally {
       setUserDataLoading(false);
     }

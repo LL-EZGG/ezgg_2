@@ -34,6 +34,14 @@ public class JWTFilter extends OncePerRequestFilter {
 	private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 변환을 위한 ObjectMapper
 
 	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		String path = request.getRequestURI();
+		return path.startsWith("/auth/logout") ||
+			path.equals("/login") ||
+			path.equals("/refresh");
+	}
+
+	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
 		String accessToken = jwtUtil.extractTokenFromRequest(request);
@@ -47,14 +55,14 @@ public class JWTFilter extends OncePerRequestFilter {
 			if (!jwtUtil.isExpired(accessToken)) {
 				// 토큰이 블랙리스트에 있는지 확인
 				if (redisRefreshTokenRepository.isBlacklisted(accessToken)) {
-					handleJwtException(response, "로그아웃된 토큰입니다. 다시 로그인해주세요.", HttpServletResponse.SC_UNAUTHORIZED);
+					handleJwtException(response, "already logout", HttpServletResponse.SC_UNAUTHORIZED);
 					return;
 				}
 				setAuthenticationToContext(accessToken);
 			}
 			filterChain.doFilter(request, response);
 		} catch (ExpiredJwtException e) {
-			handleJwtException(response, "토큰이 만료되었습니다. 다시 로그인해주세요.", HttpServletResponse.SC_UNAUTHORIZED);
+			handleJwtException(response, "token is expired", HttpServletResponse.SC_UNAUTHORIZED);
 		} catch (SignatureException e) {
 			handleJwtException(response, "유효하지 않은 JWT 서명입니다.", HttpServletResponse.SC_UNAUTHORIZED);
 		} catch (MalformedJwtException e) {
@@ -76,6 +84,10 @@ public class JWTFilter extends OncePerRequestFilter {
 			.role(role)
 			.id(jwtUtil.getMemberId(accessToken))
 			.build();
+
+		log.info(">>>>> JWTFilter memberId: {}", member.getId());
+		log.info(">>>>> JWTFilter memberUsername: {}", member.getMemberUsername());
+		log.info(">>>>> JWTFilter role: {}", member.getRole());
 		CustomUserDetails userDetails = new CustomUserDetails(member);
 		Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
 			userDetails.getAuthorities());

@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,7 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import com.matching.ezgg.member.jwt.filter.JWTFilter;
 import com.matching.ezgg.member.jwt.filter.JWTUtil;
@@ -67,7 +65,7 @@ public class SecurityConfig {
 
 		// URL 접근 권한 설정
 		http.authorizeHttpRequests((auth) -> auth
-			.requestMatchers("/auth/**", "/login", "/refresh", "/ws/**", "/ws").permitAll() // 해당 요청 은 인증 없이 접근 가능
+			.requestMatchers("/auth/signup", "/auth/logout", "/login", "/refresh", "/ws/**", "/ws").permitAll() // 해당 요청 은 인증 없이 접근 가능
 			.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 			.anyRequest().hasAnyAuthority("ROLE_USER")); // 나머지 요청은 ROLE_USER 권한이 있어야 접근 가능
 
@@ -89,7 +87,6 @@ public class SecurityConfig {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.addAllowedOrigin("http://localhost:3000");
-		configuration.addAllowedOrigin("http://localhost:5173");
 		configuration.addAllowedMethod("*");
 		configuration.addAllowedHeader("*");
 		configuration.addExposedHeader("Authorization");

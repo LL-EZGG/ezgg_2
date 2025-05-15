@@ -17,6 +17,7 @@ const tokenUtils = {
 // 토큰 리프레시 함수
 const refreshToken = async () => {
   try {
+    console.log('토큰 리프레시 시도');
     const { headers: { authorization: newToken } } = await axios.post(
       'http://localhost:8888/refresh',
       {},
@@ -58,19 +59,49 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
-    const isTokenError = error.response?.status === 401 || error.response?.status === 403;
-    const shouldRefresh = isTokenError && !error.config._retry && error.config.url !== '/refresh';
+    console.log('error : ', error.response.data.message);
+    const status = error.response?.status;
+    const message = error.response?.data?.message;
+    const isTokenExpired = status === 401 || status === 403;
 
-    if (!shouldRefresh) return Promise.reject(error);
+    // 토큰이 만료된 경우에만 재발급 시도
+    const shouldRefresh =
+      isTokenExpired &&
+      message === 'token is expired' &&
+      !error.config._retry &&
+      error.config.url !== '/refresh';
 
-    try {
-      error.config._retry = true;
-      const newToken = await refreshToken();
-      error.config.headers['Authorization'] = newToken;
-      return api(error.config);
-    } catch (refreshError) {
-      return Promise.reject(refreshError);
+    // 토큰 재발급 시도
+    if (shouldRefresh) {
+      try {
+        error.config._retry = true;
+        const newToken = await refreshToken();
+        error.config.headers['Authorization'] = newToken;
+        return api(error.config);
+      } catch (refreshError) {
+        return Promise.reject(refreshError);
+      }
     }
+
+    // 401 또는 403인데 token is expired가 아닌 경우 → 로그아웃 + 로그인 이동
+    if (status === 401 || status === 403) {
+      try {
+        await axios.post(
+          'http://localhost:8888/auth/logout',
+          {},
+          {
+            headers: { authorization: tokenUtils.get() },
+            withCredentials: true,
+          }
+        );
+      } catch (logoutError) {
+        console.error('로그아웃 처리 중 오류 발생:', logoutError);
+      } finally {
+        tokenUtils.remove();
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error); 
   }
 );
 

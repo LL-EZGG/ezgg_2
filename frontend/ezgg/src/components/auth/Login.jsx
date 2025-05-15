@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import styled from '@emotion/styled';
 import {Link, useNavigate, useLocation} from 'react-router-dom';
 import api from '../../utils/api';
+import axios from 'axios';
 
 const Container = styled.div`
     display: flex;
@@ -152,9 +153,11 @@ const Login = ({setIsLoggedIn, onLoginSuccess}) => {
         console.log('로그인 시도:', formData);
 
         try {
-            const response = await api.post('/login', {
+            const response = await axios.post('http://localhost:8888/login', {
                 memberUsername: formData.username,
                 password: formData.password
+            }, {
+                withCredentials: true
             });
 
             console.log('로그인 응답 전체:', response);
