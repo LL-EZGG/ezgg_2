@@ -4,14 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true) // Builder를 사용하여 객체를 생성할 때, 기존 객체를 기반으로 새로운 객체를 생성할 수 있도록 설정
 @ToString
 public class MatchingFilterParsingDto {
 
