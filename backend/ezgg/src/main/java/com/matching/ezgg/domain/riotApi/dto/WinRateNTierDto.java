@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WinRateNTierDto {
 	private String queueType;
@@ -23,9 +23,14 @@ public class WinRateNTierDto {
 	@JsonProperty("rank")
 	private String tierNum;
 
-
 	public static WinRateNTierDto unranked(String puuid) {
-		return new WinRateNTierDto("RANKED_SOLO_5x5", puuid, 0, 0, "UNRANKED", "0");
+		return WinRateNTierDto.builder()
+			.queueType("RANKED_SOLO_5x5")
+			.puuid(puuid)
+			.wins(0)
+			.losses(0)
+			.tier("UNRANKED")
+			.tierNum("0")
+			.build();
 	}
-
 }
