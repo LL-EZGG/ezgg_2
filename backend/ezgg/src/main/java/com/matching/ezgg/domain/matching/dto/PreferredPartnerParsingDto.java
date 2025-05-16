@@ -17,10 +17,11 @@ import lombok.ToString;
 @ToString
 public class PreferredPartnerParsingDto {
 
+	@JsonProperty("wantLine")
 	private WantLine wantLine;
-
 	@JsonProperty("selectedChampions")
 	private ChampionInfo championInfo;
+	private String userPreferenceText;
 
 	@Getter
 	@NoArgsConstructor
@@ -38,6 +39,7 @@ public class PreferredPartnerParsingDto {
 	@Builder
 	@ToString
 	public static class ChampionInfo {
+		@JsonProperty("preferredChampions")
 		private List<String> preferredChampions;
 		@JsonProperty("bannedChampions")
 		private List<String> unpreferredChampions;

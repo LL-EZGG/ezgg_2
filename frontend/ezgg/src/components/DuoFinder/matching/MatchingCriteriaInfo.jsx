@@ -5,24 +5,25 @@ const MatchingCriteriaInfo = ({ matchingCriteria }) => {
     <Container>
       <LoadingSpinner />
       <Message>듀오를 찾는 중입니다...</Message>
-      <Stats>
-        <p>내 선호 라인: {matchingCriteria.wantLine.myLine}</p>
-        <p>상대방 선호 라인: {matchingCriteria.wantLine.partnerLine}</p>
-        <p>
-          선호 챔피언: {
-          matchingCriteria.selectedChampions.preferredChampions.length > 0
-            ? matchingCriteria.selectedChampions.preferredChampions.map(c => c.name).join(', ')
-            : '없음'
-        }
-        </p>
-        <p>
-          비선호 챔피언: {
-          matchingCriteria.selectedChampions.bannedChampions.length > 0
-            ? matchingCriteria.selectedChampions.bannedChampions.map(c => c.name).join(', ')
-            : '없음'
-        }
-        </p>
-      </Stats>
+        <Stats>
+            <p>내 선호 라인: {matchingCriteria.wantLine.myLine}</p>
+            <p>상대방 선호 라인: {matchingCriteria.wantLine.partnerLine}</p>
+            <p>
+                선호 챔피언: {
+                matchingCriteria.selectedChampions.preferredChampions.length > 0
+                    ? matchingCriteria.selectedChampions.preferredChampions.map(c => c.name).join(', ')
+                    : '없음'
+            }
+            </p>
+            <p>
+                비선호 챔피언: {
+                matchingCriteria.selectedChampions.bannedChampions.length > 0
+                    ? matchingCriteria.selectedChampions.bannedChampions.map(c => c.name).join(', ')
+                    : '없음'
+            }
+            </p>
+            <p>원하는 상대의 플레이 스타일: {matchingCriteria.userPreferenceText}</p>
+        </Stats>
     </Container>
   );
 };

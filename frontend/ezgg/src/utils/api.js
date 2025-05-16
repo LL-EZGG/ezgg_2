@@ -104,4 +104,5 @@ api.interceptors.response.use(
   }
 );
 
+export { tokenUtils };
 export default api;
