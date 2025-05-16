@@ -85,10 +85,10 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
             onMessage(response);
           });
 
-                // 에러 구독
-                stompClient.current.subscribe(`/user/queue/error`, (message) => {
-                    onError(message.body);
-                });
+          // 에러 구독
+          stompClient.current.subscribe(`/user/queue/error`, (message) => {
+              onError(message.body);
+          });
 
           if (onConnect) onConnect();
           onConnectedCallback?.();
@@ -111,10 +111,10 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
         }
     }, [onDisconnect]);
 
-      /**
-       * 매칭 요청 전송 함수.
-       *  - ViewModel → DTO 변환 후 JSON 직렬화하여 전송
-       */
+    /**
+     * 매칭 요청 전송 함수.
+     *  - ViewModel → DTO 변환 후 JSON 직렬화하여 전송
+     */
     const sendMatchingRequest = useCallback(async(criteriaVM) => {
       const dtoPayload = criteriaToDTO(criteriaVM);
       const json = JSON.stringify(dtoPayload);
