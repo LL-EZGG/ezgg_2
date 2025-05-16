@@ -33,10 +33,8 @@ import lombok.extern.slf4j.Slf4j;
 public class MemberController {
 
 	private final MemberService memberService;
-	private final RedisRefreshTokenRepository redisRefreshTokenRepository;
 	private final MemberDataBundleService memberDataBundleService;
 	private final MemberInfoService memberInfoService;
-	private final JWTUtil jwtUtil;
 
 	//회원 가입
 	@PostMapping("/signup")
@@ -55,48 +53,19 @@ public class MemberController {
 	// 로그아웃
 	@PostMapping("/logout")
 	public ResponseEntity<SuccessResponse<Void>> logout(HttpServletRequest request, HttpServletResponse response) {
-		// Access Token 처리
-		String accessToken = jwtUtil.extractTokenFromRequest(request);
-		if (accessToken != null && !jwtUtil.isExpired(accessToken)) {
-			try {
-				// 토큰의 남은 유효시간 계산
-				long expirationTime = jwtUtil.getExpirationTime(accessToken);
-				long currentTime = System.currentTimeMillis();
-				long remainingTime = expirationTime - currentTime;
+		log.info(">>>>> 로그아웃 요청 들어옴");
 
-				if (remainingTime > 0) {
-					// Access Token을 블랙리스트에 추가
-					redisRefreshTokenRepository.addToBlacklist(accessToken, remainingTime);
-					log.info(">>>>> Access Token을 블랙리스트에 추가했습니다.");
-				}
-			} catch (Exception e) {
-				log.error(">>>>> Access Token 블랙리스트 추가 실패: {}", e.getMessage());
-			}
-		}
-
-		// Refresh Token 처리
-		String refreshToken = null;
-		Cookie[] cookies = request.getCookies();
-		if (cookies != null) {
-			for (Cookie cookie : cookies) {
-				if (cookie.getName().equals("Refresh")) {
-					refreshToken = cookie.getValue();
-				}
-			}
-		}
-
-		if (refreshToken != null && jwtUtil.getCategory(refreshToken).equals("refresh")) {
-			// 유효한 리프레시 토큰이 있으면 사용자 정보를 가져와서 Redis에서 해당 토큰 삭제
-			String memberUsername = jwtUtil.getMemberUsername(refreshToken);
-			redisRefreshTokenRepository.deleteByMemberId(memberUsername);
-			log.info(">>>>> Redis에서 리프레시 토큰 삭제 완료: {}", memberUsername);
-		}
+		memberService.addBlackList(request);
+		memberService.deleteRefreshToken(request);
 
 		// 클라이언트 쿠키 삭제
 		Cookie refreshCookie = new Cookie("Refresh", null);
 		refreshCookie.setMaxAge(0); // 쿠키 즉시 만료
 		refreshCookie.setHttpOnly(true);
+		refreshCookie.setPath("/"); // 모든 경로에서 쿠키 삭제
 		response.addCookie(refreshCookie);
+
+		log.info(">>>>> 로그아웃 성공");
 
 		return ResponseEntity.ok(SuccessResponse.<Void>builder()
 			.code("200")
@@ -107,6 +76,7 @@ public class MemberController {
 	@GetMapping("/memberinfo")
 	public ResponseEntity<SuccessResponse<MemberInfo>> getMemberInfo(@LoginUser Long memberId) {
 		// 로그인한 사용자의 ID를 사용하여 회원 정보를 조회
+		log.info(">>>>> 로그인한 사용자의 ID: {}", memberId);
 		MemberInfo loggedMemberInfo = memberInfoService.getMemberInfoByMemberId(memberId);
 
 		return ResponseEntity.ok(SuccessResponse.<MemberInfo>builder()

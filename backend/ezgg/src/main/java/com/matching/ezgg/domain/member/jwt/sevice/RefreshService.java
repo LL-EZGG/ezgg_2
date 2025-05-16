@@ -1,11 +1,14 @@
 package com.matching.ezgg.domain.member.jwt.sevice;
 
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 
+import com.matching.ezgg.domain.member.entity.Member;
 import com.matching.ezgg.domain.member.jwt.filter.JWTUtil;
 import com.matching.ezgg.domain.member.jwt.repository.RedisRefreshTokenRepository;
+import com.matching.ezgg.domain.member.service.MemberService;
 import com.matching.ezgg.global.exception.InvalidTokenException;
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +21,7 @@ public class RefreshService {
 
 	private final JWTUtil jwtUtil;
 	private final RedisRefreshTokenRepository redisRefreshTokenRepository;
+	private final MemberService memberService;
 
 	private final static long ACCESS_TOKEN_EXPIRY = 60 * 60 * 1000L; // 1시간
 	private final static long REFRESH_TOKEN_EXPIRY = 24 * 60 * 60 * 1000L; // 24시간
@@ -29,6 +33,9 @@ public class RefreshService {
 	 */
 	public String validateAndExtractRefreshToken(HttpServletRequest request) {
 		String refreshToken = extractCookie(request, "Refresh");
+		String UUID = jwtUtil.getUUID(refreshToken);
+		log.info(">>>>> refreshToken: {}", refreshToken);
+		log.info(">>>>> uuid: {}", UUID);
 
 		if (refreshToken == null) {
 			log.info(">>>>> Refresh 토큰이 없습니다.");
@@ -40,9 +47,13 @@ public class RefreshService {
 			throw new InvalidTokenException();
 		}
 
+		if (!redisRefreshTokenRepository.existsByRefreshToken(refreshToken)) {
+			log.error(">>>>> Redis에 Refresh 토큰이 존재하지 않습니다.");
+			throw new InvalidTokenException();
+		}
 
-		String memberUsername = jwtUtil.getMemberUsername(refreshToken); // 토큰에서 memberUsername 추출
-		String savedRefreshToken = redisRefreshTokenRepository.findByMemberId(memberUsername); // Redis에서 memberUsername으로 저장된 Refresh 토큰 조회
+		String savedRefreshToken = redisRefreshTokenRepository.findRefreshTokenByUUID(UUID);
+		log.info(">>>>> Redis에 저장된 Refresh 토큰: {}", savedRefreshToken);
 
 		if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
 			log.error(">>>>> 유효하지 않은 Refresh 토큰입니다.");
@@ -58,18 +69,20 @@ public class RefreshService {
 	 * @return 새로운 Access Token과 Refresh Token을 포함하는 TokenPair 객체
 	 */
 	public TokenPair generateAndDeleteAndSaveNewTokens(String refreshToken) {
-		Long memberId = jwtUtil.getMemberId(refreshToken); // 토큰에서 pk값 추출
-		String memberUsername = jwtUtil.getMemberUsername(refreshToken); // 토큰에서 memberUsername 추출
-		String role = jwtUtil.getRole(refreshToken); // 토큰에서 권한 추출
+		String UUID = jwtUtil.getUUID(refreshToken);// 토큰에서 uuid 추출
+		String memberUsername = redisRefreshTokenRepository.findMemberUsernameByUUID(UUID);
+		Member member = memberService.findMemberByUsername(memberUsername);// 회원정보 조회
 
-		String newAccessToken = jwtUtil.createJwt("access", memberId, memberUsername, role, ACCESS_TOKEN_EXPIRY);
-		String newRefreshToken = jwtUtil.createJwt("refresh", memberId, memberUsername, role, REFRESH_TOKEN_EXPIRY);
+		String newAccessToken = jwtUtil.accessCreateJwt("access", member.getId(), memberUsername, member.getRole(), ACCESS_TOKEN_EXPIRY);
+		Map<String, String> refreshMap = jwtUtil.refreshCreateJwt("refresh", UUID, REFRESH_TOKEN_EXPIRY);
 
 		// Redis에서 기존 Refresh Token 삭제 후 새로운 Refresh Token 저장
-		redisRefreshTokenRepository.deleteByMemberId(memberUsername);
-		redisRefreshTokenRepository.save(memberUsername, newRefreshToken, REFRESH_TOKEN_EXPIRY);
+		redisRefreshTokenRepository.deleteByUUID(UUID);
+		log.info(">>>>> Redis에서 기존 Refresh Token 삭제 완료");
+		redisRefreshTokenRepository.save(UUID, memberUsername, refreshMap.get("refreshToken"), REFRESH_TOKEN_EXPIRY);
+		log.info(">>>>> Redis에 새로운 Refresh Token 저장 완료");
 
-		return new TokenPair(newAccessToken, newRefreshToken);
+		return new TokenPair(newAccessToken, refreshMap.get("refreshToken"));
 	}
 
 	/**

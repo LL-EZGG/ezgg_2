@@ -4,21 +4,26 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.matching.ezgg.domain.matching.service.MatchingService;
 import com.matching.ezgg.domain.member.dto.SignupRequest;
 import com.matching.ezgg.domain.member.dto.SignupResponse;
-import com.matching.ezgg.domain.member.repository.MemberRepository;
-import com.matching.ezgg.domain.riotApi.service.ApiService;
-import com.matching.ezgg.domain.matching.service.MatchingService;
 import com.matching.ezgg.domain.member.entity.Member;
+import com.matching.ezgg.domain.member.jwt.filter.JWTUtil;
+import com.matching.ezgg.domain.member.jwt.repository.RedisRefreshTokenRepository;
+import com.matching.ezgg.domain.member.repository.MemberRepository;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.domain.memberInfo.repository.MemberInfoRepository;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
+import com.matching.ezgg.domain.riotApi.service.ApiService;
 import com.matching.ezgg.global.exception.ExistEmailException;
 import com.matching.ezgg.global.exception.ExistMemberIdException;
 import com.matching.ezgg.global.exception.ExistRiotUsernamException;
+import com.matching.ezgg.global.exception.MemberNotFoundException;
 import com.matching.ezgg.global.exception.MemberPassWordNotEqualsException;
 import com.matching.ezgg.global.exception.PasswordBadRequestException;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +37,8 @@ public class MemberService {
 	private final ApiService apiService;
 	private final MatchingService matchingService;
 	private final MemberInfoRepository memberInfoRepository;
+	private final JWTUtil jwtUtil;
+	private final RedisRefreshTokenRepository redisRefreshTokenRepository;
 
 	private final PasswordEncoder passwordEncoder;
 
@@ -76,47 +83,10 @@ public class MemberService {
 			.build();
 	}
 
-	//TODO 외부 api 호출(puuid찾기)을 @Transactional 안에서 하게되면 1)외부 api 데이터를 기다리는 시간동안 db 커넥션을 물고 있게 됨 + 2) 불필요하게 큰 단위의 서비스가 롤백될 가능성이 있음
-	// 따라서 아래와 같은 방식으로 refactor 해볼 수도 있지 않을까? 해서 올려봅니당
-	// 밑의 코드를 그대로 두면 self-invocation 상태이기 때문에 실제로는 Transaction이 안걸립니다. saveMemberWithInfo() 메서드를 다른 클래스로 옮겨서 사용해야 합니다
-	// 만약 밑의 방식을 채택 하실 거라면 SignupFacade 혹은 SignupTransactionalService 클래스를 만들어서 saveMemberWithInfo() 메서드를 옮겨 사용하시면 됩니다!
-
-	// public SignupResponse signup(SignupRequest signupRequest) {
-	// 	log.info("아이디 : {}", signupRequest.getMemberUsername());
-	//
-	// 	String password = passwordEncoder.encode(signupRequest.getPassword());
-	// 	validateDuplicateMember(signupRequest);
-	//
-	// 	// 외부 API 트랜잭션 밖에서 호출
-	// 	String newPuuid = apiService.getMemberPuuid(signupRequest.getRiotUsername(), signupRequest.getRiotTag());
-	//
-	// 	// 트랜잭션 안에서 db 저장 파트 처리
-	// 	return saveMemberWithInfo(signupRequest, password, newPuuid);
-	// }
-	//
-	// @Transactional
-	// public SignupResponse saveMemberWithInfo(SignupRequest signupRequest, String password, String puuid) {
-	//
-	// 	//Member 엔티티 생성 후 저장
-	// 	Member member = memberRepository.save(Member.builder()
-	// 		.memberUsername(signupRequest.getMemberUsername())
-	// 		.password(password)
-	// 		.email(signupRequest.getEmail())
-	// 		.riotUsername(signupRequest.getRiotUsername())
-	// 		.riotTag(signupRequest.getRiotTag())
-	// 		.role("ROLE_USER")
-	// 		.build());
-	//
-	// 	//MemberInfo 엔티티 생성 후 저장
-	// 	memberInfoService.createNewMemberInfo(member.getId(), member.getRiotUsername(), member.getRiotTag(), puuid);
-	//
-	// 	return SignupResponse.builder()
-	// 		.memberUsername(member.getMemberUsername())
-	// 		.email(member.getEmail())
-	// 		.riotUsername(member.getRiotUsername())
-	// 		.riotTag(member.getRiotTag())
-	// 		.build();
-	// }
+	public Member findMemberByUsername(String memberUsername) {
+		return memberRepository.findByMemberUsername(memberUsername)
+			.orElseThrow(MemberNotFoundException::new);
+	}
 
 	private void validateDuplicateMember(SignupRequest signupRequest) {
 		// 이미 존재하는 회원인지 확인
@@ -133,6 +103,75 @@ public class MemberService {
 		if (memberInfoRepository.existsByRiotUsernameAndRiotTag(signupRequest.getRiotUsername(),
 			signupRequest.getRiotTag())) {
 			throw new ExistRiotUsernamException();
+		}
+	}
+
+	/**
+	 * Access Token을 블랙리스트에 추가하는 메서드
+	 * @param request
+	 * return void
+	 */
+	public void addBlackList(HttpServletRequest request) {
+		// Access Token 처리
+		String accessToken = jwtUtil.extractTokenFromRequest(request);
+
+		Boolean isExpired = true;
+
+		try {
+			isExpired = jwtUtil.isExpired(accessToken);
+		} catch (Exception e) {
+			log.error(">>>>> Access Token 만료 여부 확인 실패: {}", e.getMessage());
+		}
+
+		if (accessToken != null && !isExpired) {
+			try {
+				// 토큰의 남은 유효시간 계산
+				long expirationTime = jwtUtil.getExpirationTime(accessToken);
+				long currentTime = System.currentTimeMillis();
+				long remainingTime = expirationTime - currentTime;
+
+				if (remainingTime > 0) {
+					// Access Token을 블랙리스트에 추가
+					redisRefreshTokenRepository.addToBlacklist(accessToken, remainingTime);
+					log.info(">>>>> Access Token을 블랙리스트에 추가했습니다.");
+				}
+			} catch (Exception e) {
+				log.error(">>>>> Access Token 블랙리스트 추가 실패: {}", e.getMessage());
+			}
+		}
+	}
+
+	/**
+	 * Refresh Token을 삭제하는 메서드
+	 * @param request
+	 * return void
+	 */
+	public void deleteRefreshToken(HttpServletRequest request) {
+		// Refresh Token 처리
+		String refreshToken = null;
+		Cookie[] cookies = request.getCookies();
+		if (cookies != null) {
+			for (Cookie cookie : cookies) {
+				if (cookie.getName().equals("Refresh")) {
+					refreshToken = cookie.getValue();
+				}
+			}
+		}
+
+		String category = null;
+
+		try {
+			category = jwtUtil.getCategory(refreshToken);
+		} catch (Exception e) {
+			log.error(">>>>> Refresh Token 카테고리 확인 실패: {}", e.getMessage());
+		}
+
+		if (refreshToken != null && "refresh".equals(jwtUtil.getCategory(refreshToken))) {
+			// 유효한 리프레시 토큰이 있으면 refreshToken에서 UUID를 추출해서 Redis에서 삭제
+			String UUID = jwtUtil.getUUID(refreshToken);
+			log.info(">>>>> Redis에서 UUID: {}", UUID);
+			redisRefreshTokenRepository.deleteByUUID(UUID);
+			log.info(">>>>> Redis에서 리프레시 토큰 삭제 완료");
 		}
 	}
 }

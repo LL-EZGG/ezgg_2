@@ -21,14 +21,27 @@ public class MatchingProcessor {
 
 	public void tryMatch(MatchingFilterParsingDto matchingFilterParsingDto) {
 		try {
+			if (matchingFilterParsingDto.getPreferredPartnerParsing() == null ||
+				matchingFilterParsingDto.getPreferredPartnerParsing().getChampionInfo() == null) {
+				log.warn("매칭 정보 누락: memberId={}, championInfo is null", matchingFilterParsingDto.getMemberId());
+				// 필요한 경우 기본값 설정 또는 다른 처리
+				redisStreamProducer.acknowledgeUser(matchingFilterParsingDto.getMemberId());
+				return;
+			}
+
+			List<String> preferredPartnerChampions = matchingFilterParsingDto.getPreferredPartnerParsing()
+				.getChampionInfo().getPreferredChampions();
+			List<String> unpreferredPartnerChampions = matchingFilterParsingDto.getPreferredPartnerParsing()
+				.getChampionInfo().getUnpreferredChampions();
+
 			// es에서 매칭 상대 조회
 			List<MatchingFilterParsingDto> matchingUsers = esMatchingFilter.findMatchingUsers(
 				matchingFilterParsingDto.getPreferredPartnerParsing().getWantLine().getMyLine(),
 				matchingFilterParsingDto.getPreferredPartnerParsing().getWantLine().getPartnerLine(),
 				matchingFilterParsingDto.getMemberInfoParsing().getTier(),
 				matchingFilterParsingDto.getMemberId(),
-				matchingFilterParsingDto.getPreferredPartnerParsing().getChampionInfo().getPreferredChampion(),
-				matchingFilterParsingDto.getPreferredPartnerParsing().getChampionInfo().getUnpreferredChampion()
+				preferredPartnerChampions,
+				unpreferredPartnerChampions
 			);
 
 			if (matchingUsers.isEmpty()) {
