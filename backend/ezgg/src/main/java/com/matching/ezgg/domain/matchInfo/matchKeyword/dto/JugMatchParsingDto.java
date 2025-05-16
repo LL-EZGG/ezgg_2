@@ -8,7 +8,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class JugMatchParsingDto {
-	private Float visionScoreAdvantageLaneOpponent; // ≥0
+	private Double visionScoreAdvantageLaneOpponent; // ≥0
 	private Integer epicMonsterSteals; // ≥2
 	private Integer enemyJungleMonsterKills; // ≥20
 	private Integer riftHeraldTakedowns; // riftHeraldTakedowns + dragonTakedowns + baronTakedowns = 상대보다 ↑
