@@ -1,7 +1,7 @@
 import {useCallback, useRef, useState} from 'react';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
-import api from '../utils/api';
+import api, { tokenUtils } from '../utils/api';
 
 export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
     const stompClient = useRef(null);
