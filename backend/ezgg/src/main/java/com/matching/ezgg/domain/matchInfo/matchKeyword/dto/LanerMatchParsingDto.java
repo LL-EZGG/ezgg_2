@@ -10,7 +10,10 @@ import lombok.Getter;
 	private Integer killsOnOtherLanesEarlyJungleAsLaner; // ≥1
 	private Integer takedownsInAllLanesEarlyJungleAsLaner; // ≥1
 	private Integer turretPlatesTaken; // > opponentTurretPlatesTaken
-	private Integer turretsLost; // turretPlatesTaken ≥2 && turretsLost < opponentTurretsLost
+	private Integer opponentTurretPlatesTaken;
+	private Integer turretsLost; // turretKills ≥ 2 && turretLost < opponentTurretsLost
+	private Integer opponentTurretsLost;
+	private Integer turretKills;
 	private Integer killsUnderOwnTurret; // ≥2
 	private Integer killsNearEnemyTurret; // ≥2
 	private Integer maxCsAdvantageOnLaneOpponent; // ≥20

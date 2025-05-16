@@ -11,9 +11,12 @@ public class JugMatchParsingDto {
 	private Float visionScoreAdvantageLaneOpponent; // ≥0
 	private Integer epicMonsterSteals; // ≥2
 	private Integer enemyJungleMonsterKills; // ≥20
-	private Integer riftHeraldTakedowns; // 합계 > 상대팀
-	private Integer dragonKills;
-	private Integer baronKills;
+	private Integer riftHeraldTakedowns; // riftHeraldTakedowns + dragonTakedowns + baronTakedowns = 상대보다 ↑
+	private Integer dragonTakedowns;
+	private Integer baronTakedowns;
+	private Integer opponentRiftHeraldTakeDowns;
+	private Integer opponentDragonTakedowns;
+	private Integer opponentBaronTakedowns;
 	private Boolean firstBloodKill; // true
 
 }
