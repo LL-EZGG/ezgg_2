@@ -67,8 +67,8 @@ const handleLineSelect = (type, line, matchingCriteria, setMatchingCriteria) => 
 const SectionSelector = ({
                            matchingCriteria,
                            setMatchingCriteria,
-                           type, // 'line' | 'champion' | 'userPreferenceText'
-                           kind, // 'my' | 'partner' | 'preferred' | 'banned'
+                           type,
+                           kind,
                            selectedValue,
                            disabledValue,
                            children // 향후 확장용 (현재 미사용)

@@ -14,7 +14,7 @@ import {Stomp} from '@stomp/stompjs';
  *  - 챔피언 객체 → id 문자열 배열로 축소
  *  - 불필요 필드는 제거
  */
-export const criteriaToDTO = (vm) => ({
+const criteriaToDTO = (vm) => ({
   wantLine: vm.wantLine,
   userPreferenceText: vm.userPreferenceText,
   selectedChampions: {

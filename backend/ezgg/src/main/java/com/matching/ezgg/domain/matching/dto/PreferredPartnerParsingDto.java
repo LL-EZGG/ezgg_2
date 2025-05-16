@@ -17,6 +17,7 @@ import lombok.ToString;
 @ToString
 public class PreferredPartnerParsingDto {
 
+	@JsonProperty("wantLine")
 	private WantLine wantLine;
 	@JsonProperty("selectedChampions")
 	private ChampionInfo championInfo;
