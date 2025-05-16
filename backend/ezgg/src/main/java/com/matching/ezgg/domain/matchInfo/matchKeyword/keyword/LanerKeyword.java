@@ -2,7 +2,7 @@ package com.matching.ezgg.domain.matchInfo.matchKeyword.keyword;
 
 import lombok.Getter;
 
-public enum TopMidAdcKeyword {
+public enum LanerKeyword {
 	EARLY_ROAM("초반 로밍 적극적"), //killsOnOtherLanesEarlyJungleAsLaner, getTakedownsInAllLanesEarlyJungleAsLaner
 	LANE_DOMINANCE("라인전 리드함"), //turretPlatesTaken(상대와 비교)
 	TURRET_Kills("포탑 철거 잘함"), //turretTakekills, turretLost
@@ -14,7 +14,7 @@ public enum TopMidAdcKeyword {
 	@Getter
 	private final String description;
 
-	TopMidAdcKeyword(String description) {
+	LanerKeyword(String description) {
 		this.description = description;
 	}
 }
