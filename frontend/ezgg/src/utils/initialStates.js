@@ -3,5 +3,6 @@ export const getInitialCriteria = () => ({
   selectedChampions: {
     preferredChampions: [],
     bannedChampions: []
-  }
+  },
+  userPreferenceText : ''
 });

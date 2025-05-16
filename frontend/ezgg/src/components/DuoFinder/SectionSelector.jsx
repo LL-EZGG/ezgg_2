@@ -1,17 +1,42 @@
+/** -----------------------------------------------------------------------------
+ * SectionSelector.jsx
+ * -----------------------------------------------------------------------------
+ * 매칭 조건 설정 폼에서 사용되는 다목적 셀렉터 컴포넌트.
+ * - 라인(TOP/JUG/MID/AD/SUP) 선택, 챔피언 선호/비선호 선택, 사용자 메모(30자) 입력 세 가지 모드를 가짐.
+ * - props 로 전달받은 matchingCriteria 를 직접 수정하지 않고, 반드시 setMatchingCriteria
+ *   콜백을 통해 상위 상태를 업데이트한다.
+ * ---------------------------------------------------------------------------*/
 import styled from '@emotion/styled';
 import React, {useEffect, useRef, useState} from "react";
 import {champions} from "../../data/champions.js";
 
-const lines = ['TOP', 'JUG', 'MID', 'AD', 'SUP'];
+/* ------------- 상수 ---------------------------------------------------------------- */
 
+// 라인 버튼에 표시될 라벨 목록
+const lines = ['TOP', 'JUG', 'MID', 'AD', 'SUP'];
+// 사용자 메모 최대 글자 수
+const TEXT_LIMIT = 30;
+
+/* ------------- 보조 함수: 라인 선택 -------------------------------------------------------- */
+
+/**
+ * 라인 버튼 클릭 시 상태를 토글하는 함수
+ * 같은 라인을 my/partner 양쪽에서 중복 선택하지 않도록 처리한다.
+ * @param {('myLine'|'partnerLine')} type            - state 키(my 라인인지 partner 라인인지)
+ * @param {string} line                              - 클릭된 라인 값
+ * @param {object} matchingCriteria                  - 현재 매칭 기준 상태 객체
+ * @param {Function} setMatchingCriteria             - 상태 업데이트 콜백
+ */
 const handleLineSelect = (type, line, matchingCriteria, setMatchingCriteria) => {
   const currentWantLine = matchingCriteria?.wantLine || {};
   const currentMyLine = currentWantLine.myLine || '';
   const currentPartnerLine = currentWantLine.partnerLine || '';
 
+  // 중복 선택 상황 방지
   if (type === 'partnerLine' && line === currentMyLine) return;
   if (type === 'myLine' && line === currentPartnerLine) return;
 
+  // 토글 로직
   const newWantLine = {
     ...currentWantLine,
     [type]: currentWantLine[type] === line ? '' : line
@@ -23,28 +48,51 @@ const handleLineSelect = (type, line, matchingCriteria, setMatchingCriteria) => 
   });
 };
 
+/* ------------- 메인 컴포넌트 ---------------------------------------------------------- */
+
+/**
+ * SectionSelector 컴포넌트
+ * ---------------------------------------------------------------------------
+ * 라인 선택 UI 혹은 챔피언 선택 UI를 렌더링하는 함수형 컴포넌트.
+ *
+ * @prop {object}   matchingCriteria          - 상위 컴포넌트의 상태 객체
+ * @prop {Function} setMatchingCriteria       - 상태 변경 함수(상태를 불변성 지켜 갱신)
+
+ * @prop {'line'|'champion'|'userPreferenceText'} type - 라인 선택 모드 or 챔피언 선택 모드 or 텍스트 입력 모드
+ * @prop {'my'|'partner'|'preferred'|'banned'} kind - 세부 유형(라인: my/partner, 챔피언: preferred/banned)
+
+ * @prop {string}   selectedValue             - (라인 모드) 현재 선택된 값
+ * @prop {string}   disabledValue             - (라인 모드) 클릭 불가능한 값(상대가 이미 선택한 라인)
+ */
 const SectionSelector = ({
                            matchingCriteria,
                            setMatchingCriteria,
-                           type, // 'line' 또는 'champion'
-                           kind, // 'my'/'partner' 또는 'preferred'/'banned'
+                           type,
+                           kind,
                            selectedValue,
                            disabledValue,
-                           children
+                           children // 향후 확장용 (현재 미사용)
                          }) => {
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [bannedSearchTerm, setBannedSearchTerm] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [showBannedSuggestions, setShowBannedSuggestions] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [bannedSelectedIndex, setBannedSelectedIndex] = useState(0);
-  const searchRef = useRef(null);
-  const bannedSearchRef = useRef(null);
-  const preferredSuggestionsRef = useRef(null);
-  const bannedSuggestionsRef = useRef(null);
+  /* ----- 상태: 챔피언 검색어 및 UI 토글 ----------------------------------- */
+  const [searchTerm, setSearchTerm] = useState(''); // 선호 챔피언 검색어
+  const [bannedSearchTerm, setBannedSearchTerm] = useState(''); // 비선호 챔피언 검색어
 
+  const [showSuggestions, setShowSuggestions] = useState(false); // 선호 챔피언 추천박스
+  const [showBannedSuggestions, setShowBannedSuggestions] = useState(false);  // 비선호 챔피언 추천박스
+
+  const [selectedIndex, setSelectedIndex] = useState(0); // 선호 챔피언 추천박스 활성 인덱스
+  const [bannedSelectedIndex, setBannedSelectedIndex] = useState(0); // 비선호 챔피언 추천박스 활성 인덱스
+
+  /* ----- ref: DOM 요소 참조 ---------------------------------------------- */
+  const searchRef = useRef(null); // 선호 입력창 wrapper
+  const bannedSearchRef = useRef(null); // 비선호 입력창 wrapper
+  const preferredSuggestionsRef = useRef(null); // 선호 챔피언 추천 목록
+  const bannedSuggestionsRef = useRef(null); // 비선호 챔피언 추천 목록
+
+  /* ------------------ effect: 외부 클릭 시 추천 박스 닫기 ------------------ */
   useEffect(() => {
+    /** 외부 클릭을 감지해 추천 박스를 닫는 함수. */
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowSuggestions(false);
@@ -58,6 +106,7 @@ const SectionSelector = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  /* ----- effect: 선택 인덱스 변경 시 스크롤 위치 맞추기 ------------------------ */
   useEffect(() => {
     scrollToSelected(selectedIndex, 'preferred');
   }, [selectedIndex]);
@@ -66,6 +115,9 @@ const SectionSelector = ({
     scrollToSelected(bannedSelectedIndex, 'banned');
   }, [bannedSelectedIndex]);
 
+  /* ---------------- 입력/포커스 핸들러 ----------------------------------- */
+
+  /** 검색어가 변경될 때 상태를 업데이트하는 함수. */
   const handleChange = (e, kind) => {
     if (kind === 'preferred') {
       setSearchTerm(e.target.value);
@@ -78,6 +130,7 @@ const SectionSelector = ({
     }
   };
 
+  /** 입력창 포커스 시 추천 박스를 여는 함수. */
   const handleShowSuggestions = (kind) => {
     if (kind === 'preferred') {
       setShowSuggestions(true);
@@ -86,6 +139,7 @@ const SectionSelector = ({
     }
   }
 
+  /** 선택된 추천 항목이 보이도록 스크롤을 이동하는 함수.*/
   const scrollToSelected = (index, type) => {
     const suggestionsElement = type === 'preferred' ?
       preferredSuggestionsRef.current :
@@ -111,6 +165,7 @@ const SectionSelector = ({
     }
   };
 
+  /** 키보드 입력(▲▼Enter)을 처리하는 함수. */
   const handleKeyDown = (e, type) => {
     const suggestions = filterChampions(type === 'preferred' ? searchTerm : bannedSearchTerm);
     const currentIndex = type === 'preferred' ? selectedIndex : bannedSelectedIndex;
@@ -144,6 +199,7 @@ const SectionSelector = ({
     }
   };
 
+  /** 검색어로 챔피언 배열을 필터링하는 함수. */
   const filterChampions = (term) => {
     if (!term) return champions;
     const lowerTerm = term.toLowerCase();
@@ -153,6 +209,7 @@ const SectionSelector = ({
     );
   };
 
+  /** 챔피언을 선택하여 상태에 반영하는 함수. */
   const handleChampionSelect = (champion, type) => {
     const key = type === 'preferred' ? 'preferredChampions' : 'bannedChampions';
     const otherKey = type === 'preferred' ? 'bannedChampions' : 'preferredChampions';
@@ -190,6 +247,7 @@ const SectionSelector = ({
     }
   };
 
+  /** 선택된 챔피언 태그를 제거하는 함수. */
   const handleRemoveChampion = (championId, type) => {
     const key = type === 'preferred' ? 'preferredChampions' : 'bannedChampions';
 
@@ -203,6 +261,9 @@ const SectionSelector = ({
 
     setMatchingCriteria(newCriteria);
   };
+
+
+  /* ---------------- 렌더링: 라인 선택 모드 --------------------------------- */
 
   if (type === 'line') {
     return (
@@ -231,10 +292,14 @@ const SectionSelector = ({
       </Section>
     );
   } else if (type === 'champion') {
+
+    /* ---------------- 렌더링: 챔피언 선택 모드 ------------------------------- */
+
     return (
       <Section>
         <Label>{kind === 'preferred' ? '선호 챔피언' : '비선호 챔피언'}</Label>
         <SearchContainer ref={kind === 'preferred' ? searchRef : bannedSearchRef}>
+          {/* 검색 입력 */}
           <SearchInput>
             <input
               type="text"
@@ -247,6 +312,8 @@ const SectionSelector = ({
               onKeyDown={(e) => handleKeyDown(e, kind)}
             />
           </SearchInput>
+
+          {/* 추천 목록 */}
           {(() => {
             const {
               show,
@@ -282,6 +349,8 @@ const SectionSelector = ({
               </Suggestions>
             );
           })()}
+
+          {/* 선택된 챔피언 태그 */}
           <ChampionTags>
             {(kind === 'preferred'
                 ? matchingCriteria.selectedChampions.preferredChampions
@@ -302,12 +371,35 @@ const SectionSelector = ({
         </SearchContainer>
       </Section>
     );
+  } else if (type === 'userPreferenceText'){
+
+    /* ---------------- 렌더링: 사용자 메모 입력 ------------------------------ */
+
+    return (
+        <Section>
+          <Label>원하는 상대의 플레이 스타일</Label>
+          <TextInput
+              type="text"
+              maxLength={TEXT_LIMIT}
+              placeholder="ex) 탱커를 잘함, 로밍을 잘감, ..."
+              value={matchingCriteria.userPreferenceText || ''}
+              onChange={(e) =>
+                  setMatchingCriteria({
+                    ...matchingCriteria,
+                    userPreferenceText: e.target.value.slice(0, TEXT_LIMIT),
+                  })
+              }
+          />
+        </Section>
+    );
   }
 
-  return null;
+  return null;  // 방어 코드
 };
 
 export default SectionSelector;
+
+/* ------------- 스타일 컴포넌트 --------------------------------------------- */
 
 const Section = styled.div`
   display: flex;
@@ -455,4 +547,16 @@ const ChampionTag = styled.div`
       color: white;
     }
   }
+`;
+
+const TextInput = styled.input`
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.9rem;
+  &::placeholder { color: rgba(255, 255, 255, 0.5); }
+  &:focus { outline: none; }
 `;
