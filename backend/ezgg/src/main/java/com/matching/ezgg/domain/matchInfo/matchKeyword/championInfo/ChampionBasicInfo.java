@@ -1,7 +1,10 @@
 package com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo;
 
+import java.util.List;
+
 import lombok.Getter;
 
+@Getter
 public enum ChampionBasicInfo {
 	GAREN("가렌", "Garen", ChampionRole.AD_BRUISER),
 	GALIO("갈리오", "Galio", ChampionRole.TANK, ChampionRole.AP_MAGE),
@@ -174,18 +177,14 @@ public enum ChampionBasicInfo {
 	HECARIM("헤카림", "Hecarim", ChampionRole.AD_BRUISER, ChampionRole.JUNGLE),
 	HWAY("흐웨이", "Hwei", ChampionRole.AP_MAGE);
 
-
-	@Getter
 	private final String koreanName;
-	@Getter
 	private final String englishName;
-	@Getter
-	private final ChampionRole[] championRoles;
+	private final List<ChampionRole> championRoles;
 
 	ChampionBasicInfo(String koreanName, String englishName, ChampionRole... championRoles) {
 		this.koreanName = koreanName;
 		this.englishName = englishName;
-		this.championRoles = championRoles;
+		this.championRoles = List.of(championRoles);
 	}
 }
 
