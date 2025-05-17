@@ -12,6 +12,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.GlobalMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.JugMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.LanerMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.SupMatchParsingDto;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 import com.matching.ezgg.domain.riotApi.dto.PuuidDto;
@@ -162,6 +166,23 @@ public class ApiService {
 			String rawJson = asiaRestTemplate.getForObject(url, String.class);
 			// MatchDto 형식으로 매핑
 			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
+			GlobalMatchParsingDto globalMatchParsingDto = matchMapper.toGlobalMatchParsingDto(rawJson, puuid);
+			log.info(globalMatchParsingDto.toString());
+
+			//포지션별 키워드 부여를 위한 매핑
+			String teamPosition = matchDto.getTeamPosition();
+			switch (teamPosition) {
+				case("TOP"),("MIDDLE"),("BOTTOM"):
+					LanerMatchParsingDto lanerMatchParsingDto = matchMapper.toLanerMatchParsingDto(rawJson,puuid,teamPosition);
+				log.info(lanerMatchParsingDto.toString());
+				case("JUNGLE"):
+					JugMatchParsingDto jugMatchParsingDto = matchMapper.toJugMatchParsingDto(rawJson,puuid);
+					log.info(jugMatchParsingDto.toString());
+				case("UTILITY"):
+					SupMatchParsingDto supMatchParsingDto = matchMapper.toSupMatchParsingDto(rawJson,puuid);
+					log.info(supMatchParsingDto.toString());
+			}
+
 			// MemberId를 MatchDto에 따로 지정
 			matchDto = matchDto.toBuilder()
 				.memberId(memberInfoService.getMemberIdByPuuid(puuid))
