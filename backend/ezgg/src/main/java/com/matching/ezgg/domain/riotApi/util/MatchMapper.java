@@ -5,6 +5,11 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.GlobalMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.JugMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.LanerMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.SupMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 
 import lombok.RequiredArgsConstructor;
@@ -57,5 +62,188 @@ public class MatchMapper {
 			}
 		}
 		throw new IllegalArgumentException("해당 Match에서 멤버를 찾을 수 없습니다.");
+	}
+
+	// participant 배열에서 상대 라인의 노드 리턴
+	private JsonNode findOpponentMember(JsonNode participants, String puuid, String teamPosition) {
+		for (JsonNode participant : participants) {
+			if (!puuid.equals(participant.path("puuid").asText())&&teamPosition.equals(participant.path("teamPosition").asText())) {
+				return participant;
+			}
+		}
+		throw new IllegalArgumentException("해당 Match에서 멤버를 찾을 수 없습니다.");
+	}
+
+	// participant 배열에서 puuid가 일치하는 노드에서 challenges 노드 리턴
+	private JsonNode findChallenges(JsonNode memberNode) {
+		JsonNode challengesNode = memberNode.path("challenges");
+		if (challengesNode.isMissingNode() || challengesNode.isNull()) {
+			throw new IllegalArgumentException("해당 멤버의 Challenges를 찾을 수 없습니다.");
+		}
+		return challengesNode;
+	}
+
+
+
+	public GlobalMatchParsingDto toGlobalMatchParsingDto(String rawJson, String puuid) {
+		try {
+			JsonNode root = objectMapper.readTree(rawJson);
+
+			//participants 노드 안에 있는 요소 파싱
+			JsonNode globalNode = findTargetMember(root.path("info").path("participants"), puuid);
+
+			Boolean win = globalNode.path("win").asBoolean();
+			Boolean gameEndedInSurrender = globalNode.path("gameEndedInSurrender").asBoolean();
+
+			//challenges 노드 안에 있는 요소 파싱
+			JsonNode challengesNode = findChallenges(globalNode);
+
+			Double killParticipation = challengesNode.path("killParticipation").asDouble();
+			Double kda = challengesNode.path("kda").asDouble();
+			Double teamDamagePercentage = challengesNode.path("teamDamagePercentage").asDouble();
+			Integer maxLevelLeadLaneOpponent = challengesNode.path("maxLevelLeadLaneOpponent").asInt();
+			Integer immobilizeAndKillWithAlly = challengesNode.path("immobilizeAndKillWithAlly").asInt();
+			Integer multiKillOneSpell = challengesNode.path("multiKillOneSpell").asInt();
+			Double damagePerMinute = challengesNode.path("damagePerMinute").asDouble();
+
+			return GlobalMatchParsingDto.builder()
+				.win(win)
+				.damagePerMinute(damagePerMinute)
+				.gameEndedInSurrender(gameEndedInSurrender)
+				.killParticipation(killParticipation)
+				.kda(kda)
+				.teamDamagePercentage(teamDamagePercentage)
+				.maxLevelLeadLaneOpponent(maxLevelLeadLaneOpponent)
+				.immobilizeAndKillWithAlly(immobilizeAndKillWithAlly)
+				.multiKillOneSpell(multiKillOneSpell)
+				.build();
+
+		} catch (JsonProcessingException e) {
+			throw new IllegalArgumentException("JSON → GlobalMatchParsingDto 변환 실패", e);
+		}
+	}
+
+
+	public LanerMatchParsingDto toLanerMatchParsingDto(String rawJson, String puuid, String teamPosition) {
+		try {
+			JsonNode root = objectMapper.readTree(rawJson);
+
+			//participants 노드 안에 있는 요소 파싱
+			JsonNode lanerNode = findTargetMember(root.path("info").path("participants"), puuid);
+			Integer turretKills = lanerNode.path("turretKills").asInt();
+			Integer turretsLost = lanerNode.path("turretsLost").asInt();
+			Boolean firstBloodKill = lanerNode.path("firstBloodKill").asBoolean();
+
+			//challenges 노드 안에 있는 요소 파싱
+			JsonNode lanerChallengesNode = findChallenges(lanerNode);
+
+			Integer killsOnOtherLanesEarlyJungleAsLaner = lanerChallengesNode.path("killsOnOtherLanesEarlyJungleAsLaner").asInt();
+			Integer getTakedownsInAllLanesEarlyJungleAsLaner = lanerChallengesNode.path("getTakedownsInAllLanesEarlyJungleAsLaner").asInt();
+			Integer turretPlatesTaken = lanerChallengesNode.path("turretPlatesTaken").asInt();
+
+			Integer killsUnderOwnTurret = lanerChallengesNode.path("killsUnderOwnTurret").asInt();
+			Integer killsNearEnemyTurret = lanerChallengesNode.path("killsNearEnemyTurret").asInt();
+			Double maxCsAdvantageOnLaneOpponent = lanerChallengesNode.path("maxCsAdvantageOnLaneOpponent").asDouble();
+
+			//상대 라이너 정보 파싱
+			JsonNode opponentLanerNode = findOpponentMember(root.path("info").path("participants"), puuid,
+				teamPosition);
+			Integer opponentTurretsLost = opponentLanerNode.path("turretsLost").asInt();
+
+			JsonNode opponentLanerChallengesNode = findChallenges(opponentLanerNode);
+			Integer opponentTurretPlatesTaken = opponentLanerChallengesNode.path("turretPlatesTaken").asInt();
+
+
+			return LanerMatchParsingDto.builder()
+				.turretKills(turretKills)
+				.turretsLost(turretsLost)
+				.firstBloodKill(firstBloodKill)
+				.killsOnOtherLanesEarlyJungleAsLaner(killsOnOtherLanesEarlyJungleAsLaner)
+				.getTakedownsInAllLanesEarlyJungleAsLaner(getTakedownsInAllLanesEarlyJungleAsLaner)
+				.turretPlatesTaken(turretPlatesTaken)
+				.killsUnderOwnTurret(killsUnderOwnTurret)
+				.killsNearEnemyTurret(killsNearEnemyTurret)
+				.maxCsAdvantageOnLaneOpponent(maxCsAdvantageOnLaneOpponent)
+				.opponentTurretPlatesTaken(opponentTurretPlatesTaken)
+				.opponentTurretsLost(opponentTurretsLost)
+				.build();
+
+		} catch (JsonProcessingException e) {
+			throw new IllegalArgumentException("JSON → LanerMatchParsingDto 변환 실패", e);
+		}
+	}
+
+	public JugMatchParsingDto toJugMatchParsingDto(String rawJson, String puuid) {
+		try {
+			JsonNode root = objectMapper.readTree(rawJson);
+
+			//participants 노드 안에 있는 요소 파싱
+			JsonNode jugNode = findTargetMember(root.path("info").path("participants"), puuid);
+			Boolean firstBloodKill = jugNode.path("firstBloodKill").asBoolean();
+
+			//challenges 노드 안에 있는 요소 파싱
+			JsonNode jugChallengesNode = findChallenges(jugNode);
+
+			Integer riftHeraldTakedowns = jugChallengesNode.path("riftHeraldTakedowns").asInt();
+			Integer dragonTakedowns = jugChallengesNode.path("dragonTakedowns").asInt();
+			Integer baronTakedowns = jugChallengesNode.path("baronTakedowns").asInt();
+
+			Double visionScoreAdvantageLaneOpponent = jugChallengesNode.path("visionScoreAdvantageLaneOpponent").doubleValue();
+			Integer epicMonsterSteals = jugChallengesNode.path("epicMonsterSteals").asInt();
+			Integer enemyJungleMonsterKills = jugChallengesNode.path("enemyJungleMonsterKills").asInt();
+
+			//상대 정글 정보 파싱
+			JsonNode opponentJugNode = findOpponentMember(root.path("info").path("participants"), puuid,
+				Lane.JUNGLE.name());
+			JsonNode opponentJugChallengesNode = findChallenges(opponentJugNode);
+
+			Integer opponentRiftHeraldTakedowns = opponentJugChallengesNode.path("riftHeraldTakedowns").asInt();
+			Integer opponentDragonTakedowns = opponentJugChallengesNode.path("dragonTakedowns").asInt();
+			Integer opponentBaronTakedowns = opponentJugChallengesNode.path("baronTakedowns").asInt();
+
+			return JugMatchParsingDto.builder()
+				.visionScoreAdvantageLaneOpponent(visionScoreAdvantageLaneOpponent)
+				.epicMonsterSteals(epicMonsterSteals)
+				.enemyJungleMonsterKills(enemyJungleMonsterKills)
+				.riftHeraldTakedowns(riftHeraldTakedowns)
+				.dragonTakedowns(dragonTakedowns)
+				.baronTakedowns(baronTakedowns)
+				.opponentRiftHeraldTakeDowns(opponentRiftHeraldTakedowns)
+				.opponentDragonTakedowns(opponentDragonTakedowns)
+				.opponentBaronTakedowns(opponentBaronTakedowns)
+				.firstBloodKill(firstBloodKill)
+				.build();
+
+		} catch (JsonProcessingException e) {
+			throw new IllegalArgumentException("JSON → JugMatchParsingDto 변환 실패", e);
+		}
+	}
+
+	public SupMatchParsingDto toSupMatchParsingDto(String rawJson, String puuid) {
+		try {
+			JsonNode root = objectMapper.readTree(rawJson);
+
+			//participants 노드 안에 있는 요소 파싱
+			JsonNode supNode = findTargetMember(root.path("info").path("participants"), puuid);
+			Integer wardsPlaced = supNode.path("wardsPlaced").asInt();
+
+			//challenges 노드 안에 있는 요소 파싱
+			JsonNode supChallengesNode = findChallenges(supNode);
+
+			Double visionScoreAdvantageLaneOpponent = supChallengesNode.path("visionScoreAdvantageLaneOpponent").asDouble();
+			Integer saveAllyFromDeath = supChallengesNode.path("saveAllyFromDeath").asInt();
+
+			Integer gameDuration = root.path("info").path("gameDuration").asInt();
+
+			return SupMatchParsingDto.builder()
+				.wardPlaced(wardsPlaced)
+				.visionScoreAdvantageLaneOpponent(visionScoreAdvantageLaneOpponent)
+				.saveAllyFromDeath(saveAllyFromDeath)
+				.gameDuration(gameDuration)
+				.build();
+
+		} catch (JsonProcessingException e) {
+			throw new IllegalArgumentException("JSON → JSupMatchParsingDto 변환 실패", e);
+		}
 	}
 }
