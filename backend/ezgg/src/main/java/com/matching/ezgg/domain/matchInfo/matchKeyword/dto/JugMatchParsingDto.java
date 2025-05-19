@@ -19,6 +19,7 @@ public class JugMatchParsingDto {
 	private Integer opponentBaronTakedowns;
 	private Boolean firstBloodKill; // true
 	private Double moreEnemyJungleThanOpponent; // +10 < 상대 moreEnemyJungleThanOpponent (값이 음수)
+	private Double opponentMoreEnemyJungleThanOpponent;
 	private Integer multiTurretRiftHeraldCount; // ≥2
 
 }
