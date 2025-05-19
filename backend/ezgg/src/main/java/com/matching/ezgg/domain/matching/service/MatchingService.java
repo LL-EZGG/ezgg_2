@@ -152,16 +152,12 @@ public class MatchingService {
 			.build();
 	}
 
-	/**
-	 * 사용자의 매칭 요청을 취소하고 Redis에서 관련 정보를 삭제합니다.
-	 *
-	 * @param memberId 매칭을 취소할 사용자 ID
-	 */
+	// 사용자의 매칭 요청을 취소하고 Redis에서 관련 정보를 삭제합니다.
 	public void stopMatching(Long memberId) {
 		log.info("사용자 ID {}의 매칭 취소 요청 처리 중", memberId);
 
 		try {
-			redisStreamProducer.removeCandidate(memberId); // Redis Stream에서 사용자 제거
+			redisStreamProducer.removeAllRedisKeysByMemberId(memberId); // Redis Stream에서 사용자 제거
 			esService.deleteDocByMemberId(memberId);       // ES에서 사용자 문서 삭제
 			log.info("사용자 ID {}의 매칭 취소 완료", memberId);
 		} catch (Exception e) {
