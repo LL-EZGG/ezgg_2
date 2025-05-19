@@ -9,7 +9,7 @@ public enum JugKeyword {
 	OBJECTIVE_TAKER("오브젝트 잘 먹음"), //riftHeraldTakedowns, dragonKills, baronKills
 	FIRST_BLOOD_MAKER("첫 킬 만들어냄"), //firstBloodKill
 	JUNGLE_DOMINANCE("적 정글 장악"), // moreEnemyJungleThanOpponent
-	RIFT_HERALD_UTILIZER("전령 활용 잘하는"); // multiTurretRiftHeraldCount
+	RIFT_HERALD_UTILIZER("전령 활용 잘함"); // multiTurretRiftHeraldCount
 
 	@Getter
 	private final String description;
