@@ -5,7 +5,8 @@ import lombok.Getter;
 public enum SupKeyword {
 	VISION_DOMINANCE("시야 장악"), //visionScoreAdvantageLaneOpponent
 	WARDS_PLACED("시야 밝혀줌"), //wardsPlaced, gameDuration
-	SAVE_ALLY("팀원 살림"); //saveAllyFromDeath
+	SAVE_ALLY("팀원 살림"), //saveAllyFromDeath
+	ASSIST_KING("킬 돕는"); // assists
 
 	@Getter
 	private final String description;

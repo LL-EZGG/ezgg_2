@@ -11,7 +11,10 @@ public enum GlobalKeyword {
 	GOOD_SYNERGY("스킬 연계 잘함"), //immobilizeAndKillWithAlly
 	NEVER_GIVES_UP("항복 안 함"), //gameEndedInSurrender
 	SURVIVABILITY("생존 잘함"), //longestTimeSpentLiving
-	TEAM_FIGHTER("한타 잘함"); //multiKillOneSpell
+	TEAM_FIGHTER("한타 잘함"), //multiKillOneSpell
+	COOPERATIVE("협동 잘함"), // pickKillWithAlly
+	INVADING("인베이드 잘함"), // takedownsBeforeJungleMinionSpawn
+	COMEBACK_WIN("위기 후 승리"); // lostAnInhibitor, win
 
 	@Getter
 	private final String description;

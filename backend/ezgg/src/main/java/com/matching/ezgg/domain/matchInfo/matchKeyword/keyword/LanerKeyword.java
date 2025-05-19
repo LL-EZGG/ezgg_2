@@ -9,7 +9,8 @@ public enum LanerKeyword {
 	TURRET_DEFENSE("포탑 다이브 버팀"), //killsUnderOwnTurret
 	TURRET_DIVE("포탑 다이브 잘함"), //killsNearEnemyTurret
 	CS_ADVANTAGE("CS 리드"), //maxCsAdvantageOnLaneOpponent
-	FIRST_BLOOD_MAKER("첫 킬 만들어냄"); //firstBloodKill
+	FIRST_BLOOD_MAKER("첫 킬 만들어냄"), //firstBloodKill
+	ASSASSIN("암살 잘함"); // killAfterHiddenWithAlly
 
 	@Getter
 	private final String description;
