@@ -21,11 +21,9 @@ const DuoFinder = (
           memberDataBundle={memberDataBundle}
           isLoading={isLoading}
         />
-
         {matchResult ? (
           <UserProfileCard
-            userInfo={userInfo}
-            memberDataBundle={memberDataBundle}
+            memberDataBundle={matchResult.data}
             isLoading={isLoading}
           />
         ) : (
