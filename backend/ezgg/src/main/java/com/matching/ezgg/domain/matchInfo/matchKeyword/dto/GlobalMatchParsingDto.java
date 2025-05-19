@@ -18,5 +18,6 @@ public class GlobalMatchParsingDto {
 	private Boolean	gameEndedInSurrender; //False
 	private Integer	multiKillOneSpell; //1 이상
 	private Integer	pickKillWithAlly; //10 이상
+	private Integer lostAnInhibitor; // lostAnInhibitor>=2 && win=True
 	private Integer	takedownsBeforeJungleMinionSpawn; // > 상대 pickKillWithAlly
 }
