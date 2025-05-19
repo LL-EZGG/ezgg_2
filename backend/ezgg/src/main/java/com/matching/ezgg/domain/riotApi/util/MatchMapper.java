@@ -105,6 +105,9 @@ public class MatchMapper {
 			Integer immobilizeAndKillWithAlly = challengesNode.path("immobilizeAndKillWithAlly").asInt();
 			Integer multiKillOneSpell = challengesNode.path("multiKillOneSpell").asInt();
 			Double damagePerMinute = challengesNode.path("damagePerMinute").asDouble();
+			Integer lostAnInhibitor = challengesNode.path("lostAnInhibitor").asInt();
+			Integer takedownsBeforeJungleMinionSpawn = challengesNode.path("takedownsBeforeJungleMinionSpawn").asInt();
+			Integer pickKillWithAlly = challengesNode.path("pickKillWithAlly").asInt();
 
 			return GlobalMatchParsingDto.builder()
 				.win(win)
@@ -116,6 +119,9 @@ public class MatchMapper {
 				.maxLevelLeadLaneOpponent(maxLevelLeadLaneOpponent)
 				.immobilizeAndKillWithAlly(immobilizeAndKillWithAlly)
 				.multiKillOneSpell(multiKillOneSpell)
+				.lostAnInhibitor(lostAnInhibitor)
+				.takedownsBeforeJungleMinionSpawn(takedownsBeforeJungleMinionSpawn)
+				.pickKillWithAlly(pickKillWithAlly)
 				.build();
 
 		} catch (JsonProcessingException e) {
@@ -144,6 +150,7 @@ public class MatchMapper {
 			Integer killsUnderOwnTurret = lanerChallengesNode.path("killsUnderOwnTurret").asInt();
 			Integer killsNearEnemyTurret = lanerChallengesNode.path("killsNearEnemyTurret").asInt();
 			Double maxCsAdvantageOnLaneOpponent = lanerChallengesNode.path("maxCsAdvantageOnLaneOpponent").asDouble();
+			Integer killAfterHiddenWithAlly = lanerChallengesNode.path("killAfterHiddenWithAlly").asInt();
 
 			//상대 라이너 정보 파싱
 			JsonNode opponentLanerNode = findOpponentMember(root.path("info").path("participants"), puuid,
@@ -166,6 +173,7 @@ public class MatchMapper {
 				.maxCsAdvantageOnLaneOpponent(maxCsAdvantageOnLaneOpponent)
 				.opponentTurretPlatesTaken(opponentTurretPlatesTaken)
 				.opponentTurretsLost(opponentTurretsLost)
+				.killAfterHiddenWithAlly(killAfterHiddenWithAlly)
 				.build();
 
 		} catch (JsonProcessingException e) {
@@ -191,6 +199,8 @@ public class MatchMapper {
 			Double visionScoreAdvantageLaneOpponent = jugChallengesNode.path("visionScoreAdvantageLaneOpponent").doubleValue();
 			Integer epicMonsterSteals = jugChallengesNode.path("epicMonsterSteals").asInt();
 			Integer enemyJungleMonsterKills = jugChallengesNode.path("enemyJungleMonsterKills").asInt();
+			Double moreEnemyJungleThanOpponent = jugChallengesNode.path("moreEnemyJungleThanOpponent").asDouble();
+			Integer multiTurretRiftHeraldCount = jugChallengesNode.path("multiTurretRiftHeraldCount").asInt();
 
 			//상대 정글 정보 파싱
 			JsonNode opponentJugNode = findOpponentMember(root.path("info").path("participants"), puuid,
@@ -200,6 +210,7 @@ public class MatchMapper {
 			Integer opponentRiftHeraldTakedowns = opponentJugChallengesNode.path("riftHeraldTakedowns").asInt();
 			Integer opponentDragonTakedowns = opponentJugChallengesNode.path("dragonTakedowns").asInt();
 			Integer opponentBaronTakedowns = opponentJugChallengesNode.path("baronTakedowns").asInt();
+			Double opponentMoreEnemyJungleThanOpponent = opponentJugChallengesNode.path("moreEnemyJungleThanOpponent").asDouble();
 
 			return JugMatchParsingDto.builder()
 				.visionScoreAdvantageLaneOpponent(visionScoreAdvantageLaneOpponent)
@@ -212,6 +223,9 @@ public class MatchMapper {
 				.opponentDragonTakedowns(opponentDragonTakedowns)
 				.opponentBaronTakedowns(opponentBaronTakedowns)
 				.firstBloodKill(firstBloodKill)
+				.moreEnemyJungleThanOpponent(moreEnemyJungleThanOpponent)
+				.opponentMoreEnemyJungleThanOpponent(opponentMoreEnemyJungleThanOpponent)
+				.multiTurretRiftHeraldCount(multiTurretRiftHeraldCount)
 				.build();
 
 		} catch (JsonProcessingException e) {
@@ -226,6 +240,7 @@ public class MatchMapper {
 			//participants 노드 안에 있는 요소 파싱
 			JsonNode supNode = findTargetMember(root.path("info").path("participants"), puuid);
 			Integer wardsPlaced = supNode.path("wardsPlaced").asInt();
+			Integer assists = supNode.path("assists").asInt();
 
 			//challenges 노드 안에 있는 요소 파싱
 			JsonNode supChallengesNode = findChallenges(supNode);
@@ -237,6 +252,7 @@ public class MatchMapper {
 
 			return SupMatchParsingDto.builder()
 				.wardPlaced(wardsPlaced)
+				.assists(assists)
 				.visionScoreAdvantageLaneOpponent(visionScoreAdvantageLaneOpponent)
 				.saveAllyFromDeath(saveAllyFromDeath)
 				.gameDuration(gameDuration)
