@@ -18,4 +18,6 @@ import lombok.Getter;
 	private Integer killsNearEnemyTurret; // ≥2
 	private Double maxCsAdvantageOnLaneOpponent; // ≥20
 	private Boolean firstBloodKill; // true
+	private Integer lostAnInhibitor; // lostAnInhibitor>=2 && win=True
+	private Integer killAfterHiddenWithAlly; // killAfterHiddenWithAlly>=2
 }

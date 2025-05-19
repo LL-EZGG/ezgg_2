@@ -12,4 +12,5 @@ public class SupMatchParsingDto {
 	private Integer	saveAllyFromDeath; //1 이상
 	private Integer	wardPlaced;
 	private Integer	gameDuration; //wardPlaced/게임시간= 분당 1.2 이상
+	private Integer assists; //assists/게임시간 = 분당 0.7이상
 }
