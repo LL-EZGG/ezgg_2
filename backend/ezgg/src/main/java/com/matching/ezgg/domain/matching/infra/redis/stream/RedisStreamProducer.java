@@ -40,4 +40,8 @@ public class RedisStreamProducer {
 	public void removeRetryCandidate(MatchingFilterParsingDto matchingFilterParsingDto) throws JsonProcessingException {
 		redisService.removeRetryCandidate(objectMapper.writeValueAsString(matchingFilterParsingDto));
 	}
+
+	public void removeAllRedisKeysByMemberId(Long memberId) {
+		redisService.removeMemberFromAllRedisKeys(memberId);
+	}
 }
