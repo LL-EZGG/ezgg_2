@@ -12,6 +12,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.matching.ezgg.domain.matchInfo.matchKeyword.analyzer.GlobalKeywordAnalyzer;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.GlobalMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.JugMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.LanerMatchParsingDto;
@@ -40,14 +41,17 @@ public class ApiService {
 	private final String apiKey;
 	private final MatchMapper matchMapper;
 	private final MemberInfoService memberInfoService;
+	private final GlobalKeywordAnalyzer globalKeywordAnalyzer;
 
 	public ApiService(@Qualifier("asia") RestTemplate asiaRestTemplate, @Qualifier("kr") RestTemplate krRestTemplate,
-		@Value("${api.key}") String apiKey, MatchMapper matchMapper, MemberInfoService memberInfoService) {
+		@Value("${api.key}") String apiKey, MatchMapper matchMapper, MemberInfoService memberInfoService,
+		GlobalKeywordAnalyzer globalKeywordAnalyzer) {
 		this.asiaRestTemplate = asiaRestTemplate;
 		this.krRestTemplate = krRestTemplate;
 		this.apiKey = apiKey;
 		this.matchMapper = matchMapper;
 		this.memberInfoService = memberInfoService;
+		this.globalKeywordAnalyzer = globalKeywordAnalyzer;
 	}
 
 	//riot/account/v1/accounts/by-riot-id/{riot-id}/{tag}?api_key=
@@ -166,15 +170,17 @@ public class ApiService {
 			String rawJson = asiaRestTemplate.getForObject(url, String.class);
 			// MatchDto 형식으로 매핑
 			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
+
+			String teamPosition = matchDto.getTeamPosition();
 			GlobalMatchParsingDto globalMatchParsingDto = matchMapper.toGlobalMatchParsingDto(rawJson, puuid);
 			log.info(globalMatchParsingDto.toString());
+			globalKeywordAnalyzer.analyze(globalMatchParsingDto,teamPosition,matchId,memberId);
 
 			//포지션별 키워드 부여를 위한 매핑
-			String teamPosition = matchDto.getTeamPosition();
 			switch (teamPosition) {
 				case("TOP"),("MIDDLE"),("BOTTOM"):
 					LanerMatchParsingDto lanerMatchParsingDto = matchMapper.toLanerMatchParsingDto(rawJson,puuid,teamPosition);
-				log.info(lanerMatchParsingDto.toString());
+					log.info(lanerMatchParsingDto.toString());
 				case("JUNGLE"):
 					JugMatchParsingDto jugMatchParsingDto = matchMapper.toJugMatchParsingDto(rawJson,puuid);
 					log.info(jugMatchParsingDto.toString());
