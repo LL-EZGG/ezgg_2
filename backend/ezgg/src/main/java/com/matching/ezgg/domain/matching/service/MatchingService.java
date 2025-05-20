@@ -12,6 +12,7 @@ import com.matching.ezgg.domain.matching.dto.MemberInfoParsingDto;
 import com.matching.ezgg.domain.matching.dto.PreferredPartnerParsingDto;
 import com.matching.ezgg.domain.matching.dto.RecentTwentyMatchParsingDto;
 import com.matching.ezgg.domain.matching.infra.es.service.EsService;
+import com.matching.ezgg.domain.matching.infra.redis.service.RedisService;
 import com.matching.ezgg.domain.matching.infra.redis.stream.RedisStreamProducer;
 import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
@@ -34,6 +35,7 @@ public class MatchingService {
 	private final ApiService apiService;
 	private final MatchingDataBulkSaveService matchingDataBulkSaveService;
 	private final RedisStreamProducer redisStreamProducer;
+	private final RedisService redisService;
 
 	// 매칭 시작 시 호출
 	public void startMatching(Long memberId, PreferredPartnerParsingDto preferredPartnerParsingDto) {
@@ -48,6 +50,12 @@ public class MatchingService {
 
 		log.info("Json: {}", matchingFilterParsingDto.toString());
 
+		// 매칭 전 ES, Redis 사용자 정보 모두 제거
+		esService.deleteDocByMemberId(memberId);
+		redisService.acknowledgeMatch(memberId);
+		redisService.removeRetryCandidateByMemberId(memberId);
+
+		// 매칭 시작 - ES, Redis 사용자 정보 추가
 		esService.esPost(matchingFilterParsingDto);
 		redisStreamProducer.sendMatchRequest(matchingFilterParsingDto);
 	}
@@ -157,6 +165,7 @@ public class MatchingService {
 		log.info("사용자 ID {}의 매칭 취소 요청 처리 중", memberId);
 
 		try {
+			redisService.addToDeleteQueue(memberId);
 			redisStreamProducer.removeAllRedisKeysByMemberId(memberId); // Redis Stream에서 사용자 제거
 			esService.deleteDocByMemberId(memberId);       // ES에서 사용자 문서 삭제
 			log.info("사용자 ID {}의 매칭 취소 완료", memberId);

@@ -176,7 +176,6 @@ public class RedisService {
 	public void removeMemberFromAllRedisKeys(Long memberId) {
 		acknowledgeMatch(memberId); // Stream 삭제 및 ack 처리
 		removeRetryCandidateByMemberId(memberId); // ZSet 삭제
-		addToDeleteQueue(memberId); // 딜리트 큐에 추가
 	}
 
 	// 리트라이 큐에서 사용자id를 활용하여 제거합니다.
@@ -204,7 +203,7 @@ public class RedisService {
 		try {
 			redisTemplate.opsForSet().add(RedisKey.DELETE_QUEUE_KEY.getValue(), memberId.toString());
 			// 딜리트 큐에서 ttl 설정
-			redisTemplate.expire(RedisKey.DELETE_QUEUE_KEY.getValue(), Duration.ofSeconds(10));
+			redisTemplate.expire(RedisKey.DELETE_QUEUE_KEY.getValue(), Duration.ofSeconds(15));
 			log.info("사용자 ID {}가 딜리트 큐에 추가되었습니다.", memberId);
 		} catch (Exception e) {
 			log.error("Redis에서 딜리트 큐에 오류 발생: {}", e.getMessage());
@@ -217,5 +216,9 @@ public class RedisService {
 		Boolean isMember = redisTemplate.opsForSet()
 			.isMember(RedisKey.DELETE_QUEUE_KEY.getValue(), memberId.toString());
 		return Boolean.TRUE.equals(isMember);
+	}
+
+	public void deleteMemberToDeleteQueue(Long memberId) {
+		redisTemplate.opsForSet().remove(RedisKey.DELETE_QUEUE_KEY.getValue(), memberId.toString());
 	}
 }

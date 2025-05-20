@@ -19,6 +19,10 @@ public class RedisStreamProducer {
 	private final ObjectMapper objectMapper;
 
 	public void sendMatchRequest(MatchingFilterParsingDto matchingFilterParsingDto) {
+		Long memberId = matchingFilterParsingDto.getMemberId();
+		if (redisService.isInDeleteQueue(memberId)) {
+			redisService.deleteMemberToDeleteQueue(memberId);
+		}
 		redisService.saveMatchRequest(matchingFilterParsingDto);
 	}
 
