@@ -39,12 +39,12 @@ public class DelayQueueWorker {
 					log.info("Retry 처리 중단 : {}", json);
 					// 딜리트 큐에 있으면 해당 id는 매칭 취소된 상태이므로 retry 큐에서 제거
 					redisService.removeRetryCandidate(json);
-					continue;
+				} else {
+					//딜리트 큐에 없으면 정상 처리
+					redisStreamProducer.sendMatchRequest(dto);
+					redisService.removeRetryCandidate(json);
+					log.info("Retry 처리 완료 : {}", json);
 				}
-				//딜리트 큐에 없으면 정상 처리
-				redisStreamProducer.sendMatchRequest(dto);
-				redisService.removeRetryCandidate(json);
-				log.info("Retry 처리 완료 : {}", json);
 			} catch (Exception e) {
 				log.error("Retry 처리 중 에러 발생 : {}", e.getMessage());
 			}
