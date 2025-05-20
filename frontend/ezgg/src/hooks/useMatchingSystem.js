@@ -14,7 +14,7 @@ export const useMatchingSystem = () => {
       setMatchResult(response)
       disconnect();
     },
-    onDisconnect: () => handleMatchCancel()
+    onDisconnect: () => handleDisconnect()
     // onMessage: (response) => {
     //   console.log(response)
     //   if (response.status === 'SUCCESS') {
@@ -51,6 +51,12 @@ export const useMatchingSystem = () => {
       setMatchingCriteria(criteria);
     });
   };
+
+  const handleDisconnect = () => {
+    disconnect();
+    setIsMatching(false);
+    setMatchingCriteria(getInitialCriteria());
+  }
 
   const handleMatchCancel = () => {
     disconnect();

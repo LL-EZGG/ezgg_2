@@ -162,20 +162,12 @@ public class EsMatchingFilter {
 		int winRateWeight = 0; // 승률관련 가중치 정해진게 없어 0으로 처리
 
 		// 순위 가중치
-		int rankWeight;
-		switch (championRank) {
-			case 1:
-				rankWeight = 5;
-				break; // 1위는 높은 가중치
-			case 2:
-				rankWeight = 3;
-				break; // 2위는 중간 가중치
-			case 3:
-				rankWeight = 1;
-				break; // 3위는 낮은 가중치
-			default:
-				rankWeight = 0; // 나머지는 가중치 없음
-		}
+		int rankWeight = switch (championRank) {
+			case 1 -> 5; // 1위는 높은 가중치
+			case 2 -> 3; // 2위는 중간 가중치
+			case 3 -> 1; // 3위는 낮은 가중치
+			default -> 0; // 나머지는 가중치 없음
+		};
 
 		// 선호/비선호 여부에 상관없이 동일한 가중치 적용
 		// (이 부분은 비즈니스 로직에 따라 다르게 처리할 수 있음)
@@ -190,7 +182,7 @@ public class EsMatchingFilter {
 		}
 
 		return mostChampions.stream()
-			.filter(champion -> champion.getChampionName().equals(championName))
+			.filter(champion -> champion.getChampionName().equalsIgnoreCase(championName))
 			.findFirst()
 			.orElse(null);
 	}
@@ -200,7 +192,7 @@ public class EsMatchingFilter {
 		log.debug("Finding rank for: {}", championName);
 		for (int i = 0; i < mostChampions.size(); i++) {
 			log.debug("Candidate: {}", mostChampions.get(i).getChampionName());
-			if (mostChampions.get(i).getChampionName().equals(championName)) {
+			if (mostChampions.get(i).getChampionName().equalsIgnoreCase(championName)) {
 				return i + 1; // 1위부터 시작하므로 i + 1을 반환
 			}
 		}
