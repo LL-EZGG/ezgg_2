@@ -168,6 +168,10 @@ public class RedisService {
 		return redisTemplate.opsForZSet().rangeByScore(RedisKey.RETRY_ZSET_KEY.getValue(), 0, now);
 	}
 
+	public Set<String> getAllCandidates() {
+		return redisTemplate.opsForZSet().range(RedisKey.RETRY_ZSET_KEY.getValue(), 0, -1);
+	}
+
 	public void removeRetryCandidate(String json) {
 		redisTemplate.opsForZSet().remove(RedisKey.RETRY_ZSET_KEY.getValue(), json);
 	}
@@ -180,7 +184,8 @@ public class RedisService {
 
 	// 리트라이 큐에서 사용자id를 활용하여 제거합니다.
 	public void removeRetryCandidateByMemberId(Long memberId) {
-		Set<String> retryCandidates = getRetryCandidates(); // 현재 시점까지 재시도 대상인 ZSet 항목 가져오기
+		// 모든 시점의 리트라이 큐 데이터 가져오기(매칭 시도중 새로고침하고 매칭을 시도했을때 업데이트 되지 않는 문제 해결을 위해)
+		Set<String> retryCandidates = getAllCandidates();
 
 		if (retryCandidates != null) {
 			for (String json : retryCandidates) {
@@ -189,7 +194,6 @@ public class RedisService {
 					if (existingDto.getMemberId().equals(memberId)) {
 						removeRetryCandidate(json); // 해당 JSON 삭제
 						log.info("기존 retry 데이터 삭제 완료 : {}", memberId);
-						break; // 삭제했으면 루프 중단
 					}
 				} catch (JsonProcessingException e) {
 					log.error("Retry 큐 데이터 파싱 실패 : {}", e.getMessage());
@@ -218,6 +222,7 @@ public class RedisService {
 		return Boolean.TRUE.equals(isMember);
 	}
 
+	// 딜리트 큐에서 사용자를 제거합니다.
 	public void deleteMemberToDeleteQueue(Long memberId) {
 		redisTemplate.opsForSet().remove(RedisKey.DELETE_QUEUE_KEY.getValue(), memberId.toString());
 	}
