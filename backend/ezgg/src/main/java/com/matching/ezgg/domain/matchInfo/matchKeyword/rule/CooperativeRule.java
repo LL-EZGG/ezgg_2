@@ -7,7 +7,7 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 public class CooperativeRule implements KeywordRule{
 	@Override
 	public Boolean matchWithRule(GlobalMatchParsingDto globalMatchParsingDto, Lane lane) {
-		return globalMatchParsingDto.getPickKillWithAlly() >= 10;
+		return globalMatchParsingDto.getPickKillWithAlly() >= 20;
 	}
 
 	@Override
