@@ -1,18 +1,18 @@
-package com.matching.ezgg.domain.matchInfo.matchKeyword.rule;
+package com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule;
 
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.GlobalMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.GlobalKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.KeywordRule;
 
-public class HighKillParticipationRule implements KeywordRule {
+public class ComebackWinRule implements KeywordRule<GlobalMatchParsingDto, GlobalKeyword> {
 	@Override
 	public Boolean matchWithRule(GlobalMatchParsingDto globalMatchParsingDto, Lane lane) {
-		Lane.Criteria criteria = lane.getCriteria();
-		return criteria!=null && globalMatchParsingDto.getKillParticipation() >= criteria.killParticipation();
+		return globalMatchParsingDto.getWin() == Boolean.TRUE && globalMatchParsingDto.getLostAnInhibitor() >= 2;
 	}
 
 	@Override
 	public GlobalKeyword getKeyword() {
-		return GlobalKeyword.HIGH_KILL_PARTICIPATION;
+		return GlobalKeyword.COMEBACK_WIN;
 	}
 }

@@ -1,17 +1,18 @@
-package com.matching.ezgg.domain.matchInfo.matchKeyword.rule;
+package com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule;
 
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.GlobalMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.GlobalKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.KeywordRule;
 
-public class LevelDiffRule implements KeywordRule {
+public class GoodSynergyRule implements KeywordRule<GlobalMatchParsingDto, GlobalKeyword> {
 	@Override
 	public Boolean matchWithRule(GlobalMatchParsingDto globalMatchParsingDto, Lane lane) {
-		return globalMatchParsingDto.getMaxLevelLeadLaneOpponent() >= 2;
+		return globalMatchParsingDto.getImmobilizeAndKillWithAlly() >= 5;
 	}
 
 	@Override
 	public GlobalKeyword getKeyword() {
-		return GlobalKeyword.LEVEL_DIFF;
+		return GlobalKeyword.GOOD_SYNERGY;
 	}
 }

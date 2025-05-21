@@ -6,25 +6,27 @@ import org.springframework.stereotype.Component;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.GlobalMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.GlobalKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.ComebackWinRule;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.CooperativeRule;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.GoodSynergyRule;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.HighDamageRule;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.HighKdaRule;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.HighKillParticipationRule;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.InvadingRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.ComebackWinRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.CooperativeRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.GoodSynergyRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.HighDamageRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.HighKdaRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.HighKillParticipationRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.InvadingRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.KeywordRule;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.LevelDiffRule;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.NeverGivesUpRule;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.TeamFighterRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.LevelDiffRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.NeverGivesUpRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.TeamFighterRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.service.GlobalKeywordService;
 
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class GlobalKeywordAnalyzer {
 
 	private final GlobalKeywordService globalKeywordService;
-	private final List<KeywordRule> rules;
+	private final List<KeywordRule<GlobalMatchParsingDto, GlobalKeyword>> rules;
 
 	public GlobalKeywordAnalyzer(GlobalKeywordService globalKeywordService) {
 		this.globalKeywordService = globalKeywordService;
@@ -56,7 +58,7 @@ public class GlobalKeywordAnalyzer {
 		}
 
 		//모든 global 규칙 확인
-		for (KeywordRule rule : rules) {
+		for (KeywordRule<GlobalMatchParsingDto, GlobalKeyword> rule : rules) {
 			//규칙에 부합하면
 			if (rule.matchWithRule(globalMatchParsingDto, lane)) {
 				//키워드 생성 및 저장
@@ -68,7 +70,7 @@ public class GlobalKeywordAnalyzer {
 				analysis.append(keyword.getDescription());
 			}
 		}
-
+		log.info("Global Analysis: {}, {}", analysis, memberId);
 		return analysis.toString();
 	}
 
