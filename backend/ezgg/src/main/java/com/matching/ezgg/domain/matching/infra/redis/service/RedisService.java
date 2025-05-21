@@ -92,22 +92,25 @@ public class RedisService {
 		}
 	}
 
-	private MatchingSuccessResponse getMatchingSuccessResponse(Long matchedMemberId) {
+	private MatchingSuccessResponse getMatchingSuccessResponse(Long matchedMemberId, String chattingRoomId) {
 		MemberDataBundleDto data = memberDataBundleService.getMemberDataBundleByMemberId(matchedMemberId);
+
+		log.info("매칭 성공! >>>>> : {}, 매칭된 방번호 : {}", matchedMemberId, chattingRoomId);
 
 		return MatchingSuccessResponse.builder()
 			.status("SUCCESS")
 			.data(MatchingSuccessResponse.MatchedMemberData.builder()
 				.matchedMemberId(matchedMemberId)
 				.memberInfoDto(data.getMemberInfoDto())
+				.chattingRoomId(chattingRoomId)
 				.recentTwentyMatchDto(data.getRecentTwentyMatchDto())
 				.build())
 			.build();
 	}
 
-	public void sendMatchingSuccessResponse(Long memberId, Long matchedMemberId) {
+	public void sendMatchingSuccessResponse(Long memberId, Long matchedMemberId, String chattingRoomId) {
 		messagingTemplate.convertAndSendToUser(memberId.toString(), "/queue/matching",
-			getMatchingSuccessResponse(matchedMemberId));
+			getMatchingSuccessResponse(matchedMemberId, chattingRoomId));
 	}
 
 	public void retryMatchRequest(MatchingFilterParsingDto matchingFilterParsingDto) {
