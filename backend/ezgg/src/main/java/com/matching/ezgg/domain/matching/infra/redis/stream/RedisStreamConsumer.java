@@ -49,6 +49,10 @@ public class RedisStreamConsumer {
 				String json = (String)message.getValue().get("data");
 				MatchingFilterParsingDto dto = objectMapper.readValue(json, MatchingFilterParsingDto.class);
 
+				if (redisService.isInDeleteQueue(dto.getMemberId())) {
+					log.info("is in delete queue : {} ", dto.getMemberId());
+					return;
+				}
 				matchingProcessor.tryMatch(dto);
 			}
 
