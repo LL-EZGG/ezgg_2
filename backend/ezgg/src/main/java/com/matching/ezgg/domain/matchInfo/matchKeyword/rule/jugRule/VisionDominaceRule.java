@@ -8,7 +8,7 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.KeywordRule;
 public class VisionDominaceRule implements KeywordRule<JugMatchParsingDto, JugKeyword> {
 	@Override
 	public Boolean matchWithRule(JugMatchParsingDto jugMatchParsingDto, Lane lane) {
-		return jugMatchParsingDto.getVisionScoreAdvantageLaneOpponent() >= 0;
+		return jugMatchParsingDto.getVisionScoreAdvantageLaneOpponent() >= 0.5;
 	}
 
 	@Override
