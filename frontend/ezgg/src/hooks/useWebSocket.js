@@ -70,7 +70,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
 
         socket.onclose = () => {
             setIsConnected(false);
-            if (onDisconnect) onDisconnect();
+            if (onDisconnect) onDisconnect(); // 연결이끊겼을때 호출됨
         };
 
         stompClient.current.connect({},
