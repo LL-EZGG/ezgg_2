@@ -28,6 +28,15 @@ public class MatchingController {
 		matchingService.startMatching(memberId, preferredPartnerDto);
 	}
 
+	// 매칭 시도를 중단할 때 호출
+	@MessageMapping("/matching/stop")
+	public void stopMatching(Principal principal) {
+		if (principal == null)
+			throw new IllegalArgumentException("로그인 정보가 없습니다.");
+		Long memberId = Long.valueOf(principal.getName());
+		matchingService.stopMatching(memberId);
+	}
+
 	@MessageExceptionHandler
 	@SendToUser("/queue/errors")
 	public String handleException(Throwable throwable) {

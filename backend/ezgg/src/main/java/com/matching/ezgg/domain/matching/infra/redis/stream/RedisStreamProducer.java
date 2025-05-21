@@ -19,6 +19,10 @@ public class RedisStreamProducer {
 	private final ObjectMapper objectMapper;
 
 	public void sendMatchRequest(MatchingFilterParsingDto matchingFilterParsingDto) {
+		Long memberId = matchingFilterParsingDto.getMemberId();
+		if (redisService.isInDeleteQueue(memberId)) {
+			redisService.deleteMemberToDeleteQueue(memberId);
+		}
 		redisService.saveMatchRequest(matchingFilterParsingDto);
 	}
 
@@ -39,5 +43,9 @@ public class RedisStreamProducer {
 
 	public void removeRetryCandidate(MatchingFilterParsingDto matchingFilterParsingDto) throws JsonProcessingException {
 		redisService.removeRetryCandidate(objectMapper.writeValueAsString(matchingFilterParsingDto));
+	}
+
+	public void removeAllRedisKeysByMemberId(Long memberId) {
+		redisService.removeMemberFromAllRedisKeys(memberId);
 	}
 }
