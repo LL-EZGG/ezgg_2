@@ -21,5 +21,6 @@ public class MatchingSuccessResponse {
 		private Long matchedMemberId;
 		private MemberInfoDto memberInfoDto;
 		private RecentTwentyMatchDto recentTwentyMatchDto;
+		private String chattingRoomId;
 	}
 }
