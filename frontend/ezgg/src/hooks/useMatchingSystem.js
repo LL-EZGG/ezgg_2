@@ -1,69 +1,71 @@
 import {useEffect, useState} from 'react';
-import {isValidCriteria} from '../utils/validation.js';
+import { isValidCriteria } from '../utils/validation.js';
 import {useWebSocket} from "./useWebSocket.js";
 import {getInitialCriteria} from "../utils/initialStates.js";
 
 export const useMatchingSystem = () => {
-    const [matchResult, setMatchResult] = useState(null);
-    const [matchingCriteria, setMatchingCriteria] = useState(getInitialCriteria());
-    const [isMatching, setIsMatching] = useState(false);
+  const [matchResult, setMatchResult] = useState(null);
+  const [matchingCriteria, setMatchingCriteria] = useState(getInitialCriteria());
+  const [isMatching, setIsMatching] = useState(false);
 
-    const {connect, disconnect, sendMatchingRequest, sendCancelRequest} = useWebSocket({
-        onMessage: (response) => {
-            alert('매칭 성공! 상대방 정보를 확인해주세요.');
-            setMatchResult(response)
-            disconnect();
-        },
-        onConnect: () => {
-            console.log('매칭 시스템 웹소켓 연결 완료');
-        },
-        onDisconnect: () => {
-            console.log('매칭 시스템 웹소켓 연결 종료');
-        }, onError: (message) => {
-            alert('에러 발생: ' + message);
-            setIsMatching(false);
-        }
+  const { connect, disconnect, sendMatchingRequest,sendCancelRequest } = useWebSocket({
+    onMessage: (response) => {
+      alert('매칭 성공! 상대방 정보를 확인해주세요.');
+      setMatchResult(response)
+      disconnect();
+    },
+      onConnect: () => {
+          console.log('매칭 시스템 웹소켓 연결 완료');
+      },
+    onDisconnect: () =>
+    {console.log('매칭 시스템 웹소켓 연결 종료');
+        handleDisconnect()
+  },onError: (message) => {
+          alert('에러 발생: ' + message);
+          setIsMatching(false);
+      }
+    // onMessage: (response) => {
+    //   console.log(response)
+    //   if (response.status === 'SUCCESS') {
+    //     setMatchResult(response.data);
+    //     alert('매칭 성공! 상대방 정보를 확인하세요.')
+    //     disconnect()
+    //     setIsMatching(false);
+    //   } else {
+    //     console.error('매칭 실패:', response.message);
+    //     alert('매칭에 실패하였습니다. 조건을 다시 설정해주세요.')
+    //     disconnect();
+    //   }
+    //   setIsMatching(false);
+    // },
+    // onDisconnect: () => {
+    //   console.log('연결 종료');
+    //   setIsMatching(false);
+    // },
+    // onError: (message) => {
+    //   alert('에러 발생 : ' + message);
+    //   setIsMatching(false);
+    // }
+  });
 
-        //     handleMatchCancel()
-        // }
-        // 연결 완료시 채팅으로 이어지도록 고처야함 + redis 삭제
-        // onMessage: (response) => {
-        //   console.log(response)
-        //   if (response.status === 'SUCCESS') {
-        //     setMatchResult(response.data);
-        //     alert('매칭 성공! 상대방 정보를 확인하세요.')
-        //     disconnect()
-        //     setIsMatching(false);
-        //   } else {
-        //     console.error('매칭 실패:', response.message);
-        //     alert('매칭에 실패하였습니다. 조건을 다시 설정해주세요.')
-        //     disconnect();
-        //   }
-        //   setIsMatching(false);
-        // },
-        // onDisconnect: () => {
-        //   console.log('연결 종료');
-        //   setIsMatching(false);
-        // },
-        // onError: (message) => {
-        //   alert('에러 발생 : ' + message);
-        //   setIsMatching(false);
-        // }
+  const handleMatchStart = (criteria) => {
+    if (!isValidCriteria(criteria)) {
+      alert('라인은 필수로 선택해주세요.');
+      return;
+    }
+
+    setIsMatching(() => true);
+    connect(() => {
+      sendMatchingRequest(criteria);
+      setMatchingCriteria(criteria);
     });
+  };
 
-    const handleMatchStart = (criteria) => {
-        if (!isValidCriteria(criteria)) {
-            alert('라인은 필수로 선택해주세요.');
-            return;
-        }
-
-        setIsMatching(() => true);
-        connect(() => {
-            sendMatchingRequest(criteria);
-            setMatchingCriteria(criteria);
-        });
-    };
-
+  const handleDisconnect = () => {
+    disconnect();
+    setIsMatching(false);
+    setMatchingCriteria(getInitialCriteria());
+  }
     const handleMatchCancel = () => {
         if (isMatching) {
             // 매칭 중일 때만 취소 요청을 백엔드로 전송
