@@ -8,11 +8,10 @@ export const useMatchingSystem = () => {
     const [matchingCriteria, setMatchingCriteria] = useState(getInitialCriteria());
     const [isMatching, setIsMatching] = useState(false);
 
-    const {connect, disconnect, sendMatchingRequest, sendCancelRequest} = useWebSocket({
+    const {connect, sendMatchingRequest, sendCancelRequest} = useWebSocket({
         onMessage: (response) => {
             alert('매칭 성공! 상대방 정보를 확인해주세요.');
-            setMatchResult(response)
-            disconnect();
+            setMatchResult(response);
         }, onConnect: () => {
             console.log('매칭 시스템 웹소켓 연결 완료');
         }, onDisconnect: () => {
@@ -60,12 +59,6 @@ export const useMatchingSystem = () => {
         });
     };
 
-    // const handleDisconnect = () => {
-    //     disconnect();
-    //     setIsMatching(false);
-    //     setMatchingCriteria(getInitialCriteria());
-    // } -> 이거는 필요없을듯 useWebSocket에서 연결 해제하는 함수가 이미 있음
-
     const handleMatchCancel = () => {
         if (isMatching) {
             // 매칭 중일 때만 취소 요청을 백엔드로 전송
@@ -76,7 +69,6 @@ export const useMatchingSystem = () => {
         setIsMatching(false);
         setMatchingCriteria(getInitialCriteria());
         // 웹소켓 연결 종료
-        disconnect();
     };
 
     useEffect(() => {
@@ -87,7 +79,6 @@ export const useMatchingSystem = () => {
                 // 매칭 중에 컴포넌트가 언마운트되면 취소 요청 전송
                 sendCancelRequest();
             }
-            disconnect();
         };
     }, [isMatching]);
 
