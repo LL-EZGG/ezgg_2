@@ -78,10 +78,17 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError}) => {
                 console.log("[useWebSocket.js]\nWebSocket connected");
                 setIsConnected(true);
 
-
                 // 개별 유저의 매칭 결과 구독
                 stompClient.current.subscribe(`/user/queue/matching`, (message) => {
                     const response = JSON.parse(message.body);
+                    console.log('매칭 완료 메시지:', response);
+                    if (response.matched && response.chattingRoomId) {
+                        // chattingId 구독 추가
+                        stompClient.current.subscribe(`/user/queue/${response.chattingRoomId}`, (chatMsg) => {
+                            const chatResponse = JSON.parse(chatMsg.body);
+                            console.log("채팅 메시지:", chatResponse);
+                        });
+                    }
                     onMessage(response);
                 });
 
