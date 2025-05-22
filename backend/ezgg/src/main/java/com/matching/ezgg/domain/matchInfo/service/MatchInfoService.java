@@ -29,6 +29,7 @@ public class MatchInfoService {
 			.teamPosition(matchDto.getTeamPosition())
 			.championName(matchDto.getChampionName())
 			.win(matchDto.isWin())
+			.matchAnalysis(matchDto.getMatchAnalysis())
 			.build();
 
 		matchInfoRepository.save(matchInfo);
