@@ -7,10 +7,12 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
+import com.matching.ezgg.domain.matching.dto.MemberDataBundleDto;
 import com.matching.ezgg.domain.matching.dto.MemberInfoParsingDto;
 import com.matching.ezgg.domain.matching.dto.PreferredPartnerParsingDto;
 import com.matching.ezgg.domain.matching.dto.RecentTwentyMatchParsingDto;
 import com.matching.ezgg.domain.matching.infra.es.service.EsService;
+import com.matching.ezgg.domain.matching.infra.redis.service.RedisService;
 import com.matching.ezgg.domain.matching.infra.redis.stream.RedisStreamProducer;
 import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
@@ -19,7 +21,6 @@ import com.matching.ezgg.domain.recentTwentyMatch.entity.model.ChampionStat;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 import com.matching.ezgg.domain.riotApi.dto.WinRateNTierDto;
 import com.matching.ezgg.domain.riotApi.service.ApiService;
-import com.matching.ezgg.domain.matching.dto.MemberDataBundleDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class MatchingService {
 	private final ApiService apiService;
 	private final MatchingDataBulkSaveService matchingDataBulkSaveService;
 	private final RedisStreamProducer redisStreamProducer;
+	private final RedisService redisService;
 
 	// 매칭 시작 시 호출
 	public void startMatching(Long memberId, PreferredPartnerParsingDto preferredPartnerParsingDto) {
@@ -48,6 +50,12 @@ public class MatchingService {
 
 		log.info("Json: {}", matchingFilterParsingDto.toString());
 
+		// 매칭 전 ES, Redis 사용자 정보 모두 제거
+		esService.deleteDocByMemberId(memberId);
+		redisService.acknowledgeMatch(memberId);
+		redisService.removeRetryCandidateByMemberId(memberId);
+
+		// 매칭 시작 - ES, Redis 사용자 정보 추가
 		esService.esPost(matchingFilterParsingDto);
 		redisStreamProducer.sendMatchRequest(matchingFilterParsingDto);
 	}
@@ -150,5 +158,20 @@ public class MatchingService {
 			.memberInfoParsing(memberInfoParsingDto)
 			.recentTwentyMatchParsing(recentTwentyMatchparsingDto)
 			.build();
+	}
+
+	// 사용자의 매칭 요청을 취소하고 Redis에서 관련 정보를 삭제합니다.
+	public void stopMatching(Long memberId) {
+		log.info("사용자 ID {}의 매칭 취소 요청 처리 중", memberId);
+
+		try {
+			redisService.addToDeleteQueue(memberId);
+			redisStreamProducer.removeAllRedisKeysByMemberId(memberId); // Redis Stream에서 사용자 제거
+			esService.deleteDocByMemberId(memberId);       // ES에서 사용자 문서 삭제
+			log.info("사용자 ID {}의 매칭 취소 완료", memberId);
+		} catch (Exception e) {
+			log.error("사용자 ID {}의 매칭 취소 중 오류 발생: {}", memberId, e.getMessage());
+			throw new RuntimeException("매칭 취소 처리 중 오류가 발생했습니다.", e);
+		}
 	}
 }
