@@ -12,11 +12,15 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.matching.ezgg.domain.matchInfo.matchKeyword.analyzer.GlobalKeywordAnalyzer;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.analyzer.KeywordAnalyzer;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.GlobalMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.JugMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.LanerMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.SupMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.GlobalKeyword;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.JugKeyword;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.LanerKeyword;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.SupKeyword;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 import com.matching.ezgg.domain.riotApi.dto.PuuidDto;
@@ -41,17 +45,23 @@ public class ApiService {
 	private final String apiKey;
 	private final MatchMapper matchMapper;
 	private final MemberInfoService memberInfoService;
-	private final GlobalKeywordAnalyzer globalKeywordAnalyzer;
+	@Qualifier("globalKeywordAnalyzer") KeywordAnalyzer<GlobalMatchParsingDto, GlobalKeyword> globalKeywordAnalyzer;
+	@Qualifier("lanerKeywordAnalyzer") KeywordAnalyzer<LanerMatchParsingDto, LanerKeyword> lanerKeywordAnalyzer;
+	@Qualifier("jugKeywordAnalyzer") KeywordAnalyzer<JugMatchParsingDto, JugKeyword> jugKeywordAnalyzer;
+	@Qualifier("supKeywordAnalyzer") KeywordAnalyzer<SupMatchParsingDto, SupKeyword> supKeywordAnalyzer;
 
 	public ApiService(@Qualifier("asia") RestTemplate asiaRestTemplate, @Qualifier("kr") RestTemplate krRestTemplate,
 		@Value("${api.key}") String apiKey, MatchMapper matchMapper, MemberInfoService memberInfoService,
-		GlobalKeywordAnalyzer globalKeywordAnalyzer) {
+		KeywordAnalyzer<GlobalMatchParsingDto, GlobalKeyword> globalKeywordAnalyzer, KeywordAnalyzer<LanerMatchParsingDto, LanerKeyword> lanerKeywordAnalyzer, KeywordAnalyzer<SupMatchParsingDto, SupKeyword> supKeywordAnalyzer, KeywordAnalyzer<JugMatchParsingDto, JugKeyword> jugKeywordAnalyzer) {
 		this.asiaRestTemplate = asiaRestTemplate;
 		this.krRestTemplate = krRestTemplate;
 		this.apiKey = apiKey;
 		this.matchMapper = matchMapper;
 		this.memberInfoService = memberInfoService;
 		this.globalKeywordAnalyzer = globalKeywordAnalyzer;
+		this.lanerKeywordAnalyzer = lanerKeywordAnalyzer;
+		this.supKeywordAnalyzer = supKeywordAnalyzer;
+		this.jugKeywordAnalyzer = jugKeywordAnalyzer;
 	}
 
 	//riot/account/v1/accounts/by-riot-id/{riot-id}/{tag}?api_key=
@@ -180,13 +190,19 @@ public class ApiService {
 			switch (teamPosition) {
 				case("TOP"),("MIDDLE"),("BOTTOM"):
 					LanerMatchParsingDto lanerMatchParsingDto = matchMapper.toLanerMatchParsingDto(rawJson,puuid,teamPosition);
+					lanerKeywordAnalyzer.analyze(lanerMatchParsingDto,teamPosition,matchId,memberId);
 					log.info(lanerMatchParsingDto.toString());
+					break;
 				case("JUNGLE"):
 					JugMatchParsingDto jugMatchParsingDto = matchMapper.toJugMatchParsingDto(rawJson,puuid);
+					jugKeywordAnalyzer.analyze(jugMatchParsingDto,teamPosition,matchId,memberId);
 					log.info(jugMatchParsingDto.toString());
+					break;
 				case("UTILITY"):
 					SupMatchParsingDto supMatchParsingDto = matchMapper.toSupMatchParsingDto(rawJson,puuid);
+					supKeywordAnalyzer.analyze(supMatchParsingDto,teamPosition,matchId,memberId);
 					log.info(supMatchParsingDto.toString());
+					break;
 			}
 
 			// MemberId를 MatchDto에 따로 지정
