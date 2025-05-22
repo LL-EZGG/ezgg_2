@@ -15,4 +15,9 @@ public class GoodSynergyRule implements KeywordRule<GlobalMatchParsingDto, Globa
 	public GlobalKeyword getKeyword() {
 		return GlobalKeyword.GOOD_SYNERGY;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

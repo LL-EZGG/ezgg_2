@@ -15,4 +15,9 @@ public class ComebackWinRule implements KeywordRule<GlobalMatchParsingDto, Globa
 	public GlobalKeyword getKeyword() {
 		return GlobalKeyword.COMEBACK_WIN;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

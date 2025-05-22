@@ -15,4 +15,9 @@ public class TurretDiveRule implements KeywordRule<LanerMatchParsingDto,LanerKey
 	public LanerKeyword getKeyword() {
 		return LanerKeyword.TURRET_DIVE;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

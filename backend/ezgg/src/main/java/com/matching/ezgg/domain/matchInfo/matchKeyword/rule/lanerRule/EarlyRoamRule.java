@@ -15,4 +15,9 @@ public class EarlyRoamRule implements KeywordRule<LanerMatchParsingDto, LanerKey
 	public LanerKeyword getKeyword() {
 		return LanerKeyword.EARLY_ROAM;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

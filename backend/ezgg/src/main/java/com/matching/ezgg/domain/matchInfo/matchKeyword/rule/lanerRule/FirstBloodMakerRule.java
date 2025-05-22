@@ -15,4 +15,9 @@ public class FirstBloodMakerRule implements KeywordRule<LanerMatchParsingDto, La
 	public LanerKeyword getKeyword() {
 		return LanerKeyword.FIRST_BLOOD_MAKER;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

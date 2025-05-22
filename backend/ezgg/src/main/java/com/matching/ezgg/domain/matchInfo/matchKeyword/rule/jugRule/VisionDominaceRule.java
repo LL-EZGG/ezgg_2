@@ -15,4 +15,9 @@ public class VisionDominaceRule implements KeywordRule<JugMatchParsingDto, JugKe
 	public JugKeyword getKeyword() {
 		return JugKeyword.VISION_DOMINANCE;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

@@ -16,4 +16,9 @@ public class HighKillParticipationRule implements KeywordRule<GlobalMatchParsing
 	public GlobalKeyword getKeyword() {
 		return GlobalKeyword.HIGH_KILL_PARTICIPATION;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

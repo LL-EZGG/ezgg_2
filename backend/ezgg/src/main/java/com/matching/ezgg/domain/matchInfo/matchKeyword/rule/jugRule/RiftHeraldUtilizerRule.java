@@ -15,4 +15,9 @@ public class RiftHeraldUtilizerRule implements KeywordRule<JugMatchParsingDto, J
 	public JugKeyword getKeyword() {
 		return JugKeyword.RIFT_HERALD_UTILIZER;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

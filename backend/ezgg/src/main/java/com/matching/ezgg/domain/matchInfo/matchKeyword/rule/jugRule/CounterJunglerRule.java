@@ -15,4 +15,9 @@ public class CounterJunglerRule implements KeywordRule<JugMatchParsingDto, JugKe
 	public JugKeyword getKeyword() {
 		return JugKeyword.COUNTER_JUNGLER;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

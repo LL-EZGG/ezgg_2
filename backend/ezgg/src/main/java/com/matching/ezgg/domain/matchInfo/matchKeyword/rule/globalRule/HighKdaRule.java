@@ -16,4 +16,9 @@ public class HighKdaRule implements KeywordRule<GlobalMatchParsingDto, GlobalKey
 	public GlobalKeyword getKeyword() {
 		return GlobalKeyword.HIGH_KDA;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

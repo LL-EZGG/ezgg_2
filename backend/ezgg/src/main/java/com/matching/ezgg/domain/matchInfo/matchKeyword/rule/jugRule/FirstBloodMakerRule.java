@@ -15,4 +15,9 @@ public class FirstBloodMakerRule implements KeywordRule<JugMatchParsingDto, JugK
 	public JugKeyword getKeyword() {
 		return JugKeyword.FIRST_BLOOD_MAKER;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

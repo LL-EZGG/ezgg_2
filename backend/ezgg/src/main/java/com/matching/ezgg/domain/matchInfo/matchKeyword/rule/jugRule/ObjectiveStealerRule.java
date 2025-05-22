@@ -15,4 +15,9 @@ public class ObjectiveStealerRule implements KeywordRule<JugMatchParsingDto, Jug
 	public JugKeyword getKeyword() {
 		return JugKeyword.OBJECTIVE_STEALER;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

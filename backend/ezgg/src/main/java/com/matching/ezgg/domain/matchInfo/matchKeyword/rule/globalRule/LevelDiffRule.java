@@ -15,4 +15,9 @@ public class LevelDiffRule implements KeywordRule<GlobalMatchParsingDto, GlobalK
 	public GlobalKeyword getKeyword() {
 		return GlobalKeyword.LEVEL_DIFF;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

@@ -15,4 +15,9 @@ public class VisionDominanceRule implements KeywordRule<SupMatchParsingDto, SupK
 	public SupKeyword getKeyword() {
 		return SupKeyword.VISION_DOMINANCE;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

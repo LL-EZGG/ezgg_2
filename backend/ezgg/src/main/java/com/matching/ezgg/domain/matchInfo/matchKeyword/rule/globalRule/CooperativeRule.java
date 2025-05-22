@@ -15,4 +15,9 @@ public class CooperativeRule implements KeywordRule<GlobalMatchParsingDto, Globa
 	public GlobalKeyword getKeyword() {
 		return GlobalKeyword.COOPERATIVE;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

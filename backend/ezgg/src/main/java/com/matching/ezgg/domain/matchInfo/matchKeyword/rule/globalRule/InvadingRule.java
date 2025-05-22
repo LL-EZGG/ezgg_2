@@ -15,4 +15,9 @@ public class InvadingRule implements KeywordRule<GlobalMatchParsingDto, GlobalKe
 	public GlobalKeyword getKeyword() {
 		return GlobalKeyword.INVADING;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

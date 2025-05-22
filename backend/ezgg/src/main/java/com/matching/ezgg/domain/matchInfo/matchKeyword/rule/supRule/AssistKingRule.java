@@ -15,4 +15,9 @@ public class AssistKingRule implements KeywordRule<SupMatchParsingDto, SupKeywor
 	public SupKeyword getKeyword() {
 		return SupKeyword.ASSIST_KING;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

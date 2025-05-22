@@ -15,4 +15,9 @@ public class NeverGivesUpRule implements KeywordRule<GlobalMatchParsingDto, Glob
 	public GlobalKeyword getKeyword() {
 		return GlobalKeyword.NEVER_GIVES_UP;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

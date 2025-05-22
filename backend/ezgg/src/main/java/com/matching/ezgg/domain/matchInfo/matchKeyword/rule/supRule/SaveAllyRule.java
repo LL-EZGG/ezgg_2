@@ -15,4 +15,9 @@ public class SaveAllyRule implements KeywordRule<SupMatchParsingDto, SupKeyword>
 	public SupKeyword getKeyword() {
 		return SupKeyword.SAVE_ALLY;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

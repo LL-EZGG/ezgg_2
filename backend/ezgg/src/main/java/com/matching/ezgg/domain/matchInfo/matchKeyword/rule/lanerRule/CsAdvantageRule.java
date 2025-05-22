@@ -15,4 +15,9 @@ public class CsAdvantageRule implements KeywordRule<LanerMatchParsingDto, LanerK
 	public LanerKeyword getKeyword() {
 		return LanerKeyword.CS_ADVANTAGE;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

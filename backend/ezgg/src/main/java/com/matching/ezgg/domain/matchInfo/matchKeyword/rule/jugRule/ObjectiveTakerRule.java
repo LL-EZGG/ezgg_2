@@ -17,4 +17,9 @@ public class ObjectiveTakerRule implements KeywordRule<JugMatchParsingDto, JugKe
 	public JugKeyword getKeyword() {
 		return JugKeyword.OBJECTIVE_TAKER;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

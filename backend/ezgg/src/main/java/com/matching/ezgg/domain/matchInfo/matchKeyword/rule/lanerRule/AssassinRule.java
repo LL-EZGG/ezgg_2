@@ -15,4 +15,9 @@ public class AssassinRule implements KeywordRule<LanerMatchParsingDto, LanerKeyw
 	public LanerKeyword getKeyword() {
 		return LanerKeyword.ASSASSIN;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

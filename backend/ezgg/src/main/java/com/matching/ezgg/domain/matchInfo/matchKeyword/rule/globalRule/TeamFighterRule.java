@@ -15,4 +15,9 @@ public class TeamFighterRule implements KeywordRule<GlobalMatchParsingDto, Globa
 	public GlobalKeyword getKeyword() {
 		return GlobalKeyword.TEAM_FIGHTER;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

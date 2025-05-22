@@ -16,4 +16,9 @@ public class HighDamageRule implements KeywordRule<GlobalMatchParsingDto, Global
 	public GlobalKeyword getKeyword() {
 		return GlobalKeyword.HIGH_DAMAGE;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

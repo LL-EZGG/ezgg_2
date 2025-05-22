@@ -16,4 +16,9 @@ public class JungleDominanceRule implements KeywordRule<JugMatchParsingDto, JugK
 	public JugKeyword getKeyword() {
 		return JugKeyword.JUNGLE_DOMINANCE;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

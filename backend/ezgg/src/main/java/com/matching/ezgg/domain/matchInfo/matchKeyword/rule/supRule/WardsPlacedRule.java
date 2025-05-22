@@ -15,4 +15,9 @@ public class WardsPlacedRule implements KeywordRule<SupMatchParsingDto,SupKeywor
 	public SupKeyword getKeyword() {
 		return SupKeyword.WARDS_PLACED;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

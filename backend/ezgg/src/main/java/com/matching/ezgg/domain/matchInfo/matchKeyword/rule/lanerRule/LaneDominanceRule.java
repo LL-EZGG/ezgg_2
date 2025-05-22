@@ -15,4 +15,9 @@ public class LaneDominanceRule implements KeywordRule<LanerMatchParsingDto, Lane
 	public LanerKeyword getKeyword() {
 		return LanerKeyword.LANE_DOMINANCE;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }

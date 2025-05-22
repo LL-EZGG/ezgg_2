@@ -15,4 +15,9 @@ public class TurretKillsRule implements KeywordRule<LanerMatchParsingDto, LanerK
 	public LanerKeyword getKeyword() {
 		return LanerKeyword.TURRET_KILLS;
 	}
+
+	@Override
+	public String getDescription() {
+		return getKeyword().getDescription();
+	}
 }
