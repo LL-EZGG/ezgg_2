@@ -5,15 +5,15 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.JugKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.KeywordRule;
 
-public class VisionDominaceRule implements KeywordRule<JugMatchParsingDto, JugKeyword> {
+public class JugFirstBloodMakerRule implements KeywordRule<JugMatchParsingDto, JugKeyword> {
 	@Override
 	public Boolean matchWithRule(JugMatchParsingDto jugMatchParsingDto, Lane lane) {
-		return jugMatchParsingDto.getVisionScoreAdvantageLaneOpponent() >= 0.5;
+		return jugMatchParsingDto.getFirstBloodKill();
 	}
 
 	@Override
 	public JugKeyword getKeyword() {
-		return JugKeyword.VISION_DOMINANCE;
+		return JugKeyword.FIRST_BLOOD_MAKER;
 	}
 
 	@Override
