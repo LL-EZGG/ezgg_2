@@ -39,7 +39,4 @@ public class MatchKeyword {
 	@Column(name = "lane", unique = false, nullable = false)
 	private Lane lane;
 
-
-
-
 }

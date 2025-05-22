@@ -25,7 +25,7 @@ public class KeywordAnalyzer<T, K> {
 		StringBuilder analysis = new StringBuilder();
 		Lane lane;
 		try {
-			 lane = Lane.valueOf(teamPosition);
+			lane = Lane.valueOf(teamPosition);
 		} catch (IllegalArgumentException e) {
 			throw new RuntimeException(e);
 		}
@@ -36,7 +36,8 @@ public class KeywordAnalyzer<T, K> {
 			if (rule.matchWithRule(matchParsingDto, lane)) {
 				//키워드 생성 및 저장
 				String keywordDescription = rule.getDescription();
-				MatchKeyword matchKeyword = keywordService.createMatchKeyword(keywordDescription, lane, matchId, memberId);
+				MatchKeyword matchKeyword = keywordService.createMatchKeyword(keywordDescription, lane, matchId,
+					memberId);
 				keywordService.saveMatchKeyword(matchKeyword);
 				//자연어 평가 생성
 				analysis.append(keywordDescription).append(",");

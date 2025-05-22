@@ -28,11 +28,11 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.NeverGive
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.TeamFighterRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.jugRule.CounterJunglerRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.jugRule.JugFirstBloodMakerRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.jugRule.JugVisionDominaceRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.jugRule.JungleDominanceRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.jugRule.ObjectiveStealerRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.jugRule.ObjectiveTakerRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.jugRule.RiftHeraldUtilizerRule;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.jugRule.JugVisionDominaceRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.lanerRule.AssassinRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.lanerRule.CsAdvantageRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.lanerRule.EarlyRoamRule;

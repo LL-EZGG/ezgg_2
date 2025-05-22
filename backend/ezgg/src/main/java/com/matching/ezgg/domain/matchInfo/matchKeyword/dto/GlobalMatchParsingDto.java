@@ -15,9 +15,9 @@ public class GlobalMatchParsingDto {
 	private Double damagePerMinute; //≥ 800 ≥ 800 ≥ 900 ≥ 900 ≥ 400
 	private Integer maxLevelLeadLaneOpponent; //2 이상
 	private Integer immobilizeAndKillWithAlly; //5 이상
-	private Boolean	gameEndedInSurrender; //False
-	private Integer	multiKillOneSpell; //1 이상
-	private Integer	pickKillWithAlly; //20 이상
+	private Boolean gameEndedInSurrender; //False
+	private Integer multiKillOneSpell; //1 이상
+	private Integer pickKillWithAlly; //20 이상
 	private Integer lostAnInhibitor; // lostAnInhibitor>=2 && win=True
-	private Integer	takedownsBeforeJungleMinionSpawn; // >= 2
+	private Integer takedownsBeforeJungleMinionSpawn; // >= 2
 }

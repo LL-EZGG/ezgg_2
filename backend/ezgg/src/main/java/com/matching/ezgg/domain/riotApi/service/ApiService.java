@@ -42,7 +42,8 @@ public class ApiService {
 	private final KeywordAnalyzerService keywordAnalyzerService;
 
 	public ApiService(@Qualifier("asia") RestTemplate asiaRestTemplate, @Qualifier("kr") RestTemplate krRestTemplate,
-		@Value("${api.key}") String apiKey, MatchMapper matchMapper, MemberInfoService memberInfoService, KeywordAnalyzerService keywordAnalyzerService) {
+		@Value("${api.key}") String apiKey, MatchMapper matchMapper, MemberInfoService memberInfoService,
+		KeywordAnalyzerService keywordAnalyzerService) {
 		this.asiaRestTemplate = asiaRestTemplate;
 		this.krRestTemplate = krRestTemplate;
 		this.apiKey = apiKey;
@@ -169,11 +170,13 @@ public class ApiService {
 			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
 			String teamPosition = matchDto.getTeamPosition();
 			//MatchAnalysis에 ChampionRole 추가
-			List<ChampionRole> championRoles = ChampionBasicInfo.valueOf(matchDto.getChampionName().toUpperCase()).getChampionRoles();
+			List<ChampionRole> championRoles = ChampionBasicInfo.valueOf(matchDto.getChampionName().toUpperCase())
+				.getChampionRoles();
 			for (ChampionRole championRole : championRoles) {
 				matchAnalysis.append(championRole.getKoreanRoleName()).append(",");
 			}
-			matchAnalysis.append(keywordAnalyzerService.giveMatchKeyword(rawJson, teamPosition, puuid, matchId, memberId));
+			matchAnalysis.append(
+				keywordAnalyzerService.giveMatchKeyword(rawJson, teamPosition, puuid, matchId, memberId));
 			// MemberId, MatchAnalysis를 MatchDto에 따로 지정
 			matchDto = matchDto.toBuilder()
 				.memberId(memberInfoService.getMemberIdByPuuid(puuid))
