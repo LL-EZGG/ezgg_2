@@ -14,6 +14,7 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.LanerKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.SupKeyword;
 import com.matching.ezgg.domain.riotApi.util.MatchMapper;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -52,6 +53,7 @@ public class KeywordAnalyzerService {
 	 * @return 한 match에 부여된 모든 평가를 합친 String
 	 */
 
+	@Transactional
 	public String giveMatchKeyword(String rawJson, String teamPosition, String puuid, String matchId, Long memberId) {
 		GlobalMatchParsingDto globalMatchParsingDto = matchMapper.toGlobalMatchParsingDto(rawJson, puuid);
 

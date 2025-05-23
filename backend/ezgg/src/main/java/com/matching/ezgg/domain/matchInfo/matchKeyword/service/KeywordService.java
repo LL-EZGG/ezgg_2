@@ -7,6 +7,7 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.entity.MatchKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.repository.MatchKeywordRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,6 +18,7 @@ public class KeywordService {
 
 	private final MatchKeywordRepository matchKeywordRepository;
 
+	@Transactional
 	public MatchKeyword createMatchKeyword(String keywordDescription, Lane lane, String matchId, Long memberId) {
 		log.info("[INFO] MatchKeyword 생성 완료: {}, {}", lane, keywordDescription);
 		return MatchKeyword.builder()
@@ -27,6 +29,7 @@ public class KeywordService {
 			.build();
 	}
 
+	@Transactional
 	public void saveMatchKeyword(MatchKeyword matchKeyword) {
 		MatchKeyword savedMatchKeyword = matchKeywordRepository.save(matchKeyword);
 		MatchKeywordDto matchKeywordDto = MatchKeywordDto.toDto(savedMatchKeyword);
