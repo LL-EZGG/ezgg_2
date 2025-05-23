@@ -10,11 +10,10 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matching.ezgg.domain.riotApi.dto.WinRateNTierDto;
-import com.matching.ezgg.domain.memberInfo.repository.MemberInfoRepository;
 import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
-import com.matching.ezgg.global.exception.MatchIdsNotFoundException;
+import com.matching.ezgg.domain.memberInfo.repository.MemberInfoRepository;
+import com.matching.ezgg.domain.riotApi.dto.WinRateNTierDto;
 import com.matching.ezgg.global.exception.MemberInfoNotFoundException;
 
 import lombok.RequiredArgsConstructor;
