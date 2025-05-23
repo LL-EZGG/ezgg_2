@@ -13,9 +13,11 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class MatchMapper {
 	private final ObjectMapper objectMapper;
 
@@ -89,18 +91,21 @@ public class MatchMapper {
 		try {
 			JsonNode root = objectMapper.readTree(rawJson);
 
+			Integer gameDuration = root.path("info").path("gameDuration").asInt();
+
 			//participants 노드 안에 있는 요소 파싱
 			JsonNode globalNode = findTargetMember(root.path("info").path("participants"), puuid);
 
 			Boolean win = globalNode.path("win").asBoolean();
 			Boolean gameEndedInSurrender = globalNode.path("gameEndedInSurrender").asBoolean();
+			Integer longestTimeSpentLiving = globalNode.path("longestTimeSpentLiving").asInt();
 
 			//challenges 노드 안에 있는 요소 파싱
 			JsonNode challengesNode = findChallenges(globalNode);
 
 			Double killParticipation = challengesNode.path("killParticipation").asDouble();
 			Double kda = challengesNode.path("kda").asDouble();
-			Double teamDamagePercentage = challengesNode.path("teamDamagePercentage").asDouble();
+			Boolean bestTeamDamagePercentage = Boolean.FALSE;
 			Integer maxLevelLeadLaneOpponent = challengesNode.path("maxLevelLeadLaneOpponent").asInt();
 			Integer immobilizeAndKillWithAlly = challengesNode.path("immobilizeAndKillWithAlly").asInt();
 			Integer multiKillOneSpell = challengesNode.path("multiKillOneSpell").asInt();
@@ -109,19 +114,49 @@ public class MatchMapper {
 			Integer takedownsBeforeJungleMinionSpawn = challengesNode.path("takedownsBeforeJungleMinionSpawn").asInt();
 			Integer pickKillWithAlly = challengesNode.path("pickKillWithAlly").asInt();
 
+			Integer teamId = globalNode.path("teamId").asInt();
+			String participantPuuid = "";
+			double maxDamage = 0.0;
+
+			JsonNode info = root.get("info");
+			JsonNode participants = info.get("participants");
+
+			for (JsonNode participant : participants) {
+				int participantTeamId = participant.path("teamId").asInt();
+
+				if (participantTeamId == teamId) {
+					JsonNode challenges = participant.path("challenges");
+					if (challenges.has("teamDamagePercentage")) {
+						double damage = challenges.get("teamDamagePercentage").doubleValue();
+						log.info(String.valueOf(damage));
+
+						if (damage > maxDamage) {
+							maxDamage = damage;
+							participantPuuid = participant.path("puuid").asText();
+						}
+					}
+				}
+				if (participantPuuid.equals(puuid)) {
+					 bestTeamDamagePercentage = Boolean.TRUE;
+				}
+			}
+
+
 			return GlobalMatchParsingDto.builder()
 				.win(win)
 				.damagePerMinute(damagePerMinute)
 				.gameEndedInSurrender(gameEndedInSurrender)
 				.killParticipation(killParticipation)
 				.kda(kda)
-				.teamDamagePercentage(teamDamagePercentage)
+				.bestTeamDamagePercentage(bestTeamDamagePercentage)
 				.maxLevelLeadLaneOpponent(maxLevelLeadLaneOpponent)
 				.immobilizeAndKillWithAlly(immobilizeAndKillWithAlly)
 				.multiKillOneSpell(multiKillOneSpell)
 				.lostAnInhibitor(lostAnInhibitor)
 				.takedownsBeforeJungleMinionSpawn(takedownsBeforeJungleMinionSpawn)
 				.pickKillWithAlly(pickKillWithAlly)
+				.longestTimeSpentLiving(longestTimeSpentLiving)
+				.gameDuration(gameDuration)
 				.build();
 
 		} catch (JsonProcessingException e) {
@@ -159,7 +194,6 @@ public class MatchMapper {
 
 			JsonNode opponentLanerChallengesNode = findChallenges(opponentLanerNode);
 			Integer opponentTurretPlatesTaken = opponentLanerChallengesNode.path("turretPlatesTaken").asInt();
-
 
 			return LanerMatchParsingDto.builder()
 				.turretKills(turretKills)
@@ -259,7 +293,7 @@ public class MatchMapper {
 				.build();
 
 		} catch (JsonProcessingException e) {
-			throw new IllegalArgumentException("JSON → JSupMatchParsingDto 변환 실패", e);
+			throw new IllegalArgumentException("JSON → SupMatchParsingDto 변환 실패", e);
 		}
 	}
 }
