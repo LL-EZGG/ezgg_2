@@ -128,7 +128,6 @@ public class MatchMapper {
 					JsonNode challenges = participant.path("challenges");
 					if (challenges.has("teamDamagePercentage")) {
 						double damage = challenges.get("teamDamagePercentage").doubleValue();
-						log.info(String.valueOf(damage));
 
 						if (damage > maxDamage) {
 							maxDamage = damage;
