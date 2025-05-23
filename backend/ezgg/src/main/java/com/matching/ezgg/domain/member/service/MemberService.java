@@ -1,5 +1,7 @@
 package com.matching.ezgg.domain.member.service;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +20,11 @@ import com.matching.ezgg.domain.riotApi.service.ApiService;
 import com.matching.ezgg.global.exception.ExistEmailException;
 import com.matching.ezgg.global.exception.ExistMemberIdException;
 import com.matching.ezgg.global.exception.ExistRiotUsernamException;
+import com.matching.ezgg.global.exception.InvalidTokenException;
 import com.matching.ezgg.global.exception.MemberNotFoundException;
 import com.matching.ezgg.global.exception.MemberPassWordNotEqualsException;
 import com.matching.ezgg.global.exception.PasswordBadRequestException;
+import com.matching.ezgg.global.exception.TokenNotFoundException;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +39,6 @@ public class MemberService {
 	private final MemberRepository memberRepository;
 	private final MemberInfoService memberInfoService;
 	private final ApiService apiService;
-	private final MatchingService matchingService;
 	private final MemberInfoRepository memberInfoRepository;
 	private final JWTUtil jwtUtil;
 	private final RedisRefreshTokenRepository redisRefreshTokenRepository;
@@ -172,6 +175,36 @@ public class MemberService {
 			log.info(">>>>> Redis에서 UUID: {}", UUID);
 			redisRefreshTokenRepository.deleteByUUID(UUID);
 			log.info(">>>>> Redis에서 리프레시 토큰 삭제 완료");
+		}
+	}
+
+	/**
+	 * Access Token의 유효성을 검사하는 메서드
+	 * @param request
+	 */
+	public void validateToken(HttpServletRequest request) {
+		String accessToken = jwtUtil.extractTokenFromRequest(request);
+
+		if (accessToken == null) {
+			throw new TokenNotFoundException();
+		}
+
+		Boolean expired = true;
+
+		try {
+			expired = jwtUtil.isExpired(accessToken);
+		} catch (Exception e) {
+			log.error(">>>>> Access Token 만료 여부 확인 실패: {}", e.getMessage());
+		}
+
+		if (expired) {
+			log.info(">>>>> Access Token이 만료되었습니다.");
+			throw new InvalidTokenException();
+		}
+
+		if (redisRefreshTokenRepository.isBlacklisted(accessToken)) {
+			log.info(">>>>> Access Token이 블랙리스트에 있습니다.");
+			throw new InvalidTokenException();
 		}
 	}
 }
