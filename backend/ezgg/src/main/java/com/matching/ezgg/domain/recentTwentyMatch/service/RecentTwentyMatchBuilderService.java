@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.domain.matchInfo.entity.MatchInfo;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.matchInfo.service.MatchInfoService;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
@@ -54,6 +55,11 @@ public class RecentTwentyMatchBuilderService {
 			.sumAssists(result.sumAssists)
 			.winRate(winRate)
 			.championStats(most3ChampionStats)
+			.topAnalysis(result.topAnalysis)
+			.jugAnalysis(result.jugAnalysis)
+			.midAnalysis(result.midAnalysis)
+			.adAnalysis(result.adAnalysis)
+			.supAnalysis(result.supAnalysis)
 			.build();
 
 		log.info("recentTwentyMatch 계산 종료");
@@ -68,6 +74,11 @@ public class RecentTwentyMatchBuilderService {
 		int wins = 0;
 		int losses = 0;
 		Map<String, ChampionStat> allChampionStats = new HashMap<>();
+		String topAnalysis = "";
+		String jugAnalysis = "";
+		String midAnalysis = "";
+		String adAnalysis = "";
+		String supAnalysis = "";
 	}
 
 	// recentTwentyMatch 계산 메서드
@@ -75,6 +86,12 @@ public class RecentTwentyMatchBuilderService {
 
 		log.info("Riot Api Match 반복문 시작");
 		AggregateResult result = new AggregateResult();
+		
+		StringBuilder topAnalysisBuilder = new StringBuilder();
+		StringBuilder jugAnalysisBuilder = new StringBuilder();
+		StringBuilder midAnalysisBuilder = new StringBuilder();
+		StringBuilder adAnalysisBuilder = new StringBuilder();
+		StringBuilder supAnalysisBuilder = new StringBuilder();
 
 		// 최근 20 경기의 matchId들로 RecentTwentyMatch 업데이트
 		for (String matchId : matchIds) {
@@ -97,7 +114,35 @@ public class RecentTwentyMatchBuilderService {
 						.championName(name)
 						.build())// 해당 챔피언이 처음으로 기록될때만 ChampionStat 객체 생성. 있을 시에는 해당 championStat 객체에 updateByMatch메서드 바로 적용
 				.updateByMatch(matchInfo);
+
+			// 라인별 analysis 업데이트
+			Lane lane = null;
+
+			try {
+				lane = Lane.valueOf(matchInfo.getTeamPosition());
+			} catch (IllegalArgumentException | NullPointerException e) {
+				log.warn("[LOG]유효하지 않은 Lane: {}", matchInfo.getTeamPosition());
+			}
+
+			if (matchInfo.getMatchAnalysis() != null && lane != null) {
+				if (Lane.TOP == lane) {
+					topAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+				} else if (Lane.JUNGLE == lane) {
+					jugAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+				} else if (Lane.MIDDLE == lane) {
+					midAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+				} else if (Lane.BOTTOM == lane) {
+					adAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+				} else if (Lane.UTILITY == lane) {
+					supAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+				}
+			}
 		}
+		result.topAnalysis = topAnalysisBuilder.toString();
+		result.jugAnalysis = jugAnalysisBuilder.toString();
+		result.midAnalysis = midAnalysisBuilder.toString();
+		result.adAnalysis = adAnalysisBuilder.toString();
+		result.supAnalysis = supAnalysisBuilder.toString();
 
 		return result;
 	}
