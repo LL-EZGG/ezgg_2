@@ -20,6 +20,15 @@ public class KeywordAnalyzer<T, K> {
 		this.rules = rules;
 	}
 
+	/**
+	 * matchData를 파싱한 dto를 기준으로 키워드를 생성하고 한 줄 자연어 평가를 생성하는 메서드
+	 * @param matchParsingDto
+	 * @param teamPosition
+	 * @param matchId
+	 * @param memberId
+	 * @return match 데이터 분석 String(keyword 합친 String)
+	 */
+
 	public String analyze(T matchParsingDto, String teamPosition, String matchId, Long memberId) {
 
 		StringBuilder analysis = new StringBuilder();
@@ -27,7 +36,7 @@ public class KeywordAnalyzer<T, K> {
 		try {
 			lane = Lane.valueOf(teamPosition);
 		} catch (IllegalArgumentException e) {
-			throw new RuntimeException(e);
+			throw new IllegalArgumentException("유효하지 않은 Lane명 입니다.", e);
 		}
 
 		//모든 global 규칙 확인
@@ -43,7 +52,7 @@ public class KeywordAnalyzer<T, K> {
 				analysis.append(keywordDescription).append(",");
 			}
 		}
-		log.info("Analysis: {}, {}", analysis, memberId);
+		log.info("[INFO] Analysis: {}, {}", analysis, memberId);
 		return analysis.toString();
 	}
 

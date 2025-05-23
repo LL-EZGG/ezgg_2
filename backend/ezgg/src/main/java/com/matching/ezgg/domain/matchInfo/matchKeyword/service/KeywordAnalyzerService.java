@@ -42,31 +42,41 @@ public class KeywordAnalyzerService {
 		this.supKeywordAnalyzer = supKeywordAnalyzer;
 	}
 
+	/**
+	 * Analyzer를 통해 Global 키워드와 포지션별 키워드를 부여하여 한 줄 평가를 생성하는 메서드
+	 * @param rawJson
+	 * @param teamPosition
+	 * @param puuid
+	 * @param matchId
+	 * @param memberId
+	 * @return 한 match에 부여된 모든 평가를 합친 String
+	 */
+
 	public String giveMatchKeyword(String rawJson, String teamPosition, String puuid, String matchId, Long memberId) {
 		GlobalMatchParsingDto globalMatchParsingDto = matchMapper.toGlobalMatchParsingDto(rawJson, puuid);
 
 		StringBuilder matchAnalysis = new StringBuilder();
-		//global 키워드 부여
+		//global 키워드에 대한 한 줄 평가 생성
 		matchAnalysis.append(globalKeywordAnalyzer.analyze(globalMatchParsingDto, teamPosition, matchId, memberId));
 
-		//포지션별 키워드 부여
+		//포지션별 키워드에 대한 한 줄 평가 생성
 		switch (teamPosition) {
 			case ("TOP"), ("MIDDLE"), ("BOTTOM"):
 				LanerMatchParsingDto lanerMatchParsingDto = matchMapper.toLanerMatchParsingDto(rawJson, puuid,
 					teamPosition);
 				matchAnalysis.append(
 					lanerKeywordAnalyzer.analyze(lanerMatchParsingDto, teamPosition, matchId, memberId));
-				log.info(lanerMatchParsingDto.toString());
+				log.info("[INFO] Laner Analysis: {}", lanerMatchParsingDto.toString());
 				break;
 			case ("JUNGLE"):
 				JugMatchParsingDto jugMatchParsingDto = matchMapper.toJugMatchParsingDto(rawJson, puuid);
 				matchAnalysis.append(jugKeywordAnalyzer.analyze(jugMatchParsingDto, teamPosition, matchId, memberId));
-				log.info(jugMatchParsingDto.toString());
+				log.info("[INFO] Jug Analysis: {}", jugMatchParsingDto.toString());
 				break;
 			case ("UTILITY"):
 				SupMatchParsingDto supMatchParsingDto = matchMapper.toSupMatchParsingDto(rawJson, puuid);
 				matchAnalysis.append(supKeywordAnalyzer.analyze(supMatchParsingDto, teamPosition, matchId, memberId));
-				log.info(supMatchParsingDto.toString());
+				log.info("[INFO] Sup Analysis: {}", supMatchParsingDto.toString());
 				break;
 		}
 		return matchAnalysis.toString();

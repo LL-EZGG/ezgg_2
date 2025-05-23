@@ -18,7 +18,7 @@ public class KeywordService {
 	private final MatchKeywordRepository matchKeywordRepository;
 
 	public MatchKeyword createMatchKeyword(String keywordDescription, Lane lane, String matchId, Long memberId) {
-		log.info("MatchKeyword 생성 완료: {}, {}", lane, keywordDescription);
+		log.info("[INFO] MatchKeyword 생성 완료: {}, {}", lane, keywordDescription);
 		return MatchKeyword.builder()
 			.memberId(memberId)
 			.keyword(keywordDescription)
@@ -30,7 +30,7 @@ public class KeywordService {
 	public void saveMatchKeyword(MatchKeyword matchKeyword) {
 		MatchKeyword savedMatchKeyword = matchKeywordRepository.save(matchKeyword);
 		MatchKeywordDto matchKeywordDto = MatchKeywordDto.toDto(savedMatchKeyword);
-		log.info("MatchKeyword 저장 완료: {}", matchKeywordDto.toString());
+		log.info("[INFO] MatchKeyword 저장 완료: {}", matchKeywordDto.toString());
 	}
 
 }

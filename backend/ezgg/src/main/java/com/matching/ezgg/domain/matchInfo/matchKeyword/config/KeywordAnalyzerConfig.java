@@ -51,6 +51,11 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.service.KeywordService;
 
 @Configuration
 public class KeywordAnalyzerConfig {
+
+	/**
+	 * keyword 종류별 Keyword Rule 리스트
+	 */
+
 	@Bean("globalRules")
 	public List<KeywordRule<GlobalMatchParsingDto, GlobalKeyword>> globalKeywordRules() {
 		return List.of(
@@ -105,6 +110,10 @@ public class KeywordAnalyzerConfig {
 			new WardsPlacedRule()
 		);
 	}
+
+	/**
+	 * keyword 종류별 Analyzer
+	 */
 
 	@Bean("globalKeywordAnalyzer")
 	public KeywordAnalyzer<GlobalMatchParsingDto, GlobalKeyword> globalKeywordAnalyzer(

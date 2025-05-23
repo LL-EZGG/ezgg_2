@@ -121,10 +121,10 @@ public class RecentTwentyMatchBuilderService {
 			try {
 				lane = Lane.valueOf(matchInfo.getTeamPosition());
 			} catch (IllegalArgumentException | NullPointerException e) {
-				log.warn("[LOG]유효하지 않은 Lane: {}", matchInfo.getTeamPosition());
+				throw new IllegalArgumentException("유효하지 않은 Lane명 입니다.", e);
 			}
 
-			if (matchInfo.getMatchAnalysis() != null && lane != null) {
+			if (matchInfo.getMatchAnalysis() != null) {
 				if (Lane.TOP == lane) {
 					topAnalysisBuilder.append(matchInfo.getMatchAnalysis());
 				} else if (Lane.JUNGLE == lane) {

@@ -19,7 +19,7 @@ public class MatchInfoService {
 
 	@Transactional
 	public void save(MatchDto matchDto) {
-		log.info("match 저장 시작: {}", matchDto.getRiotMatchId());
+		log.info("[INFO] match 저장 시작: {}", matchDto.getRiotMatchId());
 		MatchInfo matchInfo = MatchInfo.builder()
 			.memberId(matchDto.getMemberId())
 			.riotMatchId(matchDto.getRiotMatchId())
@@ -33,7 +33,7 @@ public class MatchInfoService {
 			.build();
 
 		matchInfoRepository.save(matchInfo);
-		log.info("match 저장 종료: {}", matchDto.getRiotMatchId());
+		log.info("[INFO] match 저장 종료: {}", matchDto.getRiotMatchId());
 	}
 
 	public MatchInfo getMatchByMemberIdAndRiotMatchId(Long memberId, String matchId) {
