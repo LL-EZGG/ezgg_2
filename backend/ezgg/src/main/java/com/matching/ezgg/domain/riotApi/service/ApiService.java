@@ -193,4 +193,26 @@ public class ApiService {
 		}
 	}
 
+
+	public String getMatch(String matchId) {
+		log.info("matchInfo 조회 시작: matchId = {}", matchId);
+		try {
+			String url = String.format(
+				"/lol/match/v5/matches/%s?api_key=%s",
+				matchId, apiKey
+			);
+
+			// Json 전체 수령
+			String rawJson = asiaRestTemplate.getForObject(url, String.class);
+
+			log.info("matchInfo 조회 성공: matchId = {}", matchId);
+			return rawJson;
+
+		} catch (RiotMatchNotFoundException e) {
+			throw new RiotMatchNotFoundException(matchId);
+		} catch (RiotApiException e) {
+			throw new RiotApiException("Match 조회 Riot Api 실패");
+		}
+	}
+
 }

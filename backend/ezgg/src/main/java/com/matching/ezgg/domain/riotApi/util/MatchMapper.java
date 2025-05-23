@@ -1,5 +1,8 @@
 package com.matching.ezgg.domain.riotApi.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,6 +14,7 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.LanerMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.SupMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
+import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +68,34 @@ public class MatchMapper {
 			}
 		}
 		throw new IllegalArgumentException("해당 Match에서 멤버를 찾을 수 없습니다.");
+	}
+
+	public List<MatchReviewDto> toMatchReviewDto(String rawJson) {
+		try {
+			JsonNode root = objectMapper.readTree(rawJson);
+			List<MatchReviewDto> matchReviewDtoList = new ArrayList<>();
+
+			JsonNode participants = root.path("info").path("participants");
+
+			for(JsonNode participant : participants) {
+
+				String riotUsername = participant.path("riotIdGameName").asText();
+				String riotTag = participant.path("riotIdTagline").asText();
+				int teamId = participant.path("teamId").asInt();
+
+				MatchReviewDto matchReviewDto = MatchReviewDto.builder()
+					.riotUsername(riotUsername)
+					.riotTag(riotTag)
+					.teamId(teamId)
+					.build();
+
+				matchReviewDtoList.add(matchReviewDto);
+			}
+
+			return matchReviewDtoList;
+		} catch (JsonProcessingException e) {
+			throw new IllegalArgumentException("JSON → MathReviewDto 변환 실패", e);
+		}
 	}
 
 	// participant 배열에서 상대 라인의 노드 리턴
@@ -136,7 +168,7 @@ public class MatchMapper {
 					}
 				}
 				if (participantPuuid.equals(puuid)) {
-					 bestTeamDamagePercentage = Boolean.TRUE;
+					bestTeamDamagePercentage = Boolean.TRUE;
 				}
 			}
 
