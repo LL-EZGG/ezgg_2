@@ -170,7 +170,8 @@ public class ApiService {
 			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
 			String teamPosition = matchDto.getTeamPosition();
 			//MatchAnalysis에 ChampionRole 추가
-			List<ChampionRole> championRoles = ChampionBasicInfo.valueOf(matchDto.getChampionName().toUpperCase())
+			List<ChampionRole> championRoles = ChampionBasicInfo.valueOf(matchDto.getChampionName().replaceAll("[^a-zA-Z0-9]", "")
+				.trim().toUpperCase())
 				.getChampionRoles();
 			for (ChampionRole championRole : championRoles) {
 				matchAnalysis.append(championRole.getKoreanRoleName()).append(",");
