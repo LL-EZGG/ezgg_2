@@ -16,6 +16,7 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.JugKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.LanerKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.SupKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.KeywordRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.ClutchWinnerRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.ComebackWinRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.CooperativeRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.GoodSynergyRule;
@@ -25,6 +26,7 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.HighKillP
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.InvadingRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.LevelDiffRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.NeverGivesUpRule;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.SurvivabilityRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.globalRule.TeamFighterRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.jugRule.CounterJunglerRule;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.jugRule.JugFirstBloodMakerRule;
@@ -61,10 +63,9 @@ public class KeywordAnalyzerConfig {
 			new CooperativeRule(),
 			new InvadingRule(),
 			new ComebackWinRule(),
-			new HighDamageRule()
-			//TODO
-			// CLUTCH_WINNER("게임 캐리함"), //teamDamagePercent, win
-			// SURVIVABILITY("생존 잘함"), //longestTimeSpentLiving
+			new HighDamageRule(),
+			new ClutchWinnerRule(),
+			new SurvivabilityRule()
 		);
 	}
 
