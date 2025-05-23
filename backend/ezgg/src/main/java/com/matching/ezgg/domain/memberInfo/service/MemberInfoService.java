@@ -48,14 +48,6 @@ public class MemberInfoService {
 		return memberInfoRepository.findByMemberId(memberId).orElseThrow(MemberInfoNotFoundException::new);
 	}
 
-	// memberId로 matchIds 조회
-	public List<String> getMatchIdsByMemberId(Long memberId) {
-		MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
-			.orElseThrow(MemberInfoNotFoundException::new);
-
-		return memberInfo.getMatchIds();
-	}
-
 	//member info 생성
 	public MemberInfo createNewMemberInfo(Long memberId, String riotUserName, String riotTag,
 		String puuid) {//TODO 트랜잭션을 memberService가 아니라 여기서??
