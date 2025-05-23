@@ -5,7 +5,8 @@ public enum RedisKey {
     STREAM_ID_HASH_KEY("stream-id-hash"),
     STREAM_GROUP("matching-group"),
     CONSUMER_NAME ("matching-consumer"),
-    RETRY_ZSET_KEY("matching-retry-zset");
+    RETRY_ZSET_KEY("matching-retry-zset"),
+    MATCHED_ZSET_KEY("matching-success-zset"),;
 
     private final String value;
 

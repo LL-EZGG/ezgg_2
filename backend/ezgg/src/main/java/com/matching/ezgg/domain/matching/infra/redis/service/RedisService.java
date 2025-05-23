@@ -1,6 +1,8 @@
 package com.matching.ezgg.domain.matching.infra.redis.service;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +23,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.domain.matching.dto.MatchingSuccessResponse;
-import com.matching.ezgg.domain.matching.service.MemberDataBundleService;
 import com.matching.ezgg.domain.matching.dto.MemberDataBundleDto;
 import com.matching.ezgg.domain.matching.infra.redis.key.RedisKey;
+import com.matching.ezgg.domain.matching.service.MemberDataBundleService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -167,4 +169,71 @@ public class RedisService {
     public void removeRetryCandidate(String json) {
         redisTemplate.opsForZSet().remove(RedisKey.RETRY_ZSET_KEY.getValue(), json);
     }
+
+	public void addToMatchedUsers(Long memberId1, Long memberId2) {
+		try {
+			String timestamp = String.valueOf(System.currentTimeMillis());
+			Map<String, String> matchedData = new HashMap<>();
+			matchedData.put("memberId1", String.valueOf(memberId1));
+			matchedData.put("memberId2", String.valueOf(memberId2));
+			matchedData.put("timestamp", timestamp);
+
+			String json = objectMapper.writeValueAsString(matchedData);
+
+			redisTemplate.opsForZSet().add(RedisKey.MATCHED_ZSET_KEY.getValue(), json, Long.parseLong(timestamp));
+		} catch (Exception e) {
+			log.error("Redis에 매칭된 유저 추가 실패: {}", e.getMessage());
+		}
+	}
+
+	public List<Map<String, String>> getTwentyMatchedUsers() {
+		long now = System.currentTimeMillis();
+		long threshold = now - 1000 * 60 * 20; // 20분 전
+
+		Set<String> matchedUsers = redisTemplate.opsForZSet()
+			.rangeByScore(RedisKey.MATCHED_ZSET_KEY.getValue(), 0, threshold);
+
+		if (matchedUsers == null || matchedUsers.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<Map<String, String>> result = new ArrayList<>();
+
+		for (String json : matchedUsers) {
+			try {
+				Map<String, String> matchedData = objectMapper.readValue(json, Map.class);
+				result.add(matchedData);
+			} catch (JsonProcessingException e) {
+				log.error("매칭된 유저 데이터 파싱 실패: {}", e.getMessage());
+			}
+		}
+		return result;
+	}
+
+	public void updateMatchedUser(Map<String, String> json, Map<String, String> updateJson) {
+		try {
+			redisTemplate.opsForZSet().remove(RedisKey.MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(json));
+			redisTemplate.opsForZSet().add(RedisKey.MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(updateJson), System.currentTimeMillis());
+		} catch (Exception e) {
+			log.error("Redis에 매칭된 유저 업데이트 실패: {}", e.getMessage());
+		}
+	}
+
+	public void deleteMatchedUser(Map<String, String> deleteJson) {
+		try {
+			redisTemplate.opsForZSet().remove(RedisKey.MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(deleteJson));
+		} catch (Exception e) {
+			log.error("Redis에 매칭된 유저 삭제 실패: {}", e.getMessage());
+		}
+	}
+
+	public boolean canExecuteReview(Long memberId1, Long memberId2) {
+		String key = "canExecuteReview:" + memberId1 + ":" + memberId2;
+		Long count = redisTemplate.opsForValue().increment(key);
+		if(count == 1) {
+			// 최초 실행일경우
+			redisTemplate.expire(key, Duration.ofHours(2)); // 2시간 후 만료
+		}
+		return count <= 3; // 3회까지 허용
+	}
 }

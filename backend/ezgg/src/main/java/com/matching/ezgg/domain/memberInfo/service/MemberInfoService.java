@@ -14,6 +14,7 @@ import com.matching.ezgg.domain.riotApi.dto.WinRateNTierDto;
 import com.matching.ezgg.domain.memberInfo.repository.MemberInfoRepository;
 import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
+import com.matching.ezgg.global.exception.MatchIdsNotFoundException;
 import com.matching.ezgg.global.exception.MemberInfoNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,14 @@ public class MemberInfoService {
 	// memberId로 MemberInfo 조회
 	public MemberInfo getMemberInfoByMemberId(Long memberId) {
 		return memberInfoRepository.findByMemberId(memberId).orElseThrow(MemberInfoNotFoundException::new);
+	}
+
+	// memberId로 matchIds 조회
+	public List<String> getMatchIdsByMemberId(Long memberId) {
+		MemberInfo memberInfo = memberInfoRepository.findByMemberId(memberId)
+			.orElseThrow(MemberInfoNotFoundException::new);
+
+		return memberInfo.getMatchIds();
 	}
 
 	//member info 생성
