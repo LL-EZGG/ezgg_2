@@ -37,7 +37,10 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
                 console.log("[useWebSocket.js]\nToken not found");
                 return false;
             }
-            await api.get('/auth/memberinfo');
+            // 단순히 API 요청을 보내서 토큰 검증
+            // 401이 떨어지면 api.js의 인터셉터가 자동으로 토큰을 재발급 받음
+            await api.post('/auth/validateToken');
+          
             return true;
         } catch (error) {
             console.log('[useWebSocket.js] Token validation or refresh failed:', error);
