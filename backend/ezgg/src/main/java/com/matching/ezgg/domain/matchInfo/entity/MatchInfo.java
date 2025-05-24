@@ -47,10 +47,12 @@ public class MatchInfo extends BaseEntity {
 	@Column(name = "win", unique = false, nullable = false)
 	private Boolean win;
 
+	@Column(name = "match_analysis", unique = false)
+	private String matchAnalysis = "";
+
 	@Builder
 	public MatchInfo(Long memberId, String riotMatchId, Integer kills, Integer deaths, Integer assists,
-		String teamPosition,
-		String championName, Boolean win) {
+		String teamPosition, String championName, Boolean win, String matchAnalysis) {
 		this.memberId = memberId;
 		this.riotMatchId = riotMatchId;
 		this.kills = kills;
@@ -59,5 +61,6 @@ public class MatchInfo extends BaseEntity {
 		this.teamPosition = teamPosition;
 		this.championName = championName;
 		this.win = win;
+		this.matchAnalysis = matchAnalysis;
 	}
 }

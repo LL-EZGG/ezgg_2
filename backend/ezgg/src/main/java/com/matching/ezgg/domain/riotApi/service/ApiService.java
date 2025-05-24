@@ -12,6 +12,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.matching.ezgg.domain.matchInfo.matchKeyword.service.KeywordAnalyzerService;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 import com.matching.ezgg.domain.riotApi.dto.PuuidDto;
@@ -36,14 +37,17 @@ public class ApiService {
 	private final String apiKey;
 	private final MatchMapper matchMapper;
 	private final MemberInfoService memberInfoService;
+	private final KeywordAnalyzerService keywordAnalyzerService;
 
 	public ApiService(@Qualifier("asia") RestTemplate asiaRestTemplate, @Qualifier("kr") RestTemplate krRestTemplate,
-		@Value("${api.key}") String apiKey, MatchMapper matchMapper, MemberInfoService memberInfoService) {
+		@Value("${api.key}") String apiKey, MatchMapper matchMapper, MemberInfoService memberInfoService,
+		KeywordAnalyzerService keywordAnalyzerService) {
 		this.asiaRestTemplate = asiaRestTemplate;
 		this.krRestTemplate = krRestTemplate;
 		this.apiKey = apiKey;
 		this.matchMapper = matchMapper;
 		this.memberInfoService = memberInfoService;
+		this.keywordAnalyzerService = keywordAnalyzerService;
 	}
 
 	//riot/account/v1/accounts/by-riot-id/{riot-id}/{tag}?api_key=
@@ -157,14 +161,16 @@ public class ApiService {
 				"/lol/match/v5/matches/%s?api_key=%s",
 				matchId, apiKey
 			);
-
 			// Json 전체 수령
 			String rawJson = asiaRestTemplate.getForObject(url, String.class);
 			// MatchDto 형식으로 매핑
 			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
-			// MemberId를 MatchDto에 따로 지정
+			String matchAnalysis = keywordAnalyzerService.buildMatchKeywordAnalysis(matchDto, rawJson, puuid, matchId,
+				memberId);
+			// MemberId, MatchAnalysis를 MatchDto에 따로 지정
 			matchDto = matchDto.toBuilder()
 				.memberId(memberInfoService.getMemberIdByPuuid(puuid))
+				.matchAnalysis(matchAnalysis)
 				.build();
 
 			log.info("matchInfo 조회 성공: puuid = {} matchId = {}", puuid, matchId);
@@ -176,7 +182,6 @@ public class ApiService {
 			throw new RiotApiException("Match 조회 Riot Api 실패");
 		}
 	}
-
 
 	public String getMatch(String matchId) {
 		log.info("matchInfo 조회 시작: matchId = {}", matchId);

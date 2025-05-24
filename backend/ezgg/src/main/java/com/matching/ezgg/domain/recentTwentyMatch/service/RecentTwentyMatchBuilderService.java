@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.domain.matchInfo.entity.MatchInfo;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.matchInfo.service.MatchInfoService;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
@@ -54,6 +55,11 @@ public class RecentTwentyMatchBuilderService {
 			.sumAssists(result.sumAssists)
 			.winRate(winRate)
 			.championStats(most3ChampionStats)
+			.topAnalysis(result.topAnalysisBuilder.toString())
+			.jugAnalysis(result.jugAnalysisBuilder.toString())
+			.midAnalysis(result.midAnalysisBuilder.toString())
+			.adAnalysis(result.adAnalysisBuilder.toString())
+			.supAnalysis(result.supAnalysisBuilder.toString())
 			.build();
 
 		log.info("recentTwentyMatch 계산 종료");
@@ -68,6 +74,11 @@ public class RecentTwentyMatchBuilderService {
 		int wins = 0;
 		int losses = 0;
 		Map<String, ChampionStat> allChampionStats = new HashMap<>();
+		StringBuilder topAnalysisBuilder = new StringBuilder();
+		StringBuilder jugAnalysisBuilder = new StringBuilder();
+		StringBuilder midAnalysisBuilder = new StringBuilder();
+		StringBuilder adAnalysisBuilder = new StringBuilder();
+		StringBuilder supAnalysisBuilder = new StringBuilder();
 	}
 
 	// recentTwentyMatch 계산 메서드
@@ -97,6 +108,29 @@ public class RecentTwentyMatchBuilderService {
 						.championName(name)
 						.build())// 해당 챔피언이 처음으로 기록될때만 ChampionStat 객체 생성. 있을 시에는 해당 championStat 객체에 updateByMatch메서드 바로 적용
 				.updateByMatch(matchInfo);
+
+			// 라인별 analysis 업데이트
+			Lane lane = null;
+
+			try {
+				lane = Lane.valueOf(matchInfo.getTeamPosition());
+			} catch (IllegalArgumentException | NullPointerException e) {
+				throw new IllegalArgumentException("유효하지 않은 Lane명 입니다.", e);
+			}
+
+			if (matchInfo.getMatchAnalysis() != null) {
+				if (Lane.TOP == lane) {
+					result.topAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+				} else if (Lane.JUNGLE == lane) {
+					result.jugAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+				} else if (Lane.MIDDLE == lane) {
+					result.midAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+				} else if (Lane.BOTTOM == lane) {
+					result.adAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+				} else if (Lane.UTILITY == lane) {
+					result.supAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+				}
+			}
 		}
 
 		return result;

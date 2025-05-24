@@ -21,4 +21,5 @@ public class MatchDto {
 	private String teamPosition;
 	private String championName;
 	private boolean win;
+	private String matchAnalysis;
 }

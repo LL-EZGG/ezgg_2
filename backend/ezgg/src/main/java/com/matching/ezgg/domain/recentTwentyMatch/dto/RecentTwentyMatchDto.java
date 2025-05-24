@@ -21,6 +21,11 @@ public class RecentTwentyMatchDto {
 	private int sumAssists;
 	private Map<String, ChampionStat> championStats;
 	private int winRate;
+	private String topAnalysis;
+	private String jugAnalysis;
+	private String midAnalysis;
+	private String adAnalysis;
+	private String supAnalysis;
 
 	public static RecentTwentyMatchDto toDto(RecentTwentyMatch recentTwentyMatch) {
 		return RecentTwentyMatchDto.builder()
@@ -29,6 +34,11 @@ public class RecentTwentyMatchDto {
 			.sumAssists(recentTwentyMatch.getSumAssists())
 			.championStats(recentTwentyMatch.getChampionStats())
 			.winRate(recentTwentyMatch.getWinRate())
+			.topAnalysis(recentTwentyMatch.getTopAnalysis())
+			.jugAnalysis(recentTwentyMatch.getJugAnalysis())
+			.midAnalysis(recentTwentyMatch.getMidAnalysis())
+			.adAnalysis(recentTwentyMatch.getAdAnalysis())
+			.supAnalysis(recentTwentyMatch.getSupAnalysis())
 			.build();
 	}
 }
