@@ -68,12 +68,12 @@ public class ChatRoomService {
 	 */
 	public List<String> getParticipants(String chattingRoomId) {
 		if (chattingRoomId == null) {
-			log.warn("[INFO] 채팅방 ID가 null입니다.");
+			log.warn("[WARN] 채팅방 ID가 null입니다.");
 			return new CopyOnWriteArrayList<>();
 		}
 
 		List<String> participants = chatRoomParticipants.getOrDefault(chattingRoomId, new CopyOnWriteArrayList<>());
-		log.debug("[INFO] 채팅방 참여자 조회 - 방ID: {}, 참여자 수: {}, 참여자 목록: {}",
+		log.info("[INFO] 채팅방 참여자 조회 - 방ID: {}, 참여자 수: {}, 참여자 목록: {}",
 			chattingRoomId, participants.size(), participants);
 
 		return participants;
