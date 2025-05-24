@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.List;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
@@ -27,12 +28,9 @@ public class ChatController {
 	 * @param principal
 	 */
 	@MessageMapping("/chat/send")
-	public void sendChatMessage(ChatMessageDto chatMessage, Principal principal) {
+	public void sendChatMessage(@Payload ChatMessageDto chatMessage, Principal principal) {
 		log.info("[INFO] 채팅 메시지 수신 - 방ID: {}, 발신자: {}, 메시지: {}",
 			chatMessage.getChattingRoomId(), chatMessage.getSender(), chatMessage.getMessage());
-
-		// 🔥 Principal 정보 확인
-		log.info("[DEBUG] Principal 정보: {}", principal != null ? principal.getName() : "null");
 
 		List<String> participants = chatRoomService.getParticipants(chatMessage.getChattingRoomId());
 
@@ -40,7 +38,7 @@ public class ChatController {
 			log.warn("[WARN] 채팅방에 참가자가 없습니다. 발신자를 추가합니다");
 			chatRoomService.addParticipant(chatMessage.getChattingRoomId(), chatMessage.getSender());
 
-			// 🔥 Principal 이름도 추가 (백업)
+			//Principal 이름도 추가 (백업)
 			if (principal != null && !principal.getName().equals(chatMessage.getSender())) {
 				log.info("[INFO] Principal 이름도 참가자로 추가: {}", principal.getName());
 				chatRoomService.addParticipant(chatMessage.getChattingRoomId(), principal.getName());
@@ -51,7 +49,7 @@ public class ChatController {
 
 		log.info("[INFO] 참가자 목록: {}", participants);
 
-		// 🔥 Principal 이름으로도 전송 (백업)
+		//Principal 이름으로도 전송 (백업)
 		if (principal != null) {
 			messagingTemplate.convertAndSendToUser(
 				principal.getName(),
