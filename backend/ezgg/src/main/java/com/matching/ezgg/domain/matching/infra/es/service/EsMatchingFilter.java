@@ -26,9 +26,15 @@ import lombok.extern.slf4j.Slf4j;
 public class EsMatchingFilter {
 	private final ElasticsearchClient esClient;
 
-	public List<MatchingFilterParsingDto> findMatchingUsers(String myLine, String partnerLine, String tier,
+	//TODO script_score방식으로 바꿔야한다.
+	public List<MatchingFilterParsingDto> findMatchingUsers(
+		String myLine,
+		String partnerLine,
+		String tier,
 		Long myMemberId,
-		List<String> preferredChampion, List<String> unpreferredChampion) {
+		List<String> preferredChampion,
+		List<String> unpreferredChampion) {
+
 		Query query = Query.of(q -> q
 			.bool(b -> b
 				.filter(
@@ -71,14 +77,13 @@ public class EsMatchingFilter {
 				.collect(Collectors.toList());
 
 		} catch (IOException e) {
-			log.error("Elasticsearch 조건 조회 중 오류 발생: " + e.getMessage());
+			log.error("[ERROR] Elasticsearch 조건 조회 중 오류 발생: " + e.getMessage());
 			e.printStackTrace();
 			throw new EsQueryException();
 		}
 	}
 
 	// 가중치 계산 로직
-
 	private MatchingFilterParsingDto updateUserMatchingScore(MatchingFilterParsingDto user,
 		List<String> preferredChampions,
 		List<String> unpreferredChampions) {
@@ -100,12 +105,12 @@ public class EsMatchingFilter {
 					if (championInfo != null) {
 						// 선호 챔피언이 모스트에 있으면 가중치 계산
 						preferredChampionWeight += getChampionWeight(champion, true, mostChampionList);
-						log.debug("선호 챔피언 {} 가중치: {}", champion,
+						log.debug("[DEBUG] 선호 챔피언 {} 가중치: {}", champion,
 							getChampionWeight(champion, true, mostChampionList));
 					} else {
 						// 여기서 조건에 따라 처리를 변경할 수 있습니다.
 						// 현재는 선호 챔피언이 상대방의 모스트에 없어도 계속 진행합니다.
-						log.debug("선호 챔피언 {}가 상대방의 모스트 챔피언 목록에 없습니다.", champion);
+						log.debug("[DEBUG] 선호 챔피언 {}가 상대방의 모스트 챔피언 목록에 없습니다.", champion);
 					}
 				}
 			}
@@ -122,10 +127,10 @@ public class EsMatchingFilter {
 					if (championInfo != null) {
 						// 비선호 챔피언이 모스트에 있으면 가중치 계산
 						unpreferredChampionWeight += getChampionWeight(champion, false, mostChampionList);
-						log.debug("비선호 챔피언 {} 가중치: {}", champion,
+						log.debug("[DEBUG] 비선호 챔피언 {} 가중치: {}", champion,
 							getChampionWeight(champion, false, mostChampionList));
 					} else {
-						log.debug("비선호 챔피언 {}가 상대방의 모스트 챔피언 목록에 없습니다.", champion);
+						log.debug("[DEBUG] 비선호 챔피언 {}가 상대방의 모스트 챔피언 목록에 없습니다.", champion);
 					}
 				}
 			}
@@ -133,7 +138,7 @@ public class EsMatchingFilter {
 
 		// 최종 매칭 점수 계산: 선호 챔피언 가중치 - 비선호 챔피언 가중치
 		int matchingScore = preferredChampionWeight - unpreferredChampionWeight;
-		log.debug("User ID: {}, 최종 매칭 점수: {}", user.getMemberId(), matchingScore);
+		log.debug("[DEBUG] User ID: {}, 최종 매칭 점수: {}", user.getMemberId(), matchingScore);
 
 		// 매칭 점수가 음수인 경우 0으로 설정 (선택적)
 		// matchingScore = Math.max(0, matchingScore);
@@ -189,9 +194,9 @@ public class EsMatchingFilter {
 
 	public int getChampionRank(String championName, List<RecentTwentyMatchParsingDto.MostChampion> mostChampions) {
 		// 챔피언이 모스트 챔피언 목록에서 몇 번째 순위인지 확인
-		log.debug("Finding rank for: {}", championName);
+		log.debug("[DEBUG] Finding rank for: {}", championName);
 		for (int i = 0; i < mostChampions.size(); i++) {
-			log.debug("Candidate: {}", mostChampions.get(i).getChampionName());
+			log.debug("[DEBUG] Candidate: {}", mostChampions.get(i).getChampionName());
 			if (mostChampions.get(i).getChampionName().equalsIgnoreCase(championName)) {
 				return i + 1; // 1위부터 시작하므로 i + 1을 반환
 			}
