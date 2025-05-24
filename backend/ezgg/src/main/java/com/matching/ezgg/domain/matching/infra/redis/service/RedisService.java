@@ -232,16 +232,16 @@ public class RedisService {
 		// MapRecord<Stream명, 유저의 RecordId, 유저의 record 속 key-value 값 {"memberId": "1234"}>
 
 		return stringRedisTemplate.opsForStream().read(
-			// 지정된 groupName과 consumerName으로 Stream을 읽음.
+			// Consumer<K>: 지정된 groupName과 consumerName으로 Stream을 읽음.
 			Consumer.from(STREAM_GROUP.getValue(), CONSUMER_NAME.getValue()),
 
-			// 읽기 옵션 설정:
+			// StreamReadOptions:
 			StreamReadOptions
 				.empty()
 				.count(5) // 최대 5의 메세지(유저)를 읽음
 				.block(Duration.ofMillis(2000)),// 메시지가 없을 경우 최대 2초까지 대기 (long polling)
 
-			// 해당 Consumer가 이전에 읽고 ACK하지 않은 메시지를 우선 읽고, 마지막으로 읽은 메세지 이후부터 읽음.
+			// StreamOffset<K>: 해당 Consumer가 이전에 읽고 ACK하지 않은 메시지를 우선 읽고, 마지막으로 읽은 메세지 이후부터 읽음.
 			StreamOffset.create(STREAM_KEY.getValue(), ReadOffset.lastConsumed())
 		);
 	}
