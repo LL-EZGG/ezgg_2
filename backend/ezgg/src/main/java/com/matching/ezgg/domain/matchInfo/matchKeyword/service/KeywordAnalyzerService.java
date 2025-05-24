@@ -15,33 +15,23 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.SupKeyword;
 import com.matching.ezgg.domain.riotApi.util.MatchMapper;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class KeywordAnalyzerService {
 
 	private final MatchMapper matchMapper;
 	@Qualifier("globalKeywordAnalyzer")
-	KeywordAnalyzer<GlobalMatchParsingDto, GlobalKeyword> globalKeywordAnalyzer;
+	private final KeywordAnalyzer<GlobalMatchParsingDto, GlobalKeyword> globalKeywordAnalyzer;
 	@Qualifier("lanerKeywordAnalyzer")
-	KeywordAnalyzer<LanerMatchParsingDto, LanerKeyword> lanerKeywordAnalyzer;
+	private final KeywordAnalyzer<LanerMatchParsingDto, LanerKeyword> lanerKeywordAnalyzer;
 	@Qualifier("jugKeywordAnalyzer")
-	KeywordAnalyzer<JugMatchParsingDto, JugKeyword> jugKeywordAnalyzer;
+	private final KeywordAnalyzer<JugMatchParsingDto, JugKeyword> jugKeywordAnalyzer;
 	@Qualifier("supKeywordAnalyzer")
-	KeywordAnalyzer<SupMatchParsingDto, SupKeyword> supKeywordAnalyzer;
-
-	public KeywordAnalyzerService(MatchMapper matchMapper,
-		KeywordAnalyzer<GlobalMatchParsingDto, GlobalKeyword> globalKeywordAnalyzer,
-		KeywordAnalyzer<LanerMatchParsingDto, LanerKeyword> lanerKeywordAnalyzer,
-		KeywordAnalyzer<JugMatchParsingDto, JugKeyword> jugKeywordAnalyzer,
-		KeywordAnalyzer<SupMatchParsingDto, SupKeyword> supKeywordAnalyzer) {
-		this.matchMapper = matchMapper;
-		this.globalKeywordAnalyzer = globalKeywordAnalyzer;
-		this.lanerKeywordAnalyzer = lanerKeywordAnalyzer;
-		this.jugKeywordAnalyzer = jugKeywordAnalyzer;
-		this.supKeywordAnalyzer = supKeywordAnalyzer;
-	}
+	private final KeywordAnalyzer<SupMatchParsingDto, SupKeyword> supKeywordAnalyzer;
 
 	/**
 	 * Analyzer를 통해 Global 키워드와 포지션별 키워드를 부여하여 한 줄 평가를 생성하는 메서드
