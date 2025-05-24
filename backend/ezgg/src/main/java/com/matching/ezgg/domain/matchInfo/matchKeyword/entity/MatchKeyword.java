@@ -9,16 +9,13 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 public class MatchKeyword {
 
 	@Id
@@ -39,4 +36,12 @@ public class MatchKeyword {
 	@Column(name = "lane", unique = false, nullable = false)
 	private Lane lane;
 
+	@Builder
+	public MatchKeyword(Long id, Long memberId, String riotMatchId, String keyword, Lane lane) {
+		this.id = id;
+		this.memberId = memberId;
+		this.riotMatchId = riotMatchId;
+		this.keyword = keyword;
+		this.lane = lane;
+	}
 }
