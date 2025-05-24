@@ -1,5 +1,7 @@
 package com.matching.ezgg.domain.matching.infra.redis.stream;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,8 +35,11 @@ public class RedisStreamProducer {
 	public void acknowledgeBothUser(MatchingFilterParsingDto member1, MatchingFilterParsingDto member2) {
 		redisService.acknowledgeMatch(member1.getMemberId());
 		redisService.acknowledgeMatch(member2.getMemberId());
-		redisService.sendMatchingSuccessResponse(member1.getMemberId(), member2.getMemberId());
-		redisService.sendMatchingSuccessResponse(member2.getMemberId(), member1.getMemberId());
+		
+		String chattingRoomId = UUID.randomUUID().toString();
+
+		redisService.sendMatchingSuccessResponse(member1.getMemberId(), member2.getMemberId(), chattingRoomId);
+		redisService.sendMatchingSuccessResponse(member2.getMemberId(), member1.getMemberId(), chattingRoomId);
 	}
 
 	public void retryLater(MatchingFilterParsingDto matchingFilterParsingDto) {
