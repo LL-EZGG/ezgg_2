@@ -23,6 +23,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.domain.matching.dto.MatchingSuccessResponse;
 import com.matching.ezgg.domain.matching.dto.MemberDataBundleDto;
 import com.matching.ezgg.domain.matching.service.MemberDataBundleService;
@@ -40,6 +42,7 @@ public class RedisService {
 	private final RedisTemplate<String, String> redisTemplate;
 	private final SimpMessagingTemplate messagingTemplate;
 	private final MemberDataBundleService memberDataBundleService;
+	private final ObjectMapper objectMapper;
 
 	/**
 	 * 매칭 요청 유저를 Redis Stream 및 Hash에 등록하는 메서드
@@ -343,7 +346,7 @@ public class RedisService {
 
 			String json = objectMapper.writeValueAsString(matchedData);
 
-			redisTemplate.opsForZSet().add(RedisKey.MATCHED_ZSET_KEY.getValue(), json, Long.parseLong(timestamp));
+			redisTemplate.opsForZSet().add(MATCHED_ZSET_KEY.getValue(), json, Long.parseLong(timestamp));
 		} catch (Exception e) {
 			log.error("Redis에 매칭된 유저 추가 실패: {}", e.getMessage());
 		}
@@ -354,7 +357,7 @@ public class RedisService {
 		long threshold = now - 1000 * 60 * 20; // 20분 전
 
 		Set<String> matchedUsers = redisTemplate.opsForZSet()
-			.rangeByScore(RedisKey.MATCHED_ZSET_KEY.getValue(), 0, threshold);
+			.rangeByScore(MATCHED_ZSET_KEY.getValue(), 0, threshold);
 
 		if (matchedUsers == null || matchedUsers.isEmpty()) {
 			return Collections.emptyList();
@@ -375,8 +378,8 @@ public class RedisService {
 
 	public void updateMatchedUser(Map<String, String> json, Map<String, String> updateJson) {
 		try {
-			redisTemplate.opsForZSet().remove(RedisKey.MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(json));
-			redisTemplate.opsForZSet().add(RedisKey.MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(updateJson), System.currentTimeMillis());
+			redisTemplate.opsForZSet().remove(MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(json));
+			redisTemplate.opsForZSet().add(MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(updateJson), System.currentTimeMillis());
 		} catch (Exception e) {
 			log.error("Redis에 매칭된 유저 업데이트 실패: {}", e.getMessage());
 		}
@@ -384,7 +387,7 @@ public class RedisService {
 
 	public void deleteMatchedUser(Map<String, String> deleteJson) {
 		try {
-			redisTemplate.opsForZSet().remove(RedisKey.MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(deleteJson));
+			redisTemplate.opsForZSet().remove(MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(deleteJson));
 		} catch (Exception e) {
 			log.error("Redis에 매칭된 유저 삭제 실패: {}", e.getMessage());
 		}
