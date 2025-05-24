@@ -30,7 +30,6 @@ public class RedisStreamConsumer {
 	 *   <li>이미 존재한다면 예외를 잡아 로그만 기록하고 넘어감</li>
 	 * </ol>
 	 *
-	 * @throws Exception Consumer Group 생성 중 예외가 발생할 경우
 	 */
 	@PostConstruct
 	public void init() {
@@ -57,7 +56,6 @@ public class RedisStreamConsumer {
 	 *   </li>
 	 * </ol>
 	 *
-	 * @throws Exception 매칭 처리 중 예외가 발생할 경우
 	 */
 	@Scheduled(fixedDelay = 1000)
 	public void consumeStreamMessage() {
