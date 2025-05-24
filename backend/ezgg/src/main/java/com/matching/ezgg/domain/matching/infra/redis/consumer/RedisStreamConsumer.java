@@ -1,6 +1,8 @@
 package com.matching.ezgg.domain.matching.infra.redis.consumer;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.matching.ezgg.domain.matching.infra.redis.service.RedisService;
 import com.matching.ezgg.domain.matching.service.MatchingProcessor;
+import com.matching.ezgg.domain.review.service.ReviewService;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ public class RedisStreamConsumer {
 
 	private final RedisService redisService;
 	private final MatchingProcessor matchingProcessor;
+	private final ReviewService reviewService;
 
 	/**
 	 * 서버 시작 시 Consumer Group을 생성하는 메서드
@@ -82,6 +86,38 @@ public class RedisStreamConsumer {
 
 		} catch (Exception e) {
 			log.error("[ERROR] Redis Stream Consumer 처리 중 에러 발생 : {}", e.getMessage());
+		}
+	}
+
+	@Scheduled(fixedDelay = 1000 * 60) // 1분마다 실행
+	public void findDuoGame() {
+		List<Map<String, String>> matchedUsers = redisService.getTwentyMatchedUsers();
+		if (matchedUsers == null || matchedUsers.isEmpty()) {
+			return;
+		}
+
+		for (Map<String, String> matchedUser : matchedUsers) {
+			Long memberId1 = Long.valueOf(matchedUser.get("memberId1"));
+			Long memberId2 = Long.valueOf(matchedUser.get("memberId2"));
+
+			// 3회 카운트 초과 시 매칭된 유저 삭제
+			if(!redisService.canExecuteReview(memberId1, memberId2)){
+				redisService.deleteMatchedUser(matchedUser);
+				continue;
+			}
+
+			Map<String, String> updateMatchedUser = new HashMap<>();
+			updateMatchedUser.put("memberId1", matchedUser.get("memberId1"));
+			updateMatchedUser.put("memberId2", matchedUser.get("memberId2"));
+			updateMatchedUser.put("timestamp", String.valueOf(System.currentTimeMillis()));
+
+			try {
+				redisService.updateMatchedUser(matchedUser, updateMatchedUser);
+			}catch (Exception e) {
+				log.error("Redis에 매칭된 유저 업데이트 실패: {}", e.getMessage());
+			}
+
+			reviewService.findDuoGame(memberId1, memberId2, updateMatchedUser);
 		}
 	}
 }
