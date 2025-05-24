@@ -1,7 +1,11 @@
 package com.matching.ezgg.domain.matchInfo.matchKeyword.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
+import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionBasicInfo;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionRole;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.MatchKeywordDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.entity.MatchKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
@@ -36,4 +40,20 @@ public class KeywordService {
 		log.info("[INFO] MatchKeyword 저장 완료: {}", matchKeywordDto.toString());
 	}
 
+	/**
+	 * 챔피언별 역할을 ChampionBasicInfo enum에서 추출하는 메서드
+	 * @param championName
+	 * @return 챔피언별 역할 String
+	 */
+
+	public String extractChampionRole(String championName) {
+		StringBuilder analysis = new StringBuilder();
+		List<ChampionRole> championRoles = ChampionBasicInfo.valueOf(
+			championName.replaceAll("[^a-zA-Z0-9]", "").trim().toUpperCase()).getChampionRoles();
+
+		for (ChampionRole role : championRoles) {
+			analysis.append(role.getKoreanRoleName()).append(",");
+		}
+		return analysis.toString();
+	}
 }

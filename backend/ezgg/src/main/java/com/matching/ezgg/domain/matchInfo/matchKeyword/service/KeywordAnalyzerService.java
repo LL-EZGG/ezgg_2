@@ -12,6 +12,7 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.GlobalKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.JugKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.LanerKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.SupKeyword;
+import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 import com.matching.ezgg.domain.riotApi.util.MatchMapper;
 
 import jakarta.transaction.Transactional;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class KeywordAnalyzerService {
 
 	private final MatchMapper matchMapper;
+	private final KeywordService keywordService;
 	@Qualifier("globalKeywordAnalyzer")
 	private final KeywordAnalyzer<GlobalMatchParsingDto, GlobalKeyword> globalKeywordAnalyzer;
 	@Qualifier("lanerKeywordAnalyzer")
@@ -43,10 +45,8 @@ public class KeywordAnalyzerService {
 	 * @return 한 match에 부여된 모든 평가를 합친 String
 	 */
 
-	@Transactional
-	public String giveMatchKeyword(String rawJson, String teamPosition, String puuid, String matchId, Long memberId) {
+	private String giveMatchKeyword(String rawJson, String teamPosition, String puuid, String matchId, Long memberId) {
 		GlobalMatchParsingDto globalMatchParsingDto = matchMapper.toGlobalMatchParsingDto(rawJson, puuid);
-
 		StringBuilder matchAnalysis = new StringBuilder();
 		//global 키워드에 대한 한 줄 평가 생성
 		matchAnalysis.append(globalKeywordAnalyzer.analyze(globalMatchParsingDto, teamPosition, matchId, memberId));
@@ -58,20 +58,35 @@ public class KeywordAnalyzerService {
 					teamPosition);
 				matchAnalysis.append(
 					lanerKeywordAnalyzer.analyze(lanerMatchParsingDto, teamPosition, matchId, memberId));
-				log.info("[INFO] Laner Analysis: {}", lanerMatchParsingDto.toString());
 				break;
 			case ("JUNGLE"):
 				JugMatchParsingDto jugMatchParsingDto = matchMapper.toJugMatchParsingDto(rawJson, puuid);
 				matchAnalysis.append(jugKeywordAnalyzer.analyze(jugMatchParsingDto, teamPosition, matchId, memberId));
-				log.info("[INFO] Jug Analysis: {}", jugMatchParsingDto.toString());
 				break;
 			case ("UTILITY"):
 				SupMatchParsingDto supMatchParsingDto = matchMapper.toSupMatchParsingDto(rawJson, puuid);
 				matchAnalysis.append(supKeywordAnalyzer.analyze(supMatchParsingDto, teamPosition, matchId, memberId));
-				log.info("[INFO] Sup Analysis: {}", supMatchParsingDto.toString());
 				break;
 		}
 		return matchAnalysis.toString();
 	}
 
+	/**
+	 * 한 매치의 챔피언 역할과 자연어 평가를 합쳐 한 줄 평가를 만드는 메서드
+	 * @param matchDto
+	 * @param rawJson
+	 * @param puuid
+	 * @param matchId
+	 * @param memberId
+	 * @return 한 줄 평가 String
+	 */
+
+	@Transactional
+	public String buildMatchKeywordAnalysis(MatchDto matchDto, String rawJson, String puuid, String matchId,
+		Long memberId) {
+		StringBuilder analysis = new StringBuilder();
+		analysis.append(keywordService.extractChampionRole(matchDto.getChampionName()));
+		analysis.append(giveMatchKeyword(rawJson, matchDto.getTeamPosition(), puuid, matchId, memberId));
+		return analysis.toString();
+	}
 }

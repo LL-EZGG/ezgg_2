@@ -12,8 +12,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionBasicInfo;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionRole;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.service.KeywordAnalyzerService;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
@@ -163,25 +161,16 @@ public class ApiService {
 				"/lol/match/v5/matches/%s?api_key=%s",
 				matchId, apiKey
 			);
-			StringBuilder matchAnalysis = new StringBuilder();
 			// Json 전체 수령
 			String rawJson = asiaRestTemplate.getForObject(url, String.class);
 			// MatchDto 형식으로 매핑
 			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
-			String teamPosition = matchDto.getTeamPosition();
-			//MatchAnalysis에 ChampionRole 추가
-			List<ChampionRole> championRoles = ChampionBasicInfo.valueOf(matchDto.getChampionName().replaceAll("[^a-zA-Z0-9]", "")
-				.trim().toUpperCase())
-				.getChampionRoles();
-			for (ChampionRole championRole : championRoles) {
-				matchAnalysis.append(championRole.getKoreanRoleName()).append(",");
-			}
-			matchAnalysis.append(
-				keywordAnalyzerService.giveMatchKeyword(rawJson, teamPosition, puuid, matchId, memberId));
+			String matchAnalysis = keywordAnalyzerService.buildMatchKeywordAnalysis(matchDto, rawJson, puuid, matchId,
+				memberId);
 			// MemberId, MatchAnalysis를 MatchDto에 따로 지정
 			matchDto = matchDto.toBuilder()
 				.memberId(memberInfoService.getMemberIdByPuuid(puuid))
-				.matchAnalysis(matchAnalysis.toString())
+				.matchAnalysis(matchAnalysis)
 				.build();
 
 			log.info("matchInfo 조회 성공: puuid = {} matchId = {}", puuid, matchId);
@@ -193,7 +182,6 @@ public class ApiService {
 			throw new RiotApiException("Match 조회 Riot Api 실패");
 		}
 	}
-
 
 	public String getMatch(String matchId) {
 		log.info("matchInfo 조회 시작: matchId = {}", matchId);
