@@ -18,13 +18,6 @@ const DuoFinder = (
         isConnected
     }
 ) => {
-    console.log('[DuoFinder] Props:', {
-        matchResult,
-        chatMessages,
-        isConnected,
-        userInfo
-    });
-
     return (
         <Container>
             <UserProfileCard
