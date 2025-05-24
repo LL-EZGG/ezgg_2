@@ -55,11 +55,11 @@ public class RecentTwentyMatchBuilderService {
 			.sumAssists(result.sumAssists)
 			.winRate(winRate)
 			.championStats(most3ChampionStats)
-			.topAnalysis(result.topAnalysis)
-			.jugAnalysis(result.jugAnalysis)
-			.midAnalysis(result.midAnalysis)
-			.adAnalysis(result.adAnalysis)
-			.supAnalysis(result.supAnalysis)
+			.topAnalysis(result.topAnalysisBuilder.toString())
+			.jugAnalysis(result.jugAnalysisBuilder.toString())
+			.midAnalysis(result.midAnalysisBuilder.toString())
+			.adAnalysis(result.adAnalysisBuilder.toString())
+			.supAnalysis(result.supAnalysisBuilder.toString())
 			.build();
 
 		log.info("recentTwentyMatch 계산 종료");
@@ -74,11 +74,11 @@ public class RecentTwentyMatchBuilderService {
 		int wins = 0;
 		int losses = 0;
 		Map<String, ChampionStat> allChampionStats = new HashMap<>();
-		String topAnalysis = "";
-		String jugAnalysis = "";
-		String midAnalysis = "";
-		String adAnalysis = "";
-		String supAnalysis = "";
+		StringBuilder topAnalysisBuilder = new StringBuilder();
+		StringBuilder jugAnalysisBuilder = new StringBuilder();
+		StringBuilder midAnalysisBuilder = new StringBuilder();
+		StringBuilder adAnalysisBuilder = new StringBuilder();
+		StringBuilder supAnalysisBuilder = new StringBuilder();
 	}
 
 	// recentTwentyMatch 계산 메서드
@@ -86,12 +86,6 @@ public class RecentTwentyMatchBuilderService {
 
 		log.info("Riot Api Match 반복문 시작");
 		AggregateResult result = new AggregateResult();
-		
-		StringBuilder topAnalysisBuilder = new StringBuilder();
-		StringBuilder jugAnalysisBuilder = new StringBuilder();
-		StringBuilder midAnalysisBuilder = new StringBuilder();
-		StringBuilder adAnalysisBuilder = new StringBuilder();
-		StringBuilder supAnalysisBuilder = new StringBuilder();
 
 		// 최근 20 경기의 matchId들로 RecentTwentyMatch 업데이트
 		for (String matchId : matchIds) {
@@ -126,23 +120,18 @@ public class RecentTwentyMatchBuilderService {
 
 			if (matchInfo.getMatchAnalysis() != null) {
 				if (Lane.TOP == lane) {
-					topAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+					result.topAnalysisBuilder.append(matchInfo.getMatchAnalysis());
 				} else if (Lane.JUNGLE == lane) {
-					jugAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+					result.jugAnalysisBuilder.append(matchInfo.getMatchAnalysis());
 				} else if (Lane.MIDDLE == lane) {
-					midAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+					result.midAnalysisBuilder.append(matchInfo.getMatchAnalysis());
 				} else if (Lane.BOTTOM == lane) {
-					adAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+					result.adAnalysisBuilder.append(matchInfo.getMatchAnalysis());
 				} else if (Lane.UTILITY == lane) {
-					supAnalysisBuilder.append(matchInfo.getMatchAnalysis());
+					result.supAnalysisBuilder.append(matchInfo.getMatchAnalysis());
 				}
 			}
 		}
-		result.topAnalysis = topAnalysisBuilder.toString();
-		result.jugAnalysis = jugAnalysisBuilder.toString();
-		result.midAnalysis = midAnalysisBuilder.toString();
-		result.adAnalysis = adAnalysisBuilder.toString();
-		result.supAnalysis = supAnalysisBuilder.toString();
 
 		return result;
 	}
