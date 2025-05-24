@@ -73,6 +73,17 @@ public class MemberController {
 			.build());
 	}
 
+	@PostMapping("/validateToken")
+	public ResponseEntity<SuccessResponse<Void>> validateToken(HttpServletRequest request) {
+		log.info(">>>>> 토큰 검증 요청 들어옴");
+		memberService.validateToken(request);
+
+		return ResponseEntity.ok(SuccessResponse.<Void>builder()
+			.code("200")
+			.message("토큰 검증 성공")
+			.build());
+	}
+
 	@GetMapping("/memberinfo")
 	public ResponseEntity<SuccessResponse<MemberInfo>> getMemberInfo(@LoginUser Long memberId) {
 		// 로그인한 사용자의 ID를 사용하여 회원 정보를 조회
