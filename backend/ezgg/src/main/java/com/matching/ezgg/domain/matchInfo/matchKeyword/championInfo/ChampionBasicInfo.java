@@ -100,7 +100,7 @@ public enum ChampionBasicInfo {
 	AATROX("아트록스", "Aatrox", ChampionRole.AD_BRUISER),
 	APHELIOS("아펠리오스", "Aphelios", ChampionRole.AD_CARRY),
 	ALISTAR("알리스타", "Alistar", ChampionRole.TANK, ChampionRole.SUPPORT),
-	AMBESA("암베사", "Ambesa", ChampionRole.AD_BRUISER, ChampionRole.AD_ASSASSIN),
+	AMBESSA("암베사", "Ambessa", ChampionRole.AD_BRUISER, ChampionRole.AD_ASSASSIN),
 	ANNIE("애니", "Annie", ChampionRole.AP_MAGE),
 	ANIVIA("애니비아", "Anivia", ChampionRole.AP_MAGE),
 	ASHE("애쉬", "Ashe", ChampionRole.AD_CARRY),
