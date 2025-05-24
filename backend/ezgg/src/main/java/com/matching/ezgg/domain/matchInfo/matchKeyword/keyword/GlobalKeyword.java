@@ -2,6 +2,7 @@ package com.matching.ezgg.domain.matchInfo.matchKeyword.keyword;
 
 import lombok.Getter;
 
+@Getter
 public enum GlobalKeyword {
 	HIGH_KILL_PARTICIPATION("킬 관여율 높음"), //killParticipation
 	HIGH_KDA("kda 높음"), //kda
@@ -16,7 +17,6 @@ public enum GlobalKeyword {
 	INVADING("인베이드 잘함"), // takedownsBeforeJungleMinionSpawn
 	COMEBACK_WIN("위기 후 승리"); // lostAnInhibitor, win
 
-	@Getter
 	private final String description;
 
 	GlobalKeyword(String description) {

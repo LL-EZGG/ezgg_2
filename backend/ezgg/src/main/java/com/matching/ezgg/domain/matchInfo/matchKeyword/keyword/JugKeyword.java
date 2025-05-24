@@ -2,6 +2,7 @@ package com.matching.ezgg.domain.matchInfo.matchKeyword.keyword;
 
 import lombok.Getter;
 
+@Getter
 public enum JugKeyword {
 	VISION_DOMINANCE("시야 장악"), //visionScoreAdvantageLaneOpponent
 	OBJECTIVE_STEALER("오브젝트 스틸 잘함"), //epicMonsterSteals
@@ -11,7 +12,6 @@ public enum JugKeyword {
 	JUNGLE_DOMINANCE("적 정글 장악"), // moreEnemyJungleThanOpponent
 	RIFT_HERALD_UTILIZER("전령 활용 잘함"); // multiTurretRiftHeraldCount
 
-	@Getter
 	private final String description;
 
 	JugKeyword(String description) {

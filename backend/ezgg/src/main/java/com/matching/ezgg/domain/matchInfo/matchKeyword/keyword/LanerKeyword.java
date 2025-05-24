@@ -2,6 +2,7 @@ package com.matching.ezgg.domain.matchInfo.matchKeyword.keyword;
 
 import lombok.Getter;
 
+@Getter
 public enum LanerKeyword {
 	EARLY_ROAM("초반 로밍 적극적"), //killsOnOtherLanesEarlyJungleAsLaner, getTakedownsInAllLanesEarlyJungleAsLaner
 	LANE_DOMINANCE("라인전 리드함"), //turretPlatesTaken(상대와 비교)
@@ -12,7 +13,6 @@ public enum LanerKeyword {
 	FIRST_BLOOD_MAKER("첫 킬 만들어냄"), //firstBloodKill
 	ASSASSIN("암살 잘함"); // killAfterHiddenWithAlly
 
-	@Getter
 	private final String description;
 
 	LanerKeyword(String description) {
