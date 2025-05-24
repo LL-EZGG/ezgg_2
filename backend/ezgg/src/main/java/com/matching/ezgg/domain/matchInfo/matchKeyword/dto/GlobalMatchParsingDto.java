@@ -1,12 +1,10 @@
 package com.matching.ezgg.domain.matchInfo.matchKeyword.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-@AllArgsConstructor
 public class GlobalMatchParsingDto {
 	private Double killParticipation; //≥ 40% ≥ 60% ≥ 50% ≥ 50% ≥ 60%
 	private Double kda; //≥ 4.5 ≥ 4.0 ≥ 4.5.≥ 4.5 ≥ 3.5

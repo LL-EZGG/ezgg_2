@@ -1,12 +1,10 @@
 package com.matching.ezgg.domain.matchInfo.matchKeyword.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-@AllArgsConstructor
 public class LanerMatchParsingDto {
 	private Integer killsOnOtherLanesEarlyJungleAsLaner; // ≥1
 	private Integer getTakedownsInAllLanesEarlyJungleAsLaner; // ≥1

@@ -1,12 +1,10 @@
 package com.matching.ezgg.domain.matchInfo.matchKeyword.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-@AllArgsConstructor
 public class JugMatchParsingDto {
 	private Double visionScoreAdvantageLaneOpponent; // ≥0.5
 	private Integer epicMonsterSteals; // ≥2
