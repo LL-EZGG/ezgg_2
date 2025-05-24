@@ -16,6 +16,7 @@ public enum Lane {
 		this.criteria = criteria;
 	}
 
-	public static record Criteria(Double killParticipation, Double kda, Double damagePerMinute) {}
+	public static record Criteria(Double killParticipation, Double kda, Double damagePerMinute) {
 
+	}
 }

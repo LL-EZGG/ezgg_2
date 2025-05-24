@@ -3,15 +3,11 @@ package com.matching.ezgg.domain.matchInfo.matchKeyword.dto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.entity.MatchKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class MatchKeywordDto {
 
 	private Long memberId;

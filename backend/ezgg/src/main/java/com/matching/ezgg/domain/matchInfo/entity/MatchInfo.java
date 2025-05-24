@@ -50,11 +50,9 @@ public class MatchInfo extends BaseEntity {
 	@Column(name = "match_analysis", unique = false)
 	private String matchAnalysis = "";
 
-
 	@Builder
 	public MatchInfo(Long memberId, String riotMatchId, Integer kills, Integer deaths, Integer assists,
-		String teamPosition,
-		String championName, Boolean win, String matchAnalysis) {
+		String teamPosition, String championName, Boolean win, String matchAnalysis) {
 		this.memberId = memberId;
 		this.riotMatchId = riotMatchId;
 		this.kills = kills;
