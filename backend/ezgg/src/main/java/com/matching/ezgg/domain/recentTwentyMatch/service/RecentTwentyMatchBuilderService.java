@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.matching.ezgg.domain.matchInfo.entity.MatchInfo;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.matchInfo.service.MatchInfoService;
+import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.recentTwentyMatch.dto.RecentTwentyMatchDto;
@@ -33,11 +34,9 @@ public class RecentTwentyMatchBuilderService {
 	public RecentTwentyMatchDto buildDto(String puuid) {
 		log.info("recentTwentyMatch 계산 시작");
 
-		MemberInfo memberInfo = memberInfoService.getMemberInfoByPuuid(puuid);
-		// matchIds 조회
-		List<String> matchIds = memberInfo.getMatchIds();
-		// member_Id 조회
-		Long memberId = memberInfo.getMemberId();
+		MemberInfoDto memberInfoDto = memberInfoService.getMemberInfoByPuuid(puuid);
+		List<String> matchIds = memberInfoDto.getMatchIds();
+		Long memberId = memberInfoDto.getMemberId();
 
 		// recentTwentyMatch에 들어갈 값 계산(sumKills, sumDeaths, sumAssists, wins, losses, allChampionStat)
 		AggregateResult result = calculateAggregateStatsFromMatches(matchIds, memberId);

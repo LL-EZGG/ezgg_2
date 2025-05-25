@@ -38,8 +38,10 @@ public class MemberInfoService {
 	}
 
 	// puuid로 MemberInfo 조회
-	public MemberInfo getMemberInfoByPuuid(String puuid) {
-		return memberInfoRepository.findByPuuid(puuid).orElseThrow(MemberInfoNotFoundException::new);
+	public MemberInfoDto getMemberInfoByPuuid(String puuid) {
+		return MemberInfoDto.toDto(
+			memberInfoRepository.findByPuuid(puuid).orElseThrow(MemberInfoNotFoundException::new)
+		);
 	}
 
 	// memberId로 MemberInfo 조회
