@@ -138,14 +138,17 @@ public class RedisService {
 	 * @param matchedMemberId 매칭된 상대 회원 ID
 	 * @return {@link MatchingSuccessResponse} 객체
 	 */
-	private MatchingSuccessResponse buildMatchingSuccessResponse(Long matchedMemberId) {
+	private MatchingSuccessResponse buildMatchingSuccessResponse(Long matchedMemberId, String chattingRoomId) {
 		MemberDataBundleDto data = memberDataBundleService.getMemberDataBundleByMemberId(matchedMemberId);
+
+		log.info("[INFO] 매칭 성공! >>>>> : {}, 매칭된 방번호 : {}", matchedMemberId, chattingRoomId);
 
 		return MatchingSuccessResponse.builder()
 			.status("SUCCESS")
 			.data(MatchingSuccessResponse.MatchedMemberData.builder()
 				.matchedMemberId(matchedMemberId)
 				.memberInfoDto(data.getMemberInfoDto())
+				.chattingRoomId(chattingRoomId)
 				.recentTwentyMatchDto(data.getRecentTwentyMatchDto())
 				.build())
 			.build();
@@ -163,9 +166,9 @@ public class RedisService {
 	 * @param memberId        메시지를 받을 회원 ID
 	 * @param matchedMemberId 매칭된 상대 회원 ID
 	 */
-	public void sendMatchingSuccessResponse(Long memberId, Long matchedMemberId) {
+	public void sendMatchingSuccessResponse(Long memberId, Long matchedMemberId, String chattingRoomId) {
 		messagingTemplate.convertAndSendToUser(memberId.toString(), "/queue/matching",
-			buildMatchingSuccessResponse(matchedMemberId));
+			buildMatchingSuccessResponse(matchedMemberId, chattingRoomId));
 	}
 
 	/**

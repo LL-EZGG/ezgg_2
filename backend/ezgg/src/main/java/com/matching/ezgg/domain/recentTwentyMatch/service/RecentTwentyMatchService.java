@@ -41,7 +41,12 @@ public class RecentTwentyMatchService {
 			recentTwentyMatchDto.getSumDeaths(),
 			recentTwentyMatchDto.getSumAssists(),
 			recentTwentyMatchDto.getChampionStats(),
-			recentTwentyMatchDto.getWinRate()
+			recentTwentyMatchDto.getWinRate(),
+			recentTwentyMatchDto.getTopAnalysis(),
+			recentTwentyMatchDto.getJugAnalysis(),
+			recentTwentyMatchDto.getMidAnalysis(),
+			recentTwentyMatchDto.getAdAnalysis(),
+			recentTwentyMatchDto.getSupAnalysis()
 		);
 
 		// 새로 만든 경우에만 persist, 기존이면 dirty checking → UPDATE
