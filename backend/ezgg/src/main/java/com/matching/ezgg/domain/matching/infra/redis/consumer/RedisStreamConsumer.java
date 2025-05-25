@@ -114,7 +114,7 @@ public class RedisStreamConsumer {
 			try {
 				redisService.updateMatchedUser(matchedUser, updateMatchedUser);
 			}catch (Exception e) {
-				log.error("Redis에 매칭된 유저 업데이트 실패: {}", e.getMessage());
+				log.error("[ERROR] Redis에 매칭된 유저 업데이트 실패: {}", e.getMessage());
 			}
 
 			reviewService.findDuoGame(memberId1, memberId2, updateMatchedUser);

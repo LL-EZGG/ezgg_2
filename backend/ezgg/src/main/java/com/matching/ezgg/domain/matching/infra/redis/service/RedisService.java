@@ -348,7 +348,7 @@ public class RedisService {
 
 			redisTemplate.opsForZSet().add(MATCHED_ZSET_KEY.getValue(), json, Long.parseLong(timestamp));
 		} catch (Exception e) {
-			log.error("Redis에 매칭된 유저 추가 실패: {}", e.getMessage());
+			log.error("[ERROR] Redis에 매칭된 유저 추가 실패: {}", e.getMessage());
 		}
 	}
 
@@ -370,7 +370,7 @@ public class RedisService {
 				Map<String, String> matchedData = objectMapper.readValue(json, Map.class);
 				result.add(matchedData);
 			} catch (JsonProcessingException e) {
-				log.error("매칭된 유저 데이터 파싱 실패: {}", e.getMessage());
+				log.error("[ERROR] 매칭된 유저 데이터 파싱 실패: {}", e.getMessage());
 			}
 		}
 		return result;
@@ -381,7 +381,7 @@ public class RedisService {
 			redisTemplate.opsForZSet().remove(MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(json));
 			redisTemplate.opsForZSet().add(MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(updateJson), System.currentTimeMillis());
 		} catch (Exception e) {
-			log.error("Redis에 매칭된 유저 업데이트 실패: {}", e.getMessage());
+			log.error("[ERROR] Redis에 매칭된 유저 업데이트 실패: {}", e.getMessage());
 		}
 	}
 
@@ -389,7 +389,7 @@ public class RedisService {
 		try {
 			redisTemplate.opsForZSet().remove(MATCHED_ZSET_KEY.getValue(), objectMapper.writeValueAsString(deleteJson));
 		} catch (Exception e) {
-			log.error("Redis에 매칭된 유저 삭제 실패: {}", e.getMessage());
+			log.error("[ERROR] Redis에 매칭된 유저 삭제 실패: {}", e.getMessage());
 		}
 	}
 
