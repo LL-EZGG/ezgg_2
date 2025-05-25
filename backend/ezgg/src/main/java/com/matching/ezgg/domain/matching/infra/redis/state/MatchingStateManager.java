@@ -1,5 +1,7 @@
 package com.matching.ezgg.domain.matching.infra.redis.state;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Component;
 
 import com.matching.ezgg.domain.matching.infra.redis.service.RedisService;
@@ -62,8 +64,11 @@ public class MatchingStateManager {
 	public void completeMatchingForBothUsers(Long memberId1, Long memberId2) {
 		redisService.deleteMatchingState(memberId1);
 		redisService.deleteMatchingState(memberId2);
-		redisService.sendMatchingSuccessResponse(memberId1, memberId2);
-		redisService.sendMatchingSuccessResponse(memberId2, memberId1);
+
+		String chattingRoomId = UUID.randomUUID().toString();
+
+		redisService.sendMatchingSuccessResponse(memberId1, memberId2, chattingRoomId);
+		redisService.sendMatchingSuccessResponse(memberId2, memberId1, chattingRoomId);
 	}
 
 	/**
