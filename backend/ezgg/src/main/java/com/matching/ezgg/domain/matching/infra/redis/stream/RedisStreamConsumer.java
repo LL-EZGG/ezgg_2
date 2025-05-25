@@ -67,6 +67,7 @@ public class RedisStreamConsumer {
 
 	@Scheduled(fixedDelay = 1000 * 60) // 1분마다 실행
 	public void findDuoGame() {
+		log.info("findDuoGame 실행");
 		List<Map<String, String>> matchedUsers = redisService.getTwentyMatchedUsers();
 		if (matchedUsers == null || matchedUsers.isEmpty()) {
 			return;
@@ -78,6 +79,7 @@ public class RedisStreamConsumer {
 
 			// 3회 카운트 초과 시 매칭된 유저 삭제
 			if(!redisService.canExecuteReview(memberId1, memberId2)){
+				log.info("매칭된 유저 삭제 : {} - {}", memberId1, memberId2);
 				redisService.deleteMatchedUser(matchedUser);
 				continue;
 			}

@@ -26,6 +26,7 @@ public class ReviewService {
 
 	private final ReviewRepository reviewRepository;
 	private final MemberInfoService memberInfoService;
+	private final ReviewNotificationService reviewNotificationService;
 	private final RedisService redisService;
 	private final ApiService apiService;
 	private final MatchMapper matchMapper;
@@ -64,7 +65,9 @@ public class ReviewService {
 				);
 				// redis에서 실제 듀오게임 한 유저 삭제
 				redisService.deleteMatchedUser(updateMatchedUser);
-				// TODO 이후 알림 발송 로직 추가
+
+				// 리뷰 요청 전송
+				reviewNotificationService.sendOrQueueReview(memberId1, memberInfoByMember1.getRiotUsername(), memberId2, memberInfoByMember2.getRiotUsername());
 			}
 		}
 	}

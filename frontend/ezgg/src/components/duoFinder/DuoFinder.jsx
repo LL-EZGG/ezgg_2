@@ -2,7 +2,7 @@ import React from 'react';
 import styled from '@emotion/styled';
 import {UserProfileCard} from "./user/UserProfileCard.jsx";
 import {MatchingInterface} from "./matching/MatchingInterface.jsx";
-import ChatRoom from "../Chatting/ChatRoom.jsx";
+import ChatRoom from "../chatting/ChatRoom.jsx";
 
 const DuoFinder = (
     {

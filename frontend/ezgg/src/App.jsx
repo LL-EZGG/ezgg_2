@@ -2,12 +2,13 @@ import React, {useEffect, useState} from 'react';
 import {BrowserRouter as Router, Link, Navigate, Route, Routes, useLocation} from 'react-router-dom';
 import styled from '@emotion/styled';
 import api from './utils/api';
-import DuoFinder from './components/DuoFinder/DuoFinder'
+import DuoFinder from './components/duoFinder/DuoFinder'
 import Login from './components/auth/Login';
 import Join from './components/auth/Join';
 import {useMatchingSystem} from "./hooks/useMatchingSystem.js";
-import {MatchingButtonPanel} from "./components/DuoFinder/matching/MatchingButtonPanel.jsx";
+import {MatchingButtonPanel} from "./components/duoFinder/matching/MatchingButtonPanel.jsx";
 import {useWebSocket} from './hooks/useWebSocket';
+import ReviewModal from './components/review/ReviewModal';
 
 // 로그인 상태에 따라 리다이렉트하는 보호된 라우트 컴포넌트
 const ProtectedRoute = ({element, isLoggedIn}) => {
@@ -40,6 +41,10 @@ const App = () => {
 
     // 채팅 관련 상태
     const [chatMessages, setChatMessages] = useState([]);
+
+    // 리뷰 모달 관련 상태
+    const [reviewModalVisible, setReviewModalVisible] = useState(false);
+    const [reviewTargetUsername, setReviewTargetUsername] = useState('');
 
     // WebSocket 관련 핸들러 정의
     const handleSocketMessage = (message) => {
@@ -100,6 +105,11 @@ const App = () => {
         console.error('[App] 웹소켓 에러:', error);
     };
 
+    const handleReviewRequest = (username) => {
+        setReviewTargetUsername(username);
+        setReviewModalVisible(true);
+    };
+
     // useWebSocket 훅 사용 - App에서만 연결 관리
     const {
         socket,
@@ -114,7 +124,8 @@ const App = () => {
         onConnect: handleSocketConnect,
         onDisconnect: handleSocketDisconnect,
         onError: handleSocketError,
-        onChatMessage: handleChatMessage
+        onChatMessage: handleChatMessage,
+        onReview: handleReviewRequest
     });
 
     // useMatchingSystem에 소켓 전달
@@ -298,6 +309,11 @@ const App = () => {
                            element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
                     <Route path="/join" element={<Join/>}/>
                 </Routes>
+                <ReviewModal 
+                    visible={reviewModalVisible}
+                    onClose={() => setReviewModalVisible(false)}
+                    targetUsername={reviewTargetUsername}
+                />
             </AppContainer>
         </Router>
     );
