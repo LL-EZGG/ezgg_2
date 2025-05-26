@@ -6,7 +6,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.stereotype.Component;
 
-import com.matching.ezgg.domain.matching.infra.es.index.MatchingUserES;
+import com.matching.ezgg.domain.matching.infra.es.index.MatchingUserDocument;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class ElasticsearchIndexInitializer implements ApplicationListener<Contex
 
 	@PostConstruct
 	public void createIndex() {
-		IndexOperations indexOps = elasticsearchOperations.indexOps(MatchingUserES.class);
+		IndexOperations indexOps = elasticsearchOperations.indexOps(MatchingUserDocument.class);
 		if (!indexOps.exists()) {
 			indexOps.create();
 			indexOps.putMapping(indexOps.createMapping());
@@ -31,7 +31,7 @@ public class ElasticsearchIndexInitializer implements ApplicationListener<Contex
 
 	@Override
 	public void onApplicationEvent(ContextClosedEvent event) {
-		IndexOperations indexOps = elasticsearchOperations.indexOps(MatchingUserES.class);
+		IndexOperations indexOps = elasticsearchOperations.indexOps(MatchingUserDocument.class);
 		if (indexOps.exists()) {
 			indexOps.delete();
 			log.info("Elasticsearch 인덱스 삭제 완료");

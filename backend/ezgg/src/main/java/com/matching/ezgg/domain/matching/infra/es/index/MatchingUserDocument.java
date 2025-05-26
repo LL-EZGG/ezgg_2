@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MatchingUserES {
+public class MatchingUserDocument {
 
 	@Id
 	private Long id;
@@ -28,4 +28,20 @@ public class MatchingUserES {
 
 	@Field(type = FieldType.Object)
 	private RecentTwentyMatchES recentTwentyMatchES;
+
+	/*
+	* 필수조건:
+	* memberId
+	* 티어
+	* 내 라인
+	* 상대 라인
+	*
+	* 가중치 조건:
+	* 사용자가 입력한 조건 벡터
+	* 라인별 키워드 벡터
+	* 선호 챔피언명 리스트
+	* 비선호 챔피언명 리스트
+	* 모스트 3 챔피언명 리스트
+	* 리뷰
+	* */
 }
