@@ -2,6 +2,8 @@ package com.matching.ezgg.domain.review.util;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
 
@@ -10,16 +12,16 @@ import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
  */
 public final class ReviewUtil {
 	/**
-	 * 리뷰를 남길 때, 두 유저의 매치 아이디 리스트가 같은지 확인하는 메서드
+	 * List1에 없는 List2의 요소들을 반환하는 메서드
 	 * @param list1
 	 * @param list2
-	 * @return 같으면 true, 다르면 false
+	 * @return List2에 있지만 List1에는 없는 요소들의 리스트
 	 */
-	public static boolean isSameMatchIdList(List<String> list1, List<String> list2) {
-		if (list1 == null || list2 == null) return false;
-		if (list1.size() != list2.size()) return false;
-
-		return new HashSet<>(list1).equals(new HashSet<>(list2));
+	public static List<String> getNewList(List<String> list1, List<String> list2) {
+		Set<String> set1 = new HashSet<>(list1); // 빠른 조회를 위해 Set으로 변환
+		return list2.stream()
+			.filter(e -> !set1.contains(e))
+			.collect(Collectors.toList());
 	}
 	/**
 	 * 내 팀의 ID를 가져오는 메서드

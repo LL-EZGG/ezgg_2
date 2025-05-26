@@ -49,7 +49,7 @@ public class ReviewNotificationService {
 	/**
 	 * 해당유저의 리뷰 대기열에서 메시지를 소비합니다.
 	 * @param memberId
-	 * @return
+	 * @return 리뷰 대기열에서 소비된 메시지 리스트
 	 */
 	public List<String> consumePendingReviews(String memberId) {
 		List<String> message = redisTemplate.opsForList().range(RedisKey.REVIEW_PENDING_KEY.getValue() + memberId, 0, -1);

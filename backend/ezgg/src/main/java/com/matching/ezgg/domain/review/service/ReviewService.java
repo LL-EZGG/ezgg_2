@@ -37,12 +37,12 @@ public class ReviewService {
 
 		List<String> member1MatchIds = memberInfoByMember1.getMatchIds();
 		List<String> findMember1MatchIds = apiService.getMemberMatchIds(memberInfoByMember1.getPuuid());
+		List<String> newList = getNewList(member1MatchIds, findMember1MatchIds);
 
-		if(!isSameMatchIdList(member1MatchIds, findMember1MatchIds)) { // 새로운 매치 아이디가 생겼을 때
-			String match = apiService.getMatch(findMember1MatchIds.getFirst());
+		for(String matchId : newList) {
+			String match = apiService.getMatch(matchId);
 			List<MatchReviewDto> matchReviewDtoList = matchMapper.toMatchReviewDto(match);
 			int myTeamId = getMyTeamId(matchReviewDtoList, memberInfoByMember1.getRiotUsername());
-			// 리뷰 가능 여부 확인
 			if(existsReviewableUser(matchReviewDtoList, memberInfoByMember2.getRiotUsername(), myTeamId)) {
 				// 리뷰 저장 (score는 0으로 초기화)
 				reviewRepository.save(
@@ -65,9 +65,9 @@ public class ReviewService {
 				);
 				// redis에서 실제 듀오게임 한 유저 삭제
 				redisService.deleteMatchedUser(updateMatchedUser);
-
 				// 리뷰 요청 전송
 				reviewNotificationService.sendOrQueueReview(memberId1, memberInfoByMember1.getRiotUsername(), memberId2, memberInfoByMember2.getRiotUsername());
+				break;
 			}
 		}
 	}
