@@ -137,6 +137,7 @@ public class MatchingService {
 	 */
 	public MatchingFilterParsingDto convertToMatchingFilterDto(MemberDataBundleDto memberDataBundleDto, Long memberId,
 		PreferredPartnerParsingDto preferredPartnerParsingDto) {
+
 		MemberInfoParsingDto memberInfoParsingDto = MemberInfoParsingDto.builder()
 			.riotUsername(memberDataBundleDto.getMemberInfoDto().getRiotUsername())
 			.riotTag(memberDataBundleDto.getMemberInfoDto().getRiotTag())

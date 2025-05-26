@@ -35,7 +35,6 @@ public class MatchMapper {
 			// 타겟 유저 정보 노드 검색
 			JsonNode targetMemberNode = findTargetMember(root.path("info").path("participants"), puuid);
 
-			// Dto 생성, memberId는 따로 추가해야된다!
 			return MatchDto.builder()
 				.memberId(memberId)
 				.riotMatchId(riotMatchId)

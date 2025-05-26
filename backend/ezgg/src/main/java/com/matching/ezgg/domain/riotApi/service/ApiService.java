@@ -169,7 +169,7 @@ public class ApiService {
 			String matchAnalysis = keywordAnalyzerService.buildMatchKeywordAnalysis(matchDto, rawJson, puuid, matchId,
 				memberId);
 
-			// MemberId, MatchAnalysis를 MatchDto에 따로 지정
+			// MatchAnalysis를 MatchDto에 따로 지정
 			matchDto = matchDto.toBuilder()
 				.matchAnalysis(matchAnalysis)
 				.build();
