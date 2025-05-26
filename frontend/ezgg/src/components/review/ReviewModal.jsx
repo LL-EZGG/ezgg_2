@@ -5,7 +5,7 @@ const ReviewModal = ({ visible, onClose, targetUsername }) => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
 
-    if(!visible) return null;
+    // if(!visible) return null;s
 
     const handleSubmit = () => {
         // TODO: 서버로 별점 전송 로직 구현
@@ -18,7 +18,6 @@ const ReviewModal = ({ visible, onClose, targetUsername }) => {
             <ModalContent>
                 <ModalHeader>
                     <h2>{targetUsername}님의 별점을 남겨주세요!</h2>
-                    <CloseButton onClick={onClose}>&times;</CloseButton>
                 </ModalHeader>
                 <StarContainer>
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -67,9 +66,10 @@ const ModalContent = styled.div`
 
 const ModalHeader = styled.div`
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-bottom: 2rem;
+    text-align: center;
 
     h2 {
         margin: 0;

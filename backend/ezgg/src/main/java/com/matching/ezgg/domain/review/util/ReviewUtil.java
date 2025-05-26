@@ -1,5 +1,6 @@
 package com.matching.ezgg.domain.review.util;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,16 +13,20 @@ import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
  */
 public final class ReviewUtil {
 	/**
-	 * List1에 없는 List2의 요소들을 반환하는 메서드
+	 * 리스트1과 리스트2의 교집합을 구하는 메서드
 	 * @param list1
 	 * @param list2
-	 * @return List2에 있지만 List1에는 없는 요소들의 리스트
+	 * @return 교집합을 포함하는 새로운 리스트
 	 */
-	public static List<String> getNewList(List<String> list1, List<String> list2) {
-		Set<String> set1 = new HashSet<>(list1); // 빠른 조회를 위해 Set으로 변환
-		return list2.stream()
-			.filter(e -> !set1.contains(e))
-			.collect(Collectors.toList());
+	public static List<String> getCommonElements(List<String> list1, List<String> list2) {
+		Set<String> set2 = new HashSet<>(list2);
+		List<String> result = new ArrayList<>();
+		for (String item : list1) {
+			if (set2.contains(item)) {
+				result.add(item);
+			}
+		}
+		return result;
 	}
 	/**
 	 * 내 팀의 ID를 가져오는 메서드
