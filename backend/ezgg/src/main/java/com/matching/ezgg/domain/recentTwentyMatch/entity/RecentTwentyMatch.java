@@ -48,19 +48,19 @@ public class RecentTwentyMatch extends BaseEntity {
 	@Column(name = "win_rate", unique = false, nullable = true)
 	private Integer winRate;
 
-	@Column(name = "top_analysis", unique = false, nullable = true, length=5000)
+	@Column(name = "top_analysis", unique = false, nullable = true, length=3000)
 	private String topAnalysis;
 
-	@Column(name = "jug_analysis", unique = false, nullable = true, length=5000)
+	@Column(name = "jug_analysis", unique = false, nullable = true, length=3000)
 	private String jugAnalysis;
 
-	@Column(name = "mid_analysis", unique = false, nullable = true, length=5000)
+	@Column(name = "mid_analysis", unique = false, nullable = true, length=3000)
 	private String midAnalysis;
 
-	@Column(name = "ad_analysis", unique = false, nullable = true, length=5000)
+	@Column(name = "ad_analysis", unique = false, nullable = true, length=3000)
 	private String adAnalysis;
 
-	@Column(name = "sup_analysis", unique = false, nullable = true, length=5000)
+	@Column(name = "sup_analysis", unique = false, nullable = true, length=3000)
 	private String supAnalysis;
 
 
