@@ -47,7 +47,7 @@ public enum ChampionBasicInfo {
 	MAOKAI("마오카이", "Maokai", ChampionRole.TANK, ChampionRole.SUPPORT),
 	MALZAHAR("말자하", "Malzahar", ChampionRole.AP_MAGE),
 	MALPHITE("말파이트", "Malphite", ChampionRole.TANK, ChampionRole.AP_MAGE),
-	MELL("멜", "Mell", ChampionRole.AP_DEALER),
+	MEL("멜", "Mel", ChampionRole.AP_DEALER),
 	MORDEKAISER("모데카이저", "Mordekaiser", ChampionRole.AP_BRUISER, ChampionRole.TANK),
 	MORGANA("모르가나", "Morgana", ChampionRole.AP_MAGE, ChampionRole.SUPPORT),
 	DRMUNDO("문도 박사", "Dr. Mundo", ChampionRole.TANK, ChampionRole.AD_BRUISER),
