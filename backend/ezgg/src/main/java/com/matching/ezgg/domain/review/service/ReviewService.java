@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.domain.matching.infra.redis.service.RedisService;
+import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.review.entity.Review;
@@ -31,8 +32,8 @@ public class ReviewService {
 	private final MatchMapper matchMapper;
 
 	public void findDuoGame(Long memberId1, Long memberId2, Map<String, String> updateMatchedUser) {
-		MemberInfo memberInfoByMember1 = memberInfoService.getMemberInfoByMemberId(memberId1);
-		MemberInfo memberInfoByMember2 = memberInfoService.getMemberInfoByMemberId(memberId2);
+		MemberInfoDto memberInfoByMember1 = memberInfoService.getMemberInfoByMemberId(memberId1);
+		MemberInfoDto memberInfoByMember2 = memberInfoService.getMemberInfoByMemberId(memberId2);
 
 		List<String> member1MatchIds = memberInfoByMember1.getMatchIds();
 		List<String> findMember1MatchIds = apiService.getMemberMatchIds(memberInfoByMember1.getPuuid());
