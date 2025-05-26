@@ -1,5 +1,7 @@
 package com.matching.ezgg.domain.matching.infra.es.index;
 
+import java.util.List;
+
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
@@ -12,9 +14,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PreferredPartnerES {
+public class PartnerPreference {
 
-	private String tier;
+	private float[] userPreferenceTextVector;
 
 	@Field(type = FieldType.Object)
 	private WantLine wantLine;
@@ -36,8 +38,7 @@ public class PreferredPartnerES {
 	@AllArgsConstructor
 	@Builder
 	public static class ChampionsInfo {
-		private String preferredChampion;
-		private String unpreferredChampion;
+		private List<String> preferredChampion;
+		private List<String> unPreferredChampion;
 	}
-
 }

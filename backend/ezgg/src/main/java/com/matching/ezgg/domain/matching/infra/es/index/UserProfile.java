@@ -1,5 +1,7 @@
 package com.matching.ezgg.domain.matching.infra.es.index;
 
+import java.util.List;
+
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
@@ -12,23 +14,27 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MemberInfoES {
+public class UserProfile {
+
 	private String riotUsername;
 	private String riotTag;
-	private Long memberId;
+	private String tier;
 
 	@Field(type = FieldType.Object)
-	private SeasonInfo seasonInfo;
+	private recentTwentyMatchStats recentTwentyMatchStats;
+
+	private String reviewScore;
 
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Builder
-	public static class SeasonInfo {
-		private String tier;
-		private String tierNum;
-		private int wins;
-		private int defeats;
-		private int winRate;
+	public static class recentTwentyMatchStats {
+		private List<String> most3Champions;
+		private float[] topAnalysisVector;
+		private float[] jugAnalysisVector;
+		private float[] midAnalysisVector;
+		private float[] adAnalysisVector;
+		private float[] supAnalysisVector;
 	}
 }

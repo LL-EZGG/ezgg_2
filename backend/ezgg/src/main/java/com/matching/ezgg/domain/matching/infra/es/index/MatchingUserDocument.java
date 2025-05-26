@@ -18,20 +18,19 @@ import lombok.NoArgsConstructor;
 public class MatchingUserDocument {
 
 	@Id
-	private Long id;
+	private Long id; //memberId
 
 	@Field(type = FieldType.Object)
-	private PreferredPartnerES preferredPartnerES;
+	private PartnerPreference partnerPreference; // 사용자가 입력한 조건 벡터, 내 라인, 상대 라인, 선호 챔피언명 리스트, 비선호 챔피언명 리스트
 
 	@Field(type = FieldType.Object)
-	private MemberInfoES memberInfoES;
-
-	@Field(type = FieldType.Object)
-	private RecentTwentyMatchES recentTwentyMatchES;
+	private UserProfile userProfile;
+	// riot Id 태그, 티어, 모스트 3 챔피언명 리스트, 라인별 키워드 벡터, 리뷰
 
 	/*
 	* 필수조건:
 	* memberId
+	* riot Id, 태그
 	* 티어
 	* 내 라인
 	* 상대 라인
