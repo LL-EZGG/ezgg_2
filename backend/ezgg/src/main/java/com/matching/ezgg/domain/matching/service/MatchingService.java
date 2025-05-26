@@ -180,6 +180,11 @@ public class MatchingService {
 				.deaths(memberDataBundleDto.getRecentTwentyMatchDto().getSumDeaths())
 				.assists(memberDataBundleDto.getRecentTwentyMatchDto().getSumAssists())
 				.mostChampions(mostChampions)
+				.topAnalysis(memberDataBundleDto.getRecentTwentyMatchDto().getTopAnalysis())
+				.jugAnalysis(memberDataBundleDto.getRecentTwentyMatchDto().getJugAnalysis())
+				.midAnalysis(memberDataBundleDto.getRecentTwentyMatchDto().getMidAnalysis())
+				.adAnalysis(memberDataBundleDto.getRecentTwentyMatchDto().getAdAnalysis())
+				.supAnalysis(memberDataBundleDto.getRecentTwentyMatchDto().getSupAnalysis())
 				.build();
 		}
 

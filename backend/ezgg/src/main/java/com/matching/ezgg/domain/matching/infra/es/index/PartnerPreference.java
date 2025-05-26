@@ -24,6 +24,9 @@ public class PartnerPreference {
 	@Field(type = FieldType.Object)
 	private ChampionsInfo championsInfo;
 
+	@Field(type = FieldType.Object)
+	private MatchAnalysis matchAnalysis;
+
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
@@ -40,5 +43,17 @@ public class PartnerPreference {
 	public static class ChampionsInfo {
 		private List<String> preferredChampion;
 		private List<String> unPreferredChampion;
+	}
+
+	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class MatchAnalysis {
+		private String topAnalysis;
+		private String jugAnalysis;
+		private String midAnalysis;
+		private String adAnalysis;
+		private String supAnalysis;
 	}
 }

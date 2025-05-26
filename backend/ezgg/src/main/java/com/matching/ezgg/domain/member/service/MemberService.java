@@ -1,12 +1,9 @@
 package com.matching.ezgg.domain.member.service;
 
-import java.util.List;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matching.ezgg.domain.matching.service.MatchingService;
 import com.matching.ezgg.domain.member.dto.SignupRequest;
 import com.matching.ezgg.domain.member.dto.SignupResponse;
 import com.matching.ezgg.domain.member.entity.Member;
@@ -55,7 +52,7 @@ public class MemberService {
 		}
 
 		if (!signupRequest.getPassword()
-			.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,20}$")) {
+			.matches("(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()-+=])[A-Za-z\\d!@#$%^&*()\\-+=]{6,20}$")) {
 			throw new PasswordBadRequestException();
 		}
 
