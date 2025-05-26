@@ -4,8 +4,9 @@ import {WinRateStats} from "./WinRateStats.jsx";
 import {LoadingSpinner} from "../../layout/LoadingSpinner.jsx";
 import styled from '@emotion/styled';
 
-export const UserProfileCard = ({ memberDataBundle, isLoading }) => {
+export const UserProfileCard = ({ userInfo, memberDataBundle, isLoading }) => {
   const { memberInfoDto, recentTwentyMatchDto } = memberDataBundle || {};
+  const effectiveMemberInfo = memberInfoDto || userInfo;
 
   return (
     <ProfileCard>
@@ -16,7 +17,7 @@ export const UserProfileCard = ({ memberDataBundle, isLoading }) => {
           <ChampionGallery champions = {recentTwentyMatchDto?.championStats} />
           <ProfileInfo>
             <ProfileTitle>
-              {memberInfoDto?.riotUsername || "사용자"} #{memberInfoDto?.riotTag || "0000"}
+              {effectiveMemberInfo?.riotUsername || "사용자"} #{effectiveMemberInfo?.riotTag || "0000"}
             </ProfileTitle>
             <RankBadge
               tier={memberInfoDto?.tier}
