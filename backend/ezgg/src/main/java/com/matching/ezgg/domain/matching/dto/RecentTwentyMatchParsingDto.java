@@ -19,6 +19,11 @@ public class RecentTwentyMatchParsingDto {
 	private int deaths;
 	private int assists;
 	private List<MostChampion> mostChampions;
+	private String topAnalysis;
+	private String jugAnalysis;
+	private String midAnalysis;
+	private String adAnalysis;
+	private String supAnalysis;
 
 	@Getter
 	@NoArgsConstructor
