@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class MatchingUserDocument {
 
 	@Id
-	private Long id; //memberId
+	private Long memberId; //memberId
 
 	@Field(type = FieldType.Object)
 	private PartnerPreference partnerPreference; // 사용자가 입력한 조건 벡터, 내 라인, 상대 라인, 선호 챔피언명 리스트, 비선호 챔피언명 리스트

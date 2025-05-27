@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,24 +16,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL) // 벡터값이 없을 때 필드 자체를 넣지 않기 위해(null) 선언
 public class PartnerPreference {
 
 	private float[] userPreferenceTextVector;
 
 	@Field(type = FieldType.Object)
-	private WantLine wantLine;
+	private LineRequirements lineRequirements;
 
 	@Field(type = FieldType.Object)
-	private ChampionsInfo championsInfo;
-
-	@Field(type = FieldType.Object)
-	private MatchAnalysis matchAnalysis;
+	private ChampionsPreference championsPreference;
 
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Builder
-	public static class WantLine {
+	public static class LineRequirements {
 		private String myLine;
 		private String partnerLine;
 	}
@@ -40,20 +40,9 @@ public class PartnerPreference {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Builder
-	public static class ChampionsInfo {
-		private List<String> preferredChampion;
-		private List<String> unPreferredChampion;
+	public static class ChampionsPreference {
+		private List<String> preferredChampions;
+		private List<String> unPreferredChampions;
 	}
 
-	@Getter
-	@NoArgsConstructor
-	@AllArgsConstructor
-	@Builder
-	public static class MatchAnalysis {
-		private String topAnalysis;
-		private String jugAnalysis;
-		private String midAnalysis;
-		private String adAnalysis;
-		private String supAnalysis;
-	}
 }
