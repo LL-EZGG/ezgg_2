@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:ezgg
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql://localhost:3306/ezgg
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: ezgg2503
 
   jpa:
     hibernate:
@@ -42,3 +42,6 @@ es:
 
 redis:
   host: "localhost"
+
+api:
+  key: RGAPI-7361bd9a-5dac-49ad-8c61-8c468c1eb74f
