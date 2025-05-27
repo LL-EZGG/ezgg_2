@@ -304,7 +304,7 @@ const SectionSelector = ({
             <input
               type="text"
               placeholder="챔피언 검색..."
-              value={searchTerm}
+              value={kind === 'preferred' ? searchTerm : bannedSearchTerm}
               onChange={(e) => {
                 handleChange(e, kind);
               }}
