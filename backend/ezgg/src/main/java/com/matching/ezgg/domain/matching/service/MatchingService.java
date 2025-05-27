@@ -151,7 +151,7 @@ public class MatchingService {
 			.championsPreference(
 				PartnerPreference.ChampionsPreference.builder()
 					.preferredChampions(preferredPartnerParsingDto.getChampionInfo().getPreferredChampions())
-					.unPreferredChampions(preferredPartnerParsingDto.getChampionInfo().getUnpreferredChampions())
+					.unpreferredChampions(preferredPartnerParsingDto.getChampionInfo().getUnpreferredChampions())
 				.build())
 			.build();
 
