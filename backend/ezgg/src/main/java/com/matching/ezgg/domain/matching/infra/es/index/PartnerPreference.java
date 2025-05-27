@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL) // 벡터값이 없을 때 필드 자체를 넣지 않기 위해(null) 선언
 public class PartnerPreference {
 
+	@Field(type = FieldType.Dense_Vector, dims = 1536)
 	private float[] userPreferenceTextVector;
 
 	@Field(type = FieldType.Object)
@@ -32,7 +33,9 @@ public class PartnerPreference {
 	@AllArgsConstructor
 	@Builder
 	public static class LineRequirements {
+		@Field(type = FieldType.Keyword)
 		private String myLine;
+		@Field(type = FieldType.Keyword)
 		private String partnerLine;
 	}
 
@@ -42,7 +45,7 @@ public class PartnerPreference {
 	@Builder
 	public static class ChampionsPreference {
 		private List<String> preferredChampions;
-		private List<String> unPreferredChampions;
+		private List<String> unpreferredChampions;
 	}
 
 }

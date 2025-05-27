@@ -21,6 +21,7 @@ public class UserProfile {
 
 	private String riotUsername;
 	private String riotTag;
+	@Field(type = FieldType.Keyword)
 	private String tier;
 
 	@Field(type = FieldType.Object)
@@ -43,10 +44,15 @@ public class UserProfile {
 	@Builder
 	public static class RecentTwentyMatchStats {
 		private List<String> most3Champions;
+		@Field(type = FieldType.Dense_Vector, dims = 1536)
 		private float[] topAnalysisVector;
+		@Field(type = FieldType.Dense_Vector, dims = 1536)
 		private float[] jugAnalysisVector;
+		@Field(type = FieldType.Dense_Vector, dims = 1536)
 		private float[] midAnalysisVector;
+		@Field(type = FieldType.Dense_Vector, dims = 1536)
 		private float[] adAnalysisVector;
+		@Field(type = FieldType.Dense_Vector, dims = 1536)
 		private float[] supAnalysisVector;
 	}
 }
