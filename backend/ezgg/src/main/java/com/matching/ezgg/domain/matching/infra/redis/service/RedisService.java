@@ -357,7 +357,7 @@ public class RedisService {
 
 	public List<Map<String, String>> getTwentyMatchedUsers() {
 		long now = System.currentTimeMillis();
-		long threshold = now - 1000 * 60 * 20; // 20분 전
+		long threshold = now - 1000 * 60 * 10; // 10분 전 시간
 
 		Set<String> matchedUsers = redisTemplate.opsForZSet()
 			.rangeByScore(MATCHED_ZSET_KEY.getValue(), 0, threshold);
@@ -397,12 +397,13 @@ public class RedisService {
 	}
 
 	public boolean canExecuteReview(Long memberId1, Long memberId2) {
+		log.info("[INFO] canExecuteReview 호출: memberId1={}, memberId2={}", memberId1, memberId2);
 		String key = "canExecuteReview:" + memberId1 + ":" + memberId2;
 		Long count = redisTemplate.opsForValue().increment(key);
 		if(count == 1) {
 			// 최초 실행일경우
 			redisTemplate.expire(key, Duration.ofHours(2)); // 2시간 후 만료
 		}
-		return count <= 3; // 3회까지 허용
+		return count <= 5; // 5회까지 허용
 	}
 }
