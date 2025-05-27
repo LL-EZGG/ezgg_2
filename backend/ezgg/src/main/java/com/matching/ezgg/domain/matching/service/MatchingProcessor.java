@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.domain.matching.infra.es.service.EsMatchingFilter;
-import com.matching.ezgg.domain.matching.infra.es.service.EsService;
+import com.matching.ezgg.domain.matching.infra.es.service.ElasticSearchService;
 import com.matching.ezgg.domain.matching.infra.redis.service.RedisService;
-import com.matching.ezgg.domain.matching.infra.redis.stream.RedisStreamProducer;
+import com.matching.ezgg.domain.matching.infra.redis.state.MatchingStateManager;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,56 +19,70 @@ import lombok.extern.slf4j.Slf4j;
 public class MatchingProcessor {
 
 	private final EsMatchingFilter esMatchingFilter;
-	private final RedisStreamProducer redisStreamProducer;
-	private final EsService esService;
+	private final ElasticSearchService elasticSearchService;
+	private final MatchingStateManager matchingStateManager;
 	private final RedisService redisService;
 
-	public void tryMatch(MatchingFilterParsingDto matchingFilterParsingDto) {
+	/**
+	 * 주어진 {@code memberId}에 대해 매칭을 시도하는 메서드.
+	 *
+	 * <ol>
+	 *   <li>ES에서 해당 유저의 매칭 조건 문서를 조회</li>
+	 *   <li>조건에 맞는 상대 유저 목록을 Elasticsearch DSL 쿼리로 검색</li>
+	 *   <li>목록이 비어 있으면 재시도 큐로 이동</li>
+	 *   <li>목록이 존재하면 가장 높은 점수의 유저를 선택하여:
+	 *       <ul>
+	 *         <li>ES 문서를 양쪽 모두 삭제</li>
+	 *         <li>Redis에 매칭 완료 상태 기록</li>
+	 *         <li>재시도 큐에서 제거</li>
+	 *       </ul>
+	 *   </li>
+	 * </ol>
+	 *
+	 * @param memberId 매칭을 시도할 회원 ID
+	 */
+	public void tryMatching(Long memberId) {
 		try {
-			if (matchingFilterParsingDto.getPreferredPartnerParsing() == null ||
-				matchingFilterParsingDto.getPreferredPartnerParsing().getChampionInfo() == null) {
-				log.warn("매칭 정보 누락: memberId={}, championInfo is null", matchingFilterParsingDto.getMemberId());
-				// 필요한 경우 기본값 설정 또는 다른 처리
-				redisStreamProducer.acknowledgeUser(matchingFilterParsingDto.getMemberId());
-				return;
-			}
+			//es에서 매칭을 시도할 유저의 document를 가져온다.
+			MatchingFilterParsingDto matchingUserDocument = elasticSearchService.getDocByMemberId(memberId);
 
-			List<String> preferredPartnerChampions = matchingFilterParsingDto.getPreferredPartnerParsing()
+			List<String> preferredPartnerChampions = matchingUserDocument.getPreferredPartnerParsing()
 				.getChampionInfo().getPreferredChampions();
-			List<String> unpreferredPartnerChampions = matchingFilterParsingDto.getPreferredPartnerParsing()
+			List<String> unpreferredPartnerChampions = matchingUserDocument.getPreferredPartnerParsing()
 				.getChampionInfo().getUnpreferredChampions();
 
-			// es에서 매칭 상대 조회
+			// es에서 매칭 상대 리스트 조회
 			List<MatchingFilterParsingDto> matchingUsers = esMatchingFilter.findMatchingUsers(
-				matchingFilterParsingDto.getPreferredPartnerParsing().getWantLine().getMyLine(),
-				matchingFilterParsingDto.getPreferredPartnerParsing().getWantLine().getPartnerLine(),
-				matchingFilterParsingDto.getMemberInfoParsing().getTier(),
-				matchingFilterParsingDto.getMemberId(),
+				matchingUserDocument.getPreferredPartnerParsing().getWantLine().getMyLine(),
+				matchingUserDocument.getPreferredPartnerParsing().getWantLine().getPartnerLine(),
+				matchingUserDocument.getMemberInfoParsing().getTier(),
+				memberId,
 				preferredPartnerChampions,
 				unpreferredPartnerChampions
 			);
 
+			// 매칭 조건에 맞는 유저가 없을 시 retry Set으로 이동
 			if (matchingUsers.isEmpty()) {
-				log.info("매칭 상대 없음 : {}", matchingFilterParsingDto.getMemberId());
-				redisStreamProducer.acknowledgeUser(matchingFilterParsingDto.getMemberId());
-				redisStreamProducer.retryLater(matchingFilterParsingDto);
+				log.info("[INFO] 매칭 상대 없음 : memberId={}", memberId);
+				matchingStateManager.removeUserFromMatchingState(memberId);
+				matchingStateManager.addUserToRetryState(memberId);
 				return;
 			}
 
 			MatchingFilterParsingDto bestMatchingUser = matchingUsers.getFirst(); // 매칭 점수가 가장 높은 유저
-			log.info("매칭 성공! >>>>> {} : {}", matchingFilterParsingDto.getMemberId(), bestMatchingUser.getMemberId());
+			log.info("[INFO] 매칭 성공! (memberId={}) >>>>> (memberID={})", memberId, bestMatchingUser.getMemberId());
 
-			redisService.addToMatchedUsers(matchingFilterParsingDto.getMemberId(), bestMatchingUser.getMemberId());
+			redisService.addToMatchedUsers(memberId, bestMatchingUser.getMemberId());
 
 			// ES에서 매칭된 유저들의 데이터 삭제
-			esService.deleteDocByMemberId(matchingFilterParsingDto.getMemberId());
-			esService.deleteDocByMemberId(bestMatchingUser.getMemberId());
+			elasticSearchService.deleteDocByMemberId(memberId);
+			elasticSearchService.deleteDocByMemberId(bestMatchingUser.getMemberId());
 
-			redisStreamProducer.acknowledgeBothUser(matchingFilterParsingDto, bestMatchingUser);
-			redisStreamProducer.removeRetryCandidate(matchingFilterParsingDto);
-			redisStreamProducer.removeRetryCandidate(bestMatchingUser);
+			matchingStateManager.completeMatchingForBothUsers(memberId, bestMatchingUser.getMemberId());
+			matchingStateManager.removeUserFromRetryState(memberId);
+			matchingStateManager.removeUserFromRetryState(bestMatchingUser.getMemberId());
 		} catch (Exception e) {
-			log.error("매칭 처리 중 에러 발생 : {}", e.getMessage());
+			log.error("[ERROR] 매칭 시도 중 에러 발생 : {}", e.getMessage());
 		}
 	}
 }
