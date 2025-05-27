@@ -102,6 +102,7 @@ public class RedisStreamConsumer {
 
 			// 3회 카운트 초과 시 매칭된 유저 삭제
 			if(!redisService.canExecuteReview(memberId1, memberId2)){
+				log.info("[INFO] 매칭된 유저 삭제 : {} - {}", memberId1, memberId2);
 				redisService.deleteMatchedUser(matchedUser);
 				continue;
 			}
