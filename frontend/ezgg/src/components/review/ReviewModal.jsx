@@ -1,15 +1,22 @@
 import React, { useState } from "react";
 import styled from '@emotion/styled';
+import api from "../../utils/api";
 
-const ReviewModal = ({ visible, onClose, targetUsername }) => {
+const ReviewModal = ({ visible, onClose, targetUsername, matchId }) => {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
 
-    // if(!visible) return null;s
+    if(!visible) return null;
 
     const handleSubmit = () => {
         // TODO: 서버로 별점 전송 로직 구현
         console.log(`별점 ${rating}점을 ${targetUsername}님에게 부여했습니다.`);
+        console.log(`matchId: ${matchId}`);
+        api.post('/review', {
+            partnerRiotUsername: targetUsername,
+            matchId: matchId,
+            reviewScore: rating,
+        });
         onClose();
     };
 

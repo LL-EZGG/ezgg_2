@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateReviewDto {
 	private String partnerRiotUsername;
-	private String reviewScore;
+	private String matchId;
+	private int reviewScore;
 }

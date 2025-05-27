@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
 
@@ -16,7 +15,7 @@ public final class ReviewUtil {
 	 * 리스트1과 리스트2의 교집합을 구하는 메서드
 	 * @param list1
 	 * @param list2
-	 * @return 교집합을 포함하는 새로운 리스트
+	 * @return 교집합된 요소들의 리스트
 	 */
 	public static List<String> getCommonElements(List<String> list1, List<String> list2) {
 		Set<String> set2 = new HashSet<>(list2);

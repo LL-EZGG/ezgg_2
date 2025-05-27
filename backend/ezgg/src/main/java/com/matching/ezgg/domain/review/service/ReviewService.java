@@ -16,7 +16,9 @@ import com.matching.ezgg.domain.review.repository.ReviewRepository;
 import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
 import com.matching.ezgg.domain.riotApi.service.ApiService;
 import com.matching.ezgg.domain.riotApi.util.MatchMapper;
+import com.matching.ezgg.global.exception.ReviewNotFoundException;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +34,7 @@ public class ReviewService {
 	private final ApiService apiService;
 	private final MatchMapper matchMapper;
 
+	@Transactional
 	public void findDuoGame(Long memberId1, Long memberId2, Map<String, String> updateMatchedUser) {
 		MemberInfo memberInfoByMember1 = memberInfoService.getMemberInfoByMemberId(memberId1);
 		MemberInfo memberInfoByMember2 = memberInfoService.getMemberInfoByMemberId(memberId2);
@@ -51,8 +54,8 @@ public class ReviewService {
 					Review.builder()
 						.memberId(memberId1)
 						.partnerMemberId(memberId2)
-						.partnerRiotUsername(matchId)
-						.matchId(findMember1MatchIds.getFirst())
+						.partnerRiotUsername(memberInfoByMember2.getRiotUsername())
+						.matchId(matchId)
 						.reviewScore(0)
 						.build()
 				);
@@ -68,10 +71,26 @@ public class ReviewService {
 				// redis에서 실제 듀오게임 한 유저 삭제
 				redisService.deleteMatchedUser(updateMatchedUser);
 				// 리뷰 요청 전송
-				reviewNotificationService.sendOrQueueReview(memberId1, memberInfoByMember1.getRiotUsername(), memberId2,
-					memberInfoByMember2.getRiotUsername());
+				reviewNotificationService.sendOrQueueReview(memberId1, memberInfoByMember1.getRiotUsername(), memberId2, memberInfoByMember2.getRiotUsername(), matchId);
 				break;
 			}
 		}
+	}
+
+	@Transactional
+	public void createReview(Long memberId, CreateReviewDto createReviewDto) {
+		Review findReview = reviewRepository.findByMemberIdAndMatchIdAndPartnerRiotUsername(
+			memberId, createReviewDto.getMatchId(),
+			createReviewDto.getPartnerRiotUsername())
+			.orElseThrow(ReviewNotFoundException::new);
+
+		if(findReview.getReviewScore() != 0) {
+			log.info("[INFO] {}에 대한 리뷰가 이미 작성되었습니다.", createReviewDto.getPartnerRiotUsername());
+			return;
+		}
+
+		findReview.updateReviewScore(createReviewDto.getReviewScore());
+		reviewNotificationService.deletePendingReview(memberId, createReviewDto.getPartnerRiotUsername(),
+			createReviewDto.getMatchId());
 	}
 }

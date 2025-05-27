@@ -45,6 +45,7 @@ const App = () => {
     // 리뷰 모달 관련 상태
     const [reviewModalVisible, setReviewModalVisible] = useState(false);
     const [reviewTargetUsername, setReviewTargetUsername] = useState('');
+    const [reviewMatchId, setReviewMatchId] = useState('');
 
     // WebSocket 관련 핸들러 정의
     const handleSocketMessage = (message) => {
@@ -105,8 +106,9 @@ const App = () => {
         console.error('[App] 웹소켓 에러:', error);
     };
 
-    const handleReviewRequest = (username) => {
+    const handleReviewRequest = (username, matchId) => {
         setReviewTargetUsername(username);
+        setReviewMatchId(matchId);
         setReviewModalVisible(true);
     };
 
@@ -306,13 +308,14 @@ const App = () => {
                         />
                     }/>
                     <Route path="/login"
-                           element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
+                        element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
                     <Route path="/join" element={<Join/>}/>
                 </Routes>
                 <ReviewModal 
                     visible={reviewModalVisible}
                     onClose={() => setReviewModalVisible(false)}
                     targetUsername={reviewTargetUsername}
+                    matchId={reviewMatchId}
                 />
             </AppContainer>
         </Router>

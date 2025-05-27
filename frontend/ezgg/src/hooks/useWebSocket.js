@@ -114,9 +114,9 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
 
                 // 리뷰 알림 구독
                 stompClient.current.subscribe('/user/queue/review', (message) => {
-                    const reviewTargetUsername = message.body;
+                    const [reviewTargetUsername, matchId] = message.body.split(',');
                     console.log('[useWebSocket.js] 리뷰 알림 수신 : ' + reviewTargetUsername);
-                    if (onReview) onReview(reviewTargetUsername);
+                    if (onReview) onReview(reviewTargetUsername, matchId);
                 })
 
                 // 에러 구독
