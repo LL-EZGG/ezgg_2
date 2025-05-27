@@ -405,7 +405,7 @@ const SectionSelector = ({
     const availableKeywords = getKeywordsByLine(selectedLine);
     let selectedKeywords = [];
 
-    // TOP, MID, AD 라인일 때는 JSON에서 "매우 좋음" 값을 가진 키워드들을 추출
+    // TOP, MID, AD, JUG, SUP 라인일 때 JSON에서 "매우 좋음" 값을 가진 키워드들을 추출
     if (['TOP', 'MID', 'AD', 'JUG', 'SUP'].includes(selectedLine) && matchingCriteria.userPreferenceText) {
       try {
         const preferences = JSON.parse(matchingCriteria.userPreferenceText);

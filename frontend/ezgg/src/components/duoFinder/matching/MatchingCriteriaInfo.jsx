@@ -22,7 +22,7 @@ const MatchingCriteriaInfo = ({ matchingCriteria }) => {
     
     if (!userPreferenceText) return '없음';
     
-    // TOP, MID, AD 라인일 때 (JSON 형식)
+    // TOP, MID, AD, JUG, SUP 라인일 때 (JSON 형식)
     if (['TOP', 'MID', 'AD', 'JUG', 'SUP'].includes(wantLine.partnerLine)) {
       try {
         const preferences = JSON.parse(userPreferenceText);
