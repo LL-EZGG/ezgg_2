@@ -28,6 +28,7 @@ const criteriaToDTO = (vm) => ({
 export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onChatMessage, onReview}) => {
     const stompClient = useRef(null);
     const [isConnected, setIsConnected] = useState(false);
+    const subscriptionsRef = useRef(new Map());
 
     // 토큰 유효성 검증 함수
     const validateToken = async () => {
@@ -40,7 +41,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
             // 단순히 API 요청을 보내서 토큰 검증
             // 401이 떨어지면 api.js의 인터셉터가 자동으로 토큰을 재발급 받음
             await api.post('/auth/validateToken');
-          
+
             return true;
         } catch (error) {
             console.log('[useWebSocket.js] Token validation or refresh failed:', error);
@@ -48,15 +49,69 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
         }
     }
 
+    /** 모든 구독 해제 함수 */
+    const unsubscribeAll = useCallback(() => {
+        console.log('[useWebSocket.js] 모든 구독 해제 시작');
+        subscriptionsRef.current.forEach((subscription, key) => {
+            try {
+                if (subscription && typeof subscription.unsubscribe === 'function') {
+                    subscription.unsubscribe();
+                    console.log(`[useWebSocket.js] 구독 해제됨: ${key}`);
+                }
+            } catch (error) {
+                console.error(`[useWebSocket.js] 구독 해제 중 오류 (${key}):`, error);
+            }
+        });
+        subscriptionsRef.current.clear();
+        console.log('[useWebSocket.js] 모든 구독 해제 완료');
+    }, []);
+
+    /** 채팅방 구독 함수 (재사용 가능) */
+    const subscribeToChatRoom = useCallback((chattingRoomId) => {
+        if (!stompClient.current?.connected) {
+            console.warn('[useWebSocket.js] 연결되지 않음, 채팅방 구독 불가');
+            return;
+        }
+
+        console.log('[useWebSocket] 채팅방 구독 시작:', chattingRoomId);
+
+        // 브로드캐스트 구독
+        const topicSub = stompClient.current.subscribe(`/topic/chat/${chattingRoomId}`, (chatMsg) => {
+            const chatResponse = JSON.parse(chatMsg.body);
+            console.log("[useWebSocket] 브로드캐스트 메시지 수신됨!:", chatResponse);
+            if (onChatMessage) {
+                onChatMessage(chatResponse);
+            }
+        });
+        subscriptionsRef.current.set(`topic-chat-${chattingRoomId}`, topicSub);
+
+    }, [onChatMessage]);
+
     /** STOMP 서버 연결 함수 */
-    const connect = useCallback(async (onConnectedCallback) => {
+    const connect = useCallback(async (onConnectedCallback, existingChatRoomId = null) => {
+        // 이미 연결되어 있다면 기존 채팅방만 구독하고 콜백 실행
         if (stompClient.current && stompClient.current.connected) {
             console.log('[useWebSocket.js] 이미 연결되어 있음');
+            if (existingChatRoomId) {
+                subscribeToChatRoom(existingChatRoomId);
+            }
             onConnectedCallback?.();
             return;
         }
 
-        // 웹소켓 연결 전 토큰 유효성 검증
+        // 기존 연결이 있다면 완전히 정리
+        if (stompClient.current) {
+            console.log('[useWebSocket.js] 기존 연결 정리 중...');
+            unsubscribeAll();
+            try {
+                stompClient.current.disconnect();
+            } catch (error) {
+                console.error('[useWebSocket.js] 기존 연결 해제 중 오류:', error);
+            }
+            stompClient.current = null;
+        }
+
+        // 토큰 검증
         const isTokenValid = await validateToken();
         if (!isTokenValid) {
             console.error('[useWebSocket.js] Invalid or expired token and refresh failed');
@@ -71,81 +126,89 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
 
         socket.onclose = () => {
             setIsConnected(false);
+            unsubscribeAll();
             if (onDisconnect) onDisconnect();
         };
 
         stompClient.current.connect({},
             () => {
-                console.log("[useWebSocket.js]\nWebSocket connected");
+                console.log("[useWebSocket.js] WebSocket connected");
                 setIsConnected(true);
 
-                // 개별 유저의 매칭 결과 구독
-                stompClient.current.subscribe(`/user/queue/matching`, (message) => {
-                    const response = JSON.parse(message.body);
-                    console.log('[useWebSocket] 매칭 완료 메시지:', response);
-                    console.log('[useWebSocket] 매칭 메시지 전체 구조:', JSON.stringify(response, null, 2));
+                try {
+                    // 매칭 결과 구독
+                    const matchingSub = stompClient.current.subscribe(`/user/queue/matching`, (message) => {
+                        const response = JSON.parse(message.body);
+                        console.log('[useWebSocket] 매칭 완료 메시지:', response);
 
-                    // 서버 응답 구조에 맞게 수정
-                    if (response.status === "SUCCESS" && response.data?.chattingRoomId) {
-                        console.log('[useWebSocket] 채팅방 구독 시작:', response.data.chattingRoomId);
+                        // 매칭 성공 시 채팅방 구독 추가
+                        if (response.status === "SUCCESS" && response.data?.chattingRoomId) {
+                            subscribeToChatRoom(response.data.chattingRoomId);
+                        }
 
-                        // 🔥 브로드캐스트 구독 (확실한 메시지 수신)
-                        const topicSub = stompClient.current.subscribe(`/topic/chat/${response.data.chattingRoomId}`, (chatMsg) => {
-                            const chatResponse = JSON.parse(chatMsg.body);
-                            console.log("[useWebSocket] 브로드캐스트 메시지 수신됨!:", chatResponse);
-                            if (onChatMessage) {
-                                console.log("[useWebSocket] onChatMessage 호출!");
-                                onChatMessage(chatResponse);
-                            }
-                        });
-                        console.log('[useWebSocket] 브로드캐스트 구독 완료:', topicSub.id);
+                        if (onMessage) onMessage(response);
+                    });
+                    subscriptionsRef.current.set('matching', matchingSub);
 
-                        // 개별 사용자 큐 구독 (백업)
-                        const userQueueSub = stompClient.current.subscribe(`/user/queue/${response.data.chattingRoomId}`, (chatMsg) => {
-                            const chatResponse = JSON.parse(chatMsg.body);
-                            console.log("[useWebSocket]개별 메시지 수신:", chatResponse);
-                            if (onChatMessage) onChatMessage(chatResponse);
-                        });
-                        console.log('[useWebSocket] 개별 큐 구독 완료:', userQueueSub.id);
+                    // 에러 구독 (중복 제거)
+                    const errorSub = stompClient.current.subscribe(`/user/queue/errors`, (message) => {
+                        console.error('[useWebSocket] 에러 메시지 수신:', message.body);
+                        if (onError) onError(message.body);
+                    });
+                    subscriptionsRef.current.set('errors', errorSub);
+
+                    // 리뷰 알림 구독
+                    const reviewSub = stompClient.current.subscribe('/user/queue/review', (message) => {
+                        const [reviewTargetUsername, matchId] = message.body.split(',');
+                        console.log('[useWebSocket.js] 리뷰 알림 수신 : ' + reviewTargetUsername);
+                        if (onReview) onReview(reviewTargetUsername, matchId);
+                    });
+                    subscriptionsRef.current.set('review', reviewSub);
+
+                    // 새로고침 후 기존 채팅방이 있다면 구독
+                    if (existingChatRoomId) {
+                        subscribeToChatRoom(existingChatRoomId);
                     }
 
-                    if (onMessage) onMessage(response);
-                });
-
-                // 리뷰 알림 구독
-                stompClient.current.subscribe('/user/queue/review', (message) => {
-                    const [reviewTargetUsername, matchId] = message.body.split(',');
-                    console.log('[useWebSocket.js] 리뷰 알림 수신 : ' + reviewTargetUsername);
-                    if (onReview) onReview(reviewTargetUsername, matchId);
-                })
-
-                // 에러 구독
-                stompClient.current.subscribe(`/user/queue/errors`, (message) => {
-                    if (onError) onError(message.body);
-                });
+                    console.log('[useWebSocket.js] 기본 구독 완료');
+                } catch (subscribeError) {
+                    console.error('[useWebSocket.js] 구독 중 오류:', subscribeError);
+                }
 
                 if (onConnect) onConnect();
                 onConnectedCallback?.();
             },
             (error) => {
-                console.error("[useWebSocket.js] WebSocket error", error);
+                console.error("[useWebSocket.js] WebSocket connection error", error);
                 setIsConnected(false);
-                if (onDisconnect) onDisconnect();
+                unsubscribeAll();
+                if (onError) onError('웹소켓 연결에 실패했습니다.');
             }
         );
-    }, [onConnect, onMessage, onDisconnect, onError, onChatMessage, onReview]);
+    }, [onConnect, onMessage, onDisconnect, onError, onChatMessage, onReview, unsubscribeAll, subscribeToChatRoom]);
 
     /** 연결 해제 함수 */
     const disconnect = useCallback(() => {
+        console.log('[useWebSocket.js] 연결 해제 시작');
+        // 모든 구독 해제
+        unsubscribeAll();
+
         if (stompClient.current) {
-            stompClient.current.disconnect(() => {
-                console.log('[useWebSocket.js] 연결 해제됨');
-                setIsConnected(false);
-                if (onDisconnect) onDisconnect();
-            });
+            try {
+                stompClient.current.disconnect(() => {
+                    console.log('[useWebSocket.js] STOMP 연결 해제 완료');
+                });
+            } catch (error) {
+                console.error('[useWebSocket.js] 연결 해제 중 오류:', error);
+            }
             stompClient.current = null;
         }
-    }, [onDisconnect]);
+
+        setIsConnected(false);
+        console.log('[useWebSocket.js] 연결 해제 완료');
+
+        if (onDisconnect) onDisconnect();
+    }, [onDisconnect, unsubscribeAll]);
 
     /**
      * 매칭 요청 전송 함수.
@@ -183,7 +246,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
             const isTokenValid = await validateToken();
             if (!isTokenValid) {
                 if (onError) onError('인증이 만료되었습니다');
-                return;
+                return false;
             }
             connect(() => {
                 if (stompClient.current?.connected) {
@@ -191,10 +254,11 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
                     console.log('[useWebSocket.js] 매칭 취소 요청 전송됨');
                 }
             });
-            return;
+            return true;
         }
         stompClient.current.send('/app/matching/stop', {}, JSON.stringify({}));
         console.log('[useWebSocket.js] 매칭 취소 요청 전송됨');
+        return true;
     }, [connect, onError]);
 
     /**
@@ -204,7 +268,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
         if (!stompClient.current?.connected) {
             console.log('[useWebSocket.js] 연결되지 않음, 채팅 메시지 전송 실패');
             if (onError) onError('웹소켓 연결이 끊어졌습니다.');
-            return;
+            return false;
         }
 
         const chatData = {
@@ -214,8 +278,15 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
             timestamp: new Date().toISOString()
         };
 
-        stompClient.current.send('/app/chat/send', {}, JSON.stringify(chatData));
-        console.log('[useWebSocket.js] 채팅 메시지 /app/chat/send로 전송됨:', chatData);
+        try {
+            stompClient.current.send('/app/chat/send', {}, JSON.stringify(chatData));
+            console.log('[useWebSocket.js] 채팅 메시지 전송됨:', chatData);
+            return true;
+        } catch (error) {
+            console.error('[useWebSocket.js] 채팅 메시지 전송 실패:', error);
+            if (onError) onError('채팅 메시지 전송에 실패했습니다.');
+            return false;
+        }
     }, [onError]);
 
     return {
@@ -225,6 +296,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
         sendMatchingRequest,
         sendCancelRequest,
         sendChatMessage,
+        subscribeToChatRoom,
         isConnected
     };
 };
