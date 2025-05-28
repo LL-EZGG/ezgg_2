@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { ChampionPortrait } from './ChampionPortrait.jsx';
+import {ChampionPortrait} from './ChampionPortrait.jsx';
 
 export const ChampionGallery = ({ champions }) => (
   <Gallery>
