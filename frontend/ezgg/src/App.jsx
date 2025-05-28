@@ -8,6 +8,7 @@ import Join from './components/auth/Join';
 import {useMatchingSystem} from "./hooks/useMatchingSystem.js";
 import {MatchingButtonPanel} from "./components/DuoFinder/matching/MatchingButtonPanel.jsx";
 import {useWebSocket} from './hooks/useWebSocket';
+import DuoTimeline from "./components/timeline/DuoTimeline.jsx";
 
 // 로그인 상태에 따라 리다이렉트하는 보호된 라우트 컴포넌트
 const ProtectedRoute = ({element, isLoggedIn}) => {
@@ -294,6 +295,8 @@ const App = () => {
                             isLoggedIn={isLoggedIn}
                         />
                     }/>
+                    <Route path="/timeline"
+                           element={<DuoTimeline memberData={memberDataBundle}/> } />
                     <Route path="/login"
                            element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
                     <Route path="/join" element={<Join/>}/>
