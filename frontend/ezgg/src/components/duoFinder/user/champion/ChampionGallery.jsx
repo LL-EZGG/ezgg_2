@@ -11,9 +11,9 @@ export const ChampionGallery = ({ champions }) => (
         ))
       ) : (
         <>
-          <ChampionPortrait champion="Yasuo" />
-          <ChampionPortrait champion="Ahri" />
-          <ChampionPortrait champion="Zed" />
+          <ChampionPortrait champion="basic_1" />
+          <ChampionPortrait champion="basic_2" />
+          <ChampionPortrait champion="basic_3" />
         </>
       )}
     </GalleryInner>
