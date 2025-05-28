@@ -7,7 +7,8 @@ public enum RedisKey {
     CONSUMER_NAME ("matching-consumer"),
     RETRY_ZSET_KEY("matching-retry-zset"),
     MATCHED_ZSET_KEY("matching-success-zset"),
-    DELETE_QUEUE_KEY("matching-delete-queue");
+    DELETE_QUEUE_KEY("matching-delete-queue"),
+	REVIEW_PENDING_KEY("review-pending-list");
 
 	private final String value;
 

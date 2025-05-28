@@ -25,7 +25,7 @@ const criteriaToDTO = (vm) => ({
 });
 
 // ---------------- 커스텀 훅 -----------------------------------------------------
-export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onChatMessage}) => {
+export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onChatMessage, onReview}) => {
     const stompClient = useRef(null);
     const [isConnected, setIsConnected] = useState(false);
 
@@ -112,6 +112,13 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
                     if (onMessage) onMessage(response);
                 });
 
+                // 리뷰 알림 구독
+                stompClient.current.subscribe('/user/queue/review', (message) => {
+                    const [reviewTargetUsername, matchId] = message.body.split(',');
+                    console.log('[useWebSocket.js] 리뷰 알림 수신 : ' + reviewTargetUsername);
+                    if (onReview) onReview(reviewTargetUsername, matchId);
+                })
+
                 // 에러 구독
                 stompClient.current.subscribe(`/user/queue/errors`, (message) => {
                     if (onError) onError(message.body);
@@ -126,7 +133,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
                 if (onDisconnect) onDisconnect();
             }
         );
-    }, [onConnect, onMessage, onDisconnect, onError, onChatMessage]);
+    }, [onConnect, onMessage, onDisconnect, onError, onChatMessage, onReview]);
 
     /** 연결 해제 함수 */
     const disconnect = useCallback(() => {

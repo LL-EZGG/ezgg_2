@@ -22,6 +22,9 @@ public class RecentTwentyMatchES {
 	@Field(type = FieldType.Object)
 	private List<ChampionsStats> mostChampions;
 
+	@Field(type = FieldType.Object)
+	private MatchAnalysis matchAnalysis;
+
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
@@ -44,5 +47,17 @@ public class RecentTwentyMatchES {
 		private int wins;
 		private int defeats;
 		private int totalMatches;
+	}
+
+	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class MatchAnalysis {
+		private String topAnalysis;
+		private String jugAnalysis;
+		private String midAnalysis;
+		private String adAnalysis;
+		private String supAnalysis;
 	}
 }
