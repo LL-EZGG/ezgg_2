@@ -27,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 public class KeywordAnalyzerService {
 
 	private final MatchMapper matchMapper;
-	private final KeywordService keywordService;
 	@Qualifier("globalKeywordAnalyzer")
 	private final KeywordAnalyzer<GlobalMatchParsingDto, GlobalKeyword> globalKeywordAnalyzer;
 	@Qualifier("lanerKeywordAnalyzer")

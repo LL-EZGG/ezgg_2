@@ -1,7 +1,6 @@
 package com.matching.ezgg.domain.recentTwentyMatch.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -18,11 +17,12 @@ import com.matching.ezgg.domain.matchInfo.entity.MatchInfo;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionBasicInfo;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionRole;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.analysis.Analysis;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.GlobalKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.JugKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.LanerKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.SupKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.service.ChampionInfoService;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.service.KeywordService;
 import com.matching.ezgg.domain.matchInfo.service.MatchInfoService;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
@@ -39,6 +39,8 @@ public class RecentTwentyMatchBuilderService {
 
 	private final MemberInfoService memberInfoService;
 	private final MatchInfoService matchInfoService;
+	private final KeywordService keywordService;
+	private final ChampionInfoService championInfoService;
 
 	// recentTwentyMatchDto 생성
 	public RecentTwentyMatchDto buildDto(String puuid) {
@@ -54,7 +56,7 @@ public class RecentTwentyMatchBuilderService {
 		AggregateResult result = calculateAggregateStatsFromMatches(matchIds, memberId);
 
 		// 라인별 keywordAnalysis에 들어갈 값 계산
-		KeywordAnalysisResult keywordAnalysisResult = makeKeywordJson(result);
+		MatchAnalysisResult matchAnalysisResult = makeKeywordJson(result);
 
 		// 20경기 승률 계산
 		int winRate = calculateWinRate(result.wins, result.losses);
@@ -69,11 +71,11 @@ public class RecentTwentyMatchBuilderService {
 			.sumAssists(result.sumAssists)
 			.winRate(winRate)
 			.championStats(most3ChampionStats)
-			.topAnalysis(convertToJson(keywordAnalysisResult.topKeywordAnalysis))
-			.jugAnalysis(convertToJson(keywordAnalysisResult.jugKeywordAnalysis))
-			.midAnalysis(convertToJson(keywordAnalysisResult.midKeywordAnalysis))
-			.adAnalysis(convertToJson(keywordAnalysisResult.adKeywordAnalysis))
-			.supAnalysis(convertToJson(keywordAnalysisResult.supKeywordAnalysis))
+			.topAnalysis(convertToJson(matchAnalysisResult.topKeywordAnalysis))
+			.jugAnalysis(convertToJson(matchAnalysisResult.jugKeywordAnalysis))
+			.midAnalysis(convertToJson(matchAnalysisResult.midKeywordAnalysis))
+			.adAnalysis(convertToJson(matchAnalysisResult.adKeywordAnalysis))
+			.supAnalysis(convertToJson(matchAnalysisResult.supKeywordAnalysis))
 			.build();
 
 		log.info("recentTwentyMatch 계산 종료");
@@ -170,7 +172,7 @@ public class RecentTwentyMatchBuilderService {
 			//특정 라인의 챔피언 롤 카운트 맵 꺼냄
 			Map<ChampionRole, Integer> championRoleCountMap = laneChampionRoleMap.get(lane);
 
-			String championName = cleanedName(matchInfo.getChampionName());
+			String championName = championInfoService.cleanedName(matchInfo.getChampionName());
 			List<ChampionRole> championRoles = new ArrayList<>();
 			try {
 				championRoles = ChampionBasicInfo.valueOf(championName).getChampionRoles();
@@ -186,22 +188,12 @@ public class RecentTwentyMatchBuilderService {
 		return result;
 	}
 
-	/**
-	 * 챔피언명에서 특수문자 및 공백 제거하는 메서드
-	 * @param championName
-	 * @return 챔피언명 String
-	 */
-	private String cleanedName(String championName) {
-		return championName
-			.replaceAll("[^a-zA-Z0-9]", "")
-			.toUpperCase();
-	}
 
 	/**
-	 * 각 라인별 KeywordAnalysis 보관용 내부 클래스
+	 * 각 라인별 MatchAnalysis 보관용 내부 클래스
 	 */
 
-	private static class KeywordAnalysisResult {
+	private static class MatchAnalysisResult {
 		Analysis<LanerKeyword> topKeywordAnalysis = Analysis.<LanerKeyword>builder()
 			.enumClass(LanerKeyword.class)
 			.build();
@@ -252,17 +244,33 @@ public class RecentTwentyMatchBuilderService {
 	}
 
 	/**
-	 * evaluateKeyword를 통해 키워드 등급을 계산하고
+	 * 라인에 따른 Analysis를 반환하는 메서드
+	 * @param result
+	 * @param lane
+	 * @return
+	 */
+	private Analysis<? extends Enum<?>> getAnalysisByLane(MatchAnalysisResult result, Lane lane) {
+		return switch (lane) {
+			case TOP -> result.topKeywordAnalysis;
+			case JUNGLE -> result.jugKeywordAnalysis;
+			case MIDDLE -> result.midKeywordAnalysis;
+			case BOTTOM -> result.adKeywordAnalysis;
+			case UTILITY -> result.supKeywordAnalysis;
+		};
+	}
+
+	/**
+	 * 키워드 등급과 챔피언 역할 등급을 계산하고
 	 * 해당 등급들을 Analysis 클래스를 이용해 JSON 형태로 만드는 메서드
 	 * @param result
 	 * @return 각 라인별 키워드 분석 Analysis가 들어있는 keywordAnalysisResult
 	 */
 
-	private KeywordAnalysisResult makeKeywordJson(AggregateResult result) {
+	private MatchAnalysisResult makeKeywordJson(AggregateResult result) {
 		Map<String, Integer> laneCounts = result.laneCount;
 
 		//기본 Analysis 생성
-		KeywordAnalysisResult keywordAnalysisResult = new KeywordAnalysisResult();
+		MatchAnalysisResult matchAnalysisResult = new MatchAnalysisResult();
 
 		//라인과 라인별 키워드 횟수를 묶은 Map 생성
 		Map<Lane, Map<String, Integer>> laneKeywordMap = createLaneKeywordMap(result);
@@ -278,26 +286,10 @@ public class RecentTwentyMatchBuilderService {
 			int lanePlayCount = laneCounts.getOrDefault(lane.name(), 0);
 
 			//라인에 따라 사용할 Analysis 변경
-			Analysis<? extends Enum<?>> analysis = switch (lane) {
-				case TOP -> keywordAnalysisResult.topKeywordAnalysis;
-				case JUNGLE -> keywordAnalysisResult.jugKeywordAnalysis;
-				case MIDDLE -> keywordAnalysisResult.midKeywordAnalysis;
-				case BOTTOM -> keywordAnalysisResult.adKeywordAnalysis;
-				case UTILITY -> keywordAnalysisResult.supKeywordAnalysis;
-			};
+			Analysis<? extends Enum<?>> analysis = getAnalysisByLane(matchAnalysisResult, lane);
 
-			//키워드 개수만큼 반복
-			for (Map.Entry<String, Integer> keywordEntry : keywordCounts.entrySet()) {
-				String keyword = keywordEntry.getKey();
-				int count = keywordEntry.getValue();
-
-				//Global 키워드이면 키워드 등급 계산해서 globalAnalysis 수정
-				if (Arrays.stream(GlobalKeyword.values()).anyMatch(k -> k.name().equalsIgnoreCase(keyword))) {
-					analysis.getGlobal().put(keyword, evaluateKeyword(count, lanePlayCount));
-				} else { //아니면 LaneAnalysis 수정
-					analysis.getLaner().put(keyword, evaluateKeyword(count, lanePlayCount));
-				}
-			}
+			//라인별 키워드 등급 계산
+			keywordService.evaluateKeywordsForLane(keywordCounts, lanePlayCount, analysis);
 		}
 
 		//championRoleMap 돌며 반복
@@ -308,65 +300,15 @@ public class RecentTwentyMatchBuilderService {
 			int lanePlayCount = laneCounts.getOrDefault(lane.name(), 0);
 
 			//라인에 따라 사용할 Analysis 변경
-			Analysis<? extends Enum<?>> analysis = switch (lane) {
-				case TOP -> keywordAnalysisResult.topKeywordAnalysis;
-				case JUNGLE -> keywordAnalysisResult.jugKeywordAnalysis;
-				case MIDDLE -> keywordAnalysisResult.midKeywordAnalysis;
-				case BOTTOM -> keywordAnalysisResult.adKeywordAnalysis;
-				case UTILITY -> keywordAnalysisResult.supKeywordAnalysis;
-			};
+			Analysis<? extends Enum<?>> analysis = getAnalysisByLane(matchAnalysisResult, lane);
 
-			//챔피언 롤 개수만큼 반복
-			for (Map.Entry<ChampionRole, Integer> championRoleEntry : championRoleCounts.entrySet()) {
-				ChampionRole championRole = championRoleEntry.getKey();
-				int count = championRoleEntry.getValue();
-				analysis.getChampionRole().put(championRole.name(), evaluateChampionRole(count, lanePlayCount));
-			}
+			//라인별 챔피언 역할 등급 계산
+			championInfoService.evaluateChampionRolesForLane(championRoleCounts, lanePlayCount, analysis);
+
 		}
-		return keywordAnalysisResult;
+		return matchAnalysisResult;
 	}
 
-
-	/**
-	 * 경기 수 대비 키워드 수로 키워드 등급 계산하는 메서드
-	 * @param keywordCount
-	 * @param lanePlayCount
-	 * @return 키워드 등급 String
-	 */
-
-	private String evaluateKeyword(int keywordCount, int lanePlayCount) {
-		if (lanePlayCount <= 3) { //해당 라인을 3회 이하로 플레이한 경우
-			return (keywordCount >= 1) ? "평범" : "없음"; //평범 아니면 없음만 리턴
-		}
-
-		if (keywordCount == 0) {
-			return "없음";
-		}
-
-		double ratio = (double) keywordCount / lanePlayCount;
-
-		if (ratio >= 0.75) return "매우 좋음";
-		if (ratio >= 0.5) return "좋음";
-		if (ratio >= 0.25) return "평범";
-		return "없음";
-	}
-
-	/**
-	 * 챔피언 역할 등급을 계산하는 메서드
-	 * @param championRoleCount
-	 * @return 챔피언 역할 등급 String
-	 */
-
-	private String evaluateChampionRole(int championRoleCount, int lanePlayCount) {
-		if (championRoleCount == 0) {
-			return "없음";
-		}
-		if (lanePlayCount <= 3) { //해당 라인을 3회 이하로 플레이한 경우
-			return "보통";
-		}
-		double ratio = (double) championRoleCount / lanePlayCount;
-		return ratio >= 0.4 ? "좋음" : "보통";
-	}
 
 	// 20경기 승률 계산 메서드
 	private int calculateWinRate(int wins, int losses) {
