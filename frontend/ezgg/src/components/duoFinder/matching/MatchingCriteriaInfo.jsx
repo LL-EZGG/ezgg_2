@@ -1,6 +1,49 @@
 import styled from '@emotion/styled';
+import { keyword } from '../../../data/keyword';
 
 const MatchingCriteriaInfo = ({ matchingCriteria }) => {
+  // 키워드 value를 한국어로 변환하는 함수
+  const getKeywordText = (keywordValue) => {
+    // global, jungle, support, laner의 모든 키워드를 하나의 객체로 합침
+    const allKeywords = {
+      ...keyword.global,
+      ...keyword.jungle,
+      ...keyword.support,
+      ...keyword.laner
+    };
+    
+    // value에 해당하는 key(한국어)를 찾음
+    return Object.entries(allKeywords).find(entry => entry[1] === keywordValue)?.[0] || keywordValue;
+  };
+
+  // 선택된 키워드 텍스트 가져오기
+  const getSelectedKeywordsText = () => {
+    const { userPreferenceText, wantLine } = matchingCriteria;
+    
+    if (!userPreferenceText) return '없음';
+    
+    // 모든 라인의 키워드가 global과 laner로 통일됨
+    if (['TOP', 'MID', 'AD', 'JUG', 'SUP'].includes(wantLine.partnerLine)) {
+      try {
+        const preferences = JSON.parse(userPreferenceText);
+        const selectedKeywords = [
+          ...Object.entries(preferences.global || {})
+            .filter(([, value]) => value === "매우 좋음")
+            .map(([key]) => getKeywordText(key)),
+          ...Object.entries(preferences.laner || {})
+            .filter(([, value]) => value === "매우 좋음")
+            .map(([key]) => getKeywordText(key))
+        ];
+        
+        return selectedKeywords.length > 0 ? selectedKeywords.join(', ') : '없음';
+      } catch (e) {
+        return '없음';
+      }
+    }
+    
+    return '없음';
+  };
+
   return (
     <Container>
       <LoadingSpinner />
@@ -22,7 +65,7 @@ const MatchingCriteriaInfo = ({ matchingCriteria }) => {
                     : '없음'
             }
             </p>
-            <p>원하는 상대의 플레이 스타일: {matchingCriteria.userPreferenceText}</p>
+            <p>원하는 상대의 플레이 스타일: {getSelectedKeywordsText()}</p>
         </Stats>
     </Container>
   );

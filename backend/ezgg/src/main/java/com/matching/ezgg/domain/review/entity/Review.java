@@ -44,4 +44,8 @@ public class Review {
 		this.matchId = matchId;
 		this.reviewScore = reviewScore;
 	}
+
+	public void updateReviewScore(int reviewScore) {
+		this.reviewScore = reviewScore;
+	}
 }

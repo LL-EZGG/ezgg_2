@@ -1,7 +1,9 @@
 package com.matching.ezgg.domain.review.util;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
 
@@ -9,17 +11,29 @@ import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
  * 리뷰 관련 유틸리티 클래스
  */
 public final class ReviewUtil {
+	public static boolean isSameMatchIds(List<String> matchIds1, List<String> matchIds2) {
+		if (matchIds1.size() != matchIds2.size()) {
+			return false;
+		}
+		Set<String> set1 = new HashSet<>(matchIds1);
+		Set<String> set2 = new HashSet<>(matchIds2);
+		return set1.equals(set2);
+	}
 	/**
-	 * 리뷰를 남길 때, 두 유저의 매치 아이디 리스트가 같은지 확인하는 메서드
+	 * 리스트1과 리스트2의 교집합을 구하는 메서드
 	 * @param list1
 	 * @param list2
-	 * @return 같으면 true, 다르면 false
+	 * @return 교집합된 요소들의 리스트
 	 */
-	public static boolean isSameMatchIdList(List<String> list1, List<String> list2) {
-		if (list1 == null || list2 == null) return false;
-		if (list1.size() != list2.size()) return false;
-
-		return new HashSet<>(list1).equals(new HashSet<>(list2));
+	public static List<String> getCommonElements(List<String> list1, List<String> list2) {
+		Set<String> set2 = new HashSet<>(list2);
+		List<String> result = new ArrayList<>();
+		for (String item : list1) {
+			if (set2.contains(item)) {
+				result.add(item);
+			}
+		}
+		return result;
 	}
 	/**
 	 * 내 팀의 ID를 가져오는 메서드

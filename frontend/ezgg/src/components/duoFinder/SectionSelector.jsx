@@ -9,6 +9,7 @@
 import styled from '@emotion/styled';
 import React, {useEffect, useRef, useState} from "react";
 import {champions} from "../../data/champions.js";
+import {keyword} from "../../data/keyword.js";
 
 /* ------------- 상수 ---------------------------------------------------------------- */
 
@@ -42,10 +43,19 @@ const handleLineSelect = (type, line, matchingCriteria, setMatchingCriteria) => 
     [type]: currentWantLine[type] === line ? '' : line
   };
 
-  setMatchingCriteria({
-    ...matchingCriteria,
-    wantLine: newWantLine
-  });
+  // 상대 라인이 변경될 때 userPreferenceText 초기화
+  if (type === 'partnerLine') {
+    setMatchingCriteria({
+      ...matchingCriteria,
+      wantLine: newWantLine,
+      userPreferenceText: ''  // 플레이스타일 키워드 초기화
+    });
+  } else {
+    setMatchingCriteria({
+      ...matchingCriteria,
+      wantLine: newWantLine
+    });
+  }
 };
 
 /* ------------- 메인 컴포넌트 ---------------------------------------------------------- */
@@ -304,7 +314,7 @@ const SectionSelector = ({
             <input
               type="text"
               placeholder="챔피언 검색..."
-              value={searchTerm}
+              value={kind === 'preferred' ? searchTerm : bannedSearchTerm}
               onChange={(e) => {
                 handleChange(e, kind);
               }}
@@ -372,25 +382,112 @@ const SectionSelector = ({
       </Section>
     );
   } else if (type === 'userPreferenceText'){
+    const selectedLine = matchingCriteria?.wantLine?.partnerLine || '';
+    
+    // 라인이 선택되지 않았으면 렌더링하지 않음
+    if (!selectedLine) {
+      return null;
+    }
 
-    /* ---------------- 렌더링: 사용자 메모 입력 ------------------------------ */
+    // 라인에 따른 키워드 세트 결정
+    const getKeywordsByLine = (line) => {
+      const keywords = {...keyword.global};
+      
+      if (line === 'JUG') {
+        return {...keywords, ...keyword.jungle};
+      } else if (line === 'SUP') {
+        return {...keywords, ...keyword.support};
+      } else {
+        return {...keywords, ...keyword.laner};
+      }
+    };
+
+    const availableKeywords = getKeywordsByLine(selectedLine);
+    let selectedKeywords = [];
+
+    // 선택된 키워드 파싱
+    if (matchingCriteria.userPreferenceText) {
+      try {
+        const preferences = JSON.parse(matchingCriteria.userPreferenceText);
+        selectedKeywords = [
+          ...Object.entries(preferences.global || {})
+            .filter(([key, value]) => value === "매우 좋음")
+            .map(([key]) => key),
+          ...Object.entries(preferences.laner || {})
+            .filter(([key, value]) => value === "매우 좋음")
+            .map(([key]) => key)
+        ];
+      } catch (e) {
+        selectedKeywords = [];
+      }
+    } else {
+      selectedKeywords = [];
+    }
+
+    const handleKeywordClick = (value) => {
+      const keywordIndex = selectedKeywords.indexOf(value);
+      let newKeywords;
+
+      // 키워드 추가 또는 제거
+      if (keywordIndex === -1) {
+        if (selectedKeywords.length >= 5) return;
+        newKeywords = [...selectedKeywords, value];
+      } else {
+        newKeywords = selectedKeywords.filter((k) => k !== value);
+      }
+
+      // 모든 라인의 키워드를 global과 laner로 통일
+      const globalKeywords = keyword.global;
+      let lanerKeywords;
+      
+      // 라인별로 적절한 키워드 세트 선택
+      if (selectedLine === 'JUG') {
+        lanerKeywords = keyword.jungle;
+      } else if (selectedLine === 'SUP') {
+        lanerKeywords = keyword.support;
+      } else {
+        lanerKeywords = keyword.laner;
+      }
+      
+      // JSON 객체 생성 (모든 라인이 global과 laner로 통일)
+      const preferenceObject = {
+        global: {},
+        laner: {}
+      };
+
+      // global 키워드 처리
+      Object.entries(globalKeywords).forEach(([text, val]) => {
+        preferenceObject.global[val] = newKeywords.includes(val) ? "매우 좋음" : "없음";
+      });
+
+      // laner 키워드 처리 (jungle이나 support 키워드도 laner로 저장)
+      Object.entries(lanerKeywords).forEach(([text, val]) => {
+        preferenceObject.laner[val] = newKeywords.includes(val) ? "매우 좋음" : "없음";
+      });
+
+      setMatchingCriteria({
+        ...matchingCriteria,
+        userPreferenceText: JSON.stringify(preferenceObject)
+      });
+    };
 
     return (
-        <Section>
-          <Label>원하는 상대의 플레이 스타일</Label>
-          <TextInput
-              type="text"
-              maxLength={TEXT_LIMIT}
-              placeholder="ex) 탱커를 잘함, 로밍을 잘감, ..."
-              value={matchingCriteria.userPreferenceText || ''}
-              onChange={(e) =>
-                  setMatchingCriteria({
-                    ...matchingCriteria,
-                    userPreferenceText: e.target.value.slice(0, TEXT_LIMIT),
-                  })
-              }
-          />
-        </Section>
+      <Section>
+        <Label>원하는 상대의 플레이 스타일 (최대 5개)</Label>
+        <KeywordContainer>
+          {Object.entries(availableKeywords).map(([text, value]) => (
+            <KeywordButton
+              key={value}
+              type="button"
+              selected={selectedKeywords.includes(value)}
+              disabled={!selectedKeywords.includes(value) && selectedKeywords.length >= 5}
+              onClick={() => handleKeywordClick(value)}
+            >
+              {text}
+            </KeywordButton>
+          ))}
+        </KeywordContainer>
+      </Section>
     );
   }
 
@@ -549,14 +646,24 @@ const ChampionTag = styled.div`
   }
 `;
 
-const TextInput = styled.input`
-  width: 100%;
-  padding: 0.5rem 0.8rem;
-  background: rgba(255, 255, 255, 0.1);
+const KeywordContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+const KeywordButton = styled.button`
+  padding: 0.5rem 1rem;
+  background: ${props => props.selected ? '#FF416C' : 'rgba(255, 255, 255, 0.1)'};
   border: none;
   border-radius: 4px;
-  color: white;
+  color: ${props => props.disabled ? 'rgba(255, 255, 255, 0.3)' : 'white'};
   font-size: 0.9rem;
-  &::placeholder { color: rgba(255, 255, 255, 0.5); }
-  &:focus { outline: none; }
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${props => props.selected ? '#FF416C' : props.disabled ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)'};
+  }
 `;
