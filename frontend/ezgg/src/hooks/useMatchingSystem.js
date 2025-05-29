@@ -22,17 +22,13 @@ export const useMatchingSystem = ({socket, sendMatchingRequest, sendCancelReques
             return;
         }
 
-        console.log('[useMatchingSystem] 매칭 시작:', criteria);
         setIsMatching(true);
         setMatchingCriteria(criteria);
         userCancelledRef.current = false;
-
-        // App.jsx에서 전달받은 sendMatchingRequest 사용
         sendMatchingRequest(criteria);
     }, [socket, sendMatchingRequest]);
 
     const handleMatchCancel = useCallback(() => {
-        console.log('[useMatchingSystem] 매칭 취소');
 
         userCancelledRef.current = true;
 
@@ -49,7 +45,6 @@ export const useMatchingSystem = ({socket, sendMatchingRequest, sendCancelReques
 
     // 상태 완전 초기화 함수 (로그아웃 시 사용)
     const resetMatchingState = useCallback(() => {
-        console.log('[useMatchingSystem] 매칭 상태 완전 초기화');
         userCancelledRef.current = true;
         setIsMatching(false);
         setMatchResult(null);
@@ -64,14 +59,13 @@ export const useMatchingSystem = ({socket, sendMatchingRequest, sendCancelReques
             // 사용자가 직접 취소하지 않은 상태에서 매칭 중이라면
             // 새로고침이나 페이지 이동일 가능성이 높으므로 취소하지 않음
             if (isMatching && !userCancelledRef.current) {
-                console.log('[useMatchingSystem] 새로고침/페이지이동 감지, 매칭 상태 유지');
+                console.log('새로고침/페이지이동 감지, 매칭 상태 유지');
                 // 취소 요청을 보내지 않음
                 return;
             }
-
             // 사용자가 직접 취소했거나 로그아웃한 경우에만 취소 요청
             if (isMatching && userCancelledRef.current) {
-                console.log('[useMatchingSystem] 사용자 의도적 취소, 매칭 취소 요청');
+                console.log('사용자 의도적 취소, 매칭 취소 요청');
                 sendCancelRequest();
             }
         };
@@ -82,7 +76,6 @@ export const useMatchingSystem = ({socket, sendMatchingRequest, sendCancelReques
             userCancelledRef.current = false;
         }
     }, [matchResult]);
-
 
     return {
         matchResult,
