@@ -165,12 +165,12 @@ public class ApiService {
 			String rawJson = asiaRestTemplate.getForObject(url, String.class);
 			// MatchDto 형식으로 매핑
 			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
-			String matchAnalysis = keywordAnalyzerService.buildMatchKeywordAnalysis(matchDto, rawJson, puuid, matchId,
+			List<String> matchKeywords = keywordAnalyzerService.giveMatchKeyword(rawJson, matchDto.getTeamPosition(), puuid, matchId,
 				memberId);
 			// MemberId, MatchAnalysis를 MatchDto에 따로 지정
 			matchDto = matchDto.toBuilder()
 				.memberId(memberInfoService.getMemberIdByPuuid(puuid))
-				.matchAnalysis(matchAnalysis)
+				.matchKeywords(matchKeywords)
 				.build();
 
 			log.info("matchInfo 조회 성공: puuid = {} matchId = {}", puuid, matchId);

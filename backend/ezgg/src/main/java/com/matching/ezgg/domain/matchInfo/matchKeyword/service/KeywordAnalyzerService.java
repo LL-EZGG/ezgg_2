@@ -1,5 +1,9 @@
 package com.matching.ezgg.domain.matchInfo.matchKeyword.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +16,8 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.GlobalKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.JugKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.LanerKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.SupKeyword;
-import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 import com.matching.ezgg.domain.riotApi.util.MatchMapper;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,39 +38,40 @@ public class KeywordAnalyzerService {
 	private final KeywordAnalyzer<SupMatchParsingDto, SupKeyword> supKeywordAnalyzer;
 
 	/**
-	 * Analyzer를 통해 Global 키워드와 포지션별 키워드를 부여하여 한 줄 평가를 생성하는 메서드
+	 * Analyzer를 통해 Global 키워드와 포지션별 키워드를 부여하여 키워드 리스트를 생성하는 메서드
 	 * @param rawJson
 	 * @param teamPosition
 	 * @param puuid
 	 * @param matchId
 	 * @param memberId
-	 * @return 한 match에 부여된 모든 평가를 합친 String
+	 * @return 한 match에 부여된 키워드 리스트 List<String>
 	 */
 
-	private String giveMatchKeyword(String rawJson, String teamPosition, String puuid, String matchId, Long memberId) {
+	public List<String> giveMatchKeyword(String rawJson, String teamPosition, String puuid, String matchId,
+		Long memberId) {
 		GlobalMatchParsingDto globalMatchParsingDto = matchMapper.toGlobalMatchParsingDto(rawJson, puuid);
-		StringBuilder matchAnalysis = new StringBuilder();
-		//global 키워드에 대한 한 줄 평가 생성
-		matchAnalysis.append(globalKeywordAnalyzer.analyze(globalMatchParsingDto, teamPosition, matchId, memberId));
 
-		//포지션별 키워드에 대한 한 줄 평가 생성
-		switch (teamPosition) {
-			case ("TOP"), ("MIDDLE"), ("BOTTOM"):
+		//global 키워드 리스트 생성
+		List<String> globalKeywords = globalKeywordAnalyzer.analyze(globalMatchParsingDto, teamPosition, matchId, memberId);
+
+		//포지션별 키워드 리스트 생성
+		List<String> positionKeywords = switch (teamPosition) {
+			case ("TOP"), ("MIDDLE"), ("BOTTOM") -> {
 				LanerMatchParsingDto lanerMatchParsingDto = matchMapper.toLanerMatchParsingDto(rawJson, puuid,
 					teamPosition);
-				matchAnalysis.append(
-					lanerKeywordAnalyzer.analyze(lanerMatchParsingDto, teamPosition, matchId, memberId));
-				break;
-			case ("JUNGLE"):
+				yield lanerKeywordAnalyzer.analyze(lanerMatchParsingDto, teamPosition, matchId, memberId);
+			}
+			case ("JUNGLE") -> {
 				JugMatchParsingDto jugMatchParsingDto = matchMapper.toJugMatchParsingDto(rawJson, puuid);
-				matchAnalysis.append(jugKeywordAnalyzer.analyze(jugMatchParsingDto, teamPosition, matchId, memberId));
-				break;
-			case ("UTILITY"):
+				yield jugKeywordAnalyzer.analyze(jugMatchParsingDto, teamPosition, matchId, memberId);
+			}
+			case ("UTILITY") -> {
 				SupMatchParsingDto supMatchParsingDto = matchMapper.toSupMatchParsingDto(rawJson, puuid);
-				matchAnalysis.append(supKeywordAnalyzer.analyze(supMatchParsingDto, teamPosition, matchId, memberId));
-				break;
-		}
-		return matchAnalysis.toString();
+				yield supKeywordAnalyzer.analyze(supMatchParsingDto, teamPosition, matchId, memberId);
+			}
+			default -> List.of();
+		};
+		return new ArrayList<>(Stream.concat(globalKeywords.stream(), positionKeywords.stream()).toList());
 	}
 
 	/**
@@ -81,12 +84,12 @@ public class KeywordAnalyzerService {
 	 * @return 한 줄 평가 String
 	 */
 
-	@Transactional
-	public String buildMatchKeywordAnalysis(MatchDto matchDto, String rawJson, String puuid, String matchId,
-		Long memberId) {
-		StringBuilder analysis = new StringBuilder();
-		analysis.append(keywordService.extractChampionRole(matchDto.getChampionName()));
-		analysis.append(giveMatchKeyword(rawJson, matchDto.getTeamPosition(), puuid, matchId, memberId));
-		return analysis.toString();
-	}
+	// @Transactional
+	// public String buildMatchKeywordAnalysis(MatchDto matchDto, String rawJson, String puuid, String matchId,
+	// 	Long memberId) {
+	// 	StringBuilder analysis = new StringBuilder();
+	// 	analysis.append(keywordService.extractChampionRole(matchDto.getChampionName()));
+	// 	analysis.append(giveMatchKeyword(rawJson, matchDto.getTeamPosition(), puuid, matchId, memberId));
+	// 	return analysis.toString();
+	// }
 }
