@@ -48,6 +48,7 @@ public class KeywordService {
 
 	public String extractChampionRole(String championName) {
 		StringBuilder analysis = new StringBuilder();
+		log.info("[INFO] 챔피언 이름: {}", championName);
 		List<ChampionRole> championRoles = ChampionBasicInfo.valueOf(
 			championName.replaceAll("[^a-zA-Z0-9]", "").trim().toUpperCase()).getChampionRoles();
 

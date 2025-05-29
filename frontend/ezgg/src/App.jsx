@@ -9,6 +9,8 @@ import {useMatchingSystem} from "./hooks/useMatchingSystem.js";
 import {MatchingButtonPanel} from "./components/duoFinder/matching/MatchingButtonPanel.jsx";
 import {useWebSocket} from './hooks/useWebSocket';
 import ReviewModal from './components/review/ReviewModal';
+import {STORAGE_KEYS} from './utils/constants';
+import {useStateManager} from "./hooks/useStateManager.js";
 
 // 로그인 상태에 따라 리다이렉트하는 보호된 라우트 컴포넌트
 const ProtectedRoute = ({element, isLoggedIn}) => {
@@ -18,13 +20,10 @@ const ProtectedRoute = ({element, isLoggedIn}) => {
     if (location.pathname === '/login' && isLoggedIn) {
         return <Navigate to="/" replace/>;
     }
-
     // 로그인이 필요한 페이지이고 로그인되지 않은 경우 로그인 페이지로 리다이렉트
     if (!isLoggedIn) {
-        console.log('로그인되지 않음, 로그인 페이지로 리다이렉트');
         return <Navigate to="/login" state={{from: location}} replace/>;
     }
-
     // 로그인 상태이면 요청한 페이지 렌더링
     return element;
 };
@@ -41,6 +40,7 @@ const App = () => {
 
     // 채팅 관련 상태
     const [chatMessages, setChatMessages] = useState([]);
+    const [currentChatRoomId, setCurrentChatRoomId] = useState(null);
 
     // 리뷰 모달 관련 상태
     const [reviewModalVisible, setReviewModalVisible] = useState(false);
@@ -49,11 +49,10 @@ const App = () => {
 
     // WebSocket 관련 핸들러 정의
     const handleSocketMessage = (message) => {
-        console.log('[App] 매칭 메시지 수신:', message);
 
         // 매칭 성공 시 matchResult 업데이트 (서버 응답 구조에 맞게 수정)
         if (message.status === "SUCCESS" && message.data?.chattingRoomId) {
-            console.log('[App] 매칭 성공! 결과:', message);
+            console.log('매칭 성공! 결과:', message);
 
             // 서버 응답 구조에 맞게 matchResult 생성
             const matchResult = {
@@ -67,10 +66,11 @@ const App = () => {
                     wins: message.data.memberInfoDto.wins,
                     losses: message.data.memberInfoDto.losses
                 },
-                data: message.data // 전체 데이터도 포함
+                data: message.data
             };
 
             setMatchResult(matchResult);
+            setCurrentChatRoomId(message.data.chattingRoomId);
             setIsMatching(false);
             alert(`🎉 매칭 성공!\n상대방: ${message.data.memberInfoDto.riotUsername}#${message.data.memberInfoDto.riotTag}\n티어: ${message.data.memberInfoDto.tier} ${message.data.memberInfoDto.tierNum}`);
         } else if (message.cancelled) {
@@ -83,27 +83,32 @@ const App = () => {
     };
 
     const handleChatMessage = (message) => {
-        console.log('[App] 🔥🔥🔥 채팅 메시지 수신됨!!!:', message);
-        console.log('[App] 메시지 타입:', typeof message, message);
         setChatMessages(prev => {
-            console.log('[App] 이전 chatMessages:', prev);
-            const newMessages = [...prev, message];
-            console.log('[App] 새로운 chatMessages:', newMessages);
-            return newMessages;
+            // 동일한 메시지가 이미 있는지 확인 (timestamp와 sender, message로 판단)
+            const isDuplicate = prev.some(existingMsg =>
+                existingMsg.timestamp === message.timestamp &&
+                existingMsg.sender === message.sender &&
+                existingMsg.message === message.message
+            );
+
+            if (isDuplicate) {
+                return prev; // 기존 배열 그대로 반환
+            }
+
+            return [...prev, message];
         });
     };
 
     const handleSocketConnect = () => {
-        console.log('[App] 웹소켓 연결 성공');
+        console.log('웹소켓 연결 성공');
     };
 
     const handleSocketDisconnect = () => {
-        console.log('[App] 웹소켓 연결 해제');
-        setChatMessages([]);
+        console.log('웹소켓 연결 해제');
     };
 
     const handleSocketError = (error) => {
-        console.error('[App] 웹소켓 에러:', error);
+        console.error('웹소켓 에러:', error);
     };
 
     const handleReviewRequest = (username, matchId) => {
@@ -120,6 +125,7 @@ const App = () => {
         sendChatMessage,
         sendMatchingRequest,
         sendCancelRequest,
+        subscribeToChatRoom,
         isConnected
     } = useWebSocket({
         onMessage: handleSocketMessage,
@@ -139,46 +145,80 @@ const App = () => {
         isMatching,
         setIsMatching,
         handleMatchStart,
-        handleMatchCancel
+        handleMatchCancel,
+        resetMatchingState
     } = useMatchingSystem({
         socket,
         sendMatchingRequest,
         sendCancelRequest
     });
 
-    // 앱 시작 시 로컬 스토리지에서 토큰을 확인하여 로그인 상태 유지
+    // useStateManager 훅 사용
+    const {
+        restoreAppState,
+        saveMatchingState,
+        saveChatMessages,
+        performLogoutSteps,
+        clearChatState,
+    } = useStateManager(
+        {
+            setIsMatching,
+            setMatchResult,
+            setMatchingCriteria,
+            setCurrentChatRoomId,
+            setChatMessages,
+            resetMatchingState,
+            subscribeToChatRoom
+        });
+
+    // 앱 시작 시 로컬 스토리지에서 토큰을 확인하여 로그인 상태 유지 - 단순화
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            console.log('토큰 발견, 자동 로그인 시도');
-            setIsLoggedIn(true);
-            fetchUserInfo();
-        } else {
-            setUserDataLoading(false);
-        }
-    }, []);
+        const initializeApp = async () => {
+            const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+            if (token) {
+                setIsLoggedIn(true);
+                restoreAppState();
+                fetchUserInfo();
+            } else {
+                setUserDataLoading(false);
+            }
+        };
+
+        initializeApp();
+    }, []); // 빈 배열로 변경
 
     // 로그인 상태 변경 시 웹소켓 연결/해제
     useEffect(() => {
         if (isLoggedIn && !isConnected && !userDataLoading) {
-            console.log('[App] 로그인 상태 - 웹소켓 연결 시작');
-            connect();
+            console.log('로그인 상태 - 웹소켓 연결 시작');
+            connect(null, currentChatRoomId);
         } else if (!isLoggedIn && isConnected) {
-            console.log('[App] 로그아웃 상태 - 웹소켓 연결 해제');
+            console.log('로그아웃 상태 - 웹소켓 연결 해제');
             disconnect();
         }
-    }, [isLoggedIn, isConnected, userDataLoading, connect, disconnect]);
+    }, [isLoggedIn, isConnected, userDataLoading, connect, disconnect, currentChatRoomId]);
 
-    // 토큰을 사용하여 사용자 정보 가져오기
+    // 매칭 상태 변경 시마다 저장하는 useEffect
+    useEffect(() => {
+        if (isLoggedIn) {
+            saveMatchingState(isMatching, matchResult, matchingCriteria);
+        }
+    }, [isMatching, matchResult, matchingCriteria, isLoggedIn, saveMatchingState]);
+
+    // 채팅 메시지 변경 시 저장하는 useEffect
+    useEffect(() => {
+        if (isLoggedIn && chatMessages.length > 0) {
+            saveChatMessages(chatMessages);
+        }
+    }, [chatMessages, isLoggedIn, saveChatMessages]);
+
+    // 토큰을 사용하여 사용자 정보 가져오기 - 에러 처리만 강화
     const fetchUserInfo = async () => {
         setUserDataLoading(true);
         try {
-            console.log('사용자 정보 요청 중...');
             const memberInfoResponse = await api.get('/auth/memberinfo');
-            console.log('사용자 정보 API 응답:', memberInfoResponse);
 
             if (memberInfoResponse.data && memberInfoResponse.data.data) {
-                console.log('기본 사용자 정보 가져오기 성공:', memberInfoResponse.data.data);
                 setUserInfo({
                     riotUsername: memberInfoResponse.data.data.riotUsername || '사용자',
                     riotTag: memberInfoResponse.data.data.riotTag || 'KR'
@@ -186,18 +226,28 @@ const App = () => {
 
                 try {
                     const dataBundleResponse = await api.get('/auth/memberdatabundle');
-                    console.log('데이터 번들 API 응답:', dataBundleResponse);
 
                     if (dataBundleResponse.data && dataBundleResponse.data.data) {
-                        console.log('사용자 데이터 번들 가져오기 성공:', dataBundleResponse.data.data);
                         setMemberDataBundle(dataBundleResponse.data.data);
                     }
                 } catch (bundleError) {
                     console.error('사용자 데이터 번들 가져오기 실패:', bundleError);
+                    // 에러가 발생해도 기본값으로 설정하여 앱이 계속 동작하도록
+                    setMemberDataBundle({
+                        memberInfoDto: {
+                            riotUsername: memberInfoResponse.data.data.riotUsername || '사용자',
+                            riotTag: memberInfoResponse.data.data.riotTag || 'KR'
+                        },
+                        recentTwentyMatchDto: null // null로 설정
+                    });
                 }
             }
         } catch (error) {
             console.error('사용자 정보 가져오기 실패:', error);
+            // 인증 에러시 로그아웃 처리
+            if (error.response?.status === 401) {
+                handleLogout();
+            }
         } finally {
             setUserDataLoading(false);
         }
@@ -205,7 +255,7 @@ const App = () => {
 
     useEffect(() => {
         if (userInfo) {
-            console.log('userInfo 변경됨:', userInfo);
+            console.log('userInfo 변경됨:');
         }
     }, [userInfo]);
 
@@ -215,29 +265,32 @@ const App = () => {
         setIsLoggingOut(true);
 
         try {
-            const token = localStorage.getItem('token');
-
+            const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
             if (!token) {
                 console.warn('토큰이 없습니다. 로컬에서만 로그아웃합니다.');
             } else {
-                const response = await api.post('/auth/logout');
-                console.log('서버 로그아웃 성공:', response.data);
+                try {
+                    await api.post('/auth/logout');
+                } catch (serverError) {
+                    console.error('서버 로그아웃 실패 (계속 진행):', serverError);
+                }
             }
-        } catch (error) {
-            console.error('서버 로그아웃 실패:', error);
-        } finally {
-            // 로컬 스토리지에서 토큰 제거
-            localStorage.removeItem('token');
 
-            // 상태 초기화
+            resetMatchingState();
+            clearChatState();
+
+            await performLogoutSteps(isMatching, handleMatchCancel, isConnected, disconnect);
+
             setIsLoggedIn(false);
-            setUserInfo({
-                riotUsername: '',
-                riotTag: ''
-            });
+            setUserInfo({riotUsername: '', riotTag: ''});
             setMemberDataBundle(null);
+            setUserDataLoading(false);
 
-            console.log('로그아웃 처리 완료');
+            delete api.defaults.headers.common['Authorization'];
+        } catch (error) {
+            console.error('로그아웃 과정에서 오류 발생:', error);
+        } finally {
+            console.log(' 로그아웃 처리 완료');
             setIsLoggingOut(false);
         }
     };
@@ -308,10 +361,10 @@ const App = () => {
                         />
                     }/>
                     <Route path="/login"
-                        element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
+                           element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
                     <Route path="/join" element={<Join/>}/>
                 </Routes>
-                <ReviewModal 
+                <ReviewModal
                     visible={reviewModalVisible}
                     onClose={() => setReviewModalVisible(false)}
                     targetUsername={reviewTargetUsername}
@@ -414,6 +467,7 @@ const LogoutButton = styled.button`
     padding: 0.5rem 1rem;
     border-radius: 4px;
     background: #FF416C;
+    border: none;
     text-decoration: none;
     transition: opacity 0.2s;
 

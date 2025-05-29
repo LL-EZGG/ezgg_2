@@ -13,33 +13,21 @@ const ChatRoom = ({userInfo, matchResult, chatMessages, sendChatMessage, isConne
         console.log('[ChatRoom] chatMessages 업데이트:', chatMessages);
 
         if (chatMessages && chatMessages.length > 0) {
-            // 가장 최근 메시지만 처리
-            const latestMessage = chatMessages[chatMessages.length - 1];
-            console.log('[ChatRoom] 최신 메시지:', latestMessage);
+            const formattedMessages = chatMessages.map((msg, index) => ({
+                id: msg.id || Date.now() + index,
+                sender: msg.sender || '알 수 없음',
+                text: msg.message || msg.text || '',
+                timestamp: msg.timestamp || new Date().toISOString(),
+                isOwn: msg.sender === userInfo.riotUsername
+            }));
 
-            // 서버에서 오는 메시지 구조에 맞춰 변환
-            const formattedMessage = {
-                id: Date.now() + Math.random(),
-                sender: latestMessage.sender || '알 수 없음',
-                text: latestMessage.message || latestMessage.text || '',
-                timestamp: latestMessage.timestamp || new Date().toISOString(),
-                isOwn: latestMessage.sender === userInfo.riotUsername // 내가 보낸 메시지인지 확인
-            };
+            // 시스템 메시지 + 모든 채팅 메시지로 완전 동기화
+            setMessages([
+                {id: 1, sender: 'System', text: '채팅방에 오신 것을 환영합니다!', timestamp: new Date().toISOString()},
+                ...formattedMessages
+            ]);
 
-            // 중복 체크 단순화 - 최근 5개 메시지와만 비교
-            const recentMessages = messages.slice(-5);
-            const isDuplicate = recentMessages.some(msg =>
-                msg.sender === formattedMessage.sender &&
-                msg.text === formattedMessage.text &&
-                Math.abs(new Date(msg.timestamp) - new Date(formattedMessage.timestamp)) < 2000
-            );
-
-            if (!isDuplicate) {
-                console.log('[ChatRoom] 새 메시지 추가:', formattedMessage);
-                setMessages(prev => [...prev, formattedMessage]);
-            } else {
-                console.log('[ChatRoom] 중복 메시지 무시');
-            }
+            console.log('[ChatRoom] 메시지 완전 동기화 완료:', formattedMessages.length, '개');
         }
     }, [chatMessages, userInfo.riotUsername]);
 
@@ -62,16 +50,6 @@ const ChatRoom = ({userInfo, matchResult, chatMessages, sendChatMessage, isConne
             sender: userInfo.riotUsername
         });
 
-        // 내가 보낸 메시지를 즉시 화면에 표시 (UI 반응성을 위해)
-        const newMsg = {
-            id: Date.now(),
-            sender: userInfo.riotUsername || '나',
-            text: input.trim(),
-            timestamp: new Date().toISOString(),
-            isOwn: true
-        };
-
-        setMessages(prev => [...prev, newMsg]);
 
         // WebSocket으로 메시지 전송
         sendChatMessage(
