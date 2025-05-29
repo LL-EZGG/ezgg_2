@@ -1,5 +1,6 @@
 package com.matching.ezgg.domain.matchInfo.matchKeyword.analyzer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.matching.ezgg.domain.matchInfo.matchKeyword.entity.MatchKeyword;
@@ -10,7 +11,7 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.service.KeywordService;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class KeywordAnalyzer<T, K> {
+public class KeywordAnalyzer<T, K extends Enum<K>> {
 
 	private final KeywordService keywordService;
 	private final List<KeywordRule<T, K>> rules;
@@ -21,17 +22,17 @@ public class KeywordAnalyzer<T, K> {
 	}
 
 	/**
-	 * matchData를 파싱한 dto를 기준으로 키워드를 생성하고 한 줄 자연어 평가를 생성하는 메서드
+	 * matchData를 파싱한 dto를 기준으로 키워드를 생성하고 키워드 리스트를 반환하는 메서드
 	 * @param matchParsingDto
 	 * @param teamPosition
 	 * @param matchId
 	 * @param memberId
-	 * @return match 데이터 분석 String(keyword 합친 String)
+	 * @return match 키워드 List<String>
 	 */
 
-	public String analyze(T matchParsingDto, String teamPosition, String matchId, Long memberId) {
+	public List<String> analyze(T matchParsingDto, String teamPosition, String matchId, Long memberId) {
 
-		StringBuilder analysis = new StringBuilder();
+		List<String> keywordList = new ArrayList<>();
 		Lane lane;
 		try {
 			lane = Lane.valueOf(teamPosition);
@@ -44,16 +45,16 @@ public class KeywordAnalyzer<T, K> {
 			//규칙에 부합하면
 			if (rule.matchWithRule(matchParsingDto, lane)) {
 				//키워드 생성 및 저장
-				String keywordDescription = rule.getDescription();
-				MatchKeyword matchKeyword = keywordService.createMatchKeyword(keywordDescription, lane, matchId,
+				String keyword = rule.getKeyword().name();
+				MatchKeyword matchKeyword = keywordService.createMatchKeyword(keyword, lane, matchId,
 					memberId);
 				keywordService.saveMatchKeyword(matchKeyword);
-				//자연어 평가 생성
-				analysis.append(keywordDescription).append(",");
+				//키워드 리스트에 추가
+				keywordList.add(keyword);
 			}
 		}
-		log.info("[INFO] Analysis: {}, {}", analysis, memberId);
-		return analysis.toString();
+		log.info("[INFO] Analysis: {}, {}", keywordList, memberId);
+		return keywordList;
 	}
 
 }
