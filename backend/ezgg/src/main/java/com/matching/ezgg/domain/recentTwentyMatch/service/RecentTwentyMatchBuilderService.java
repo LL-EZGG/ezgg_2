@@ -1,5 +1,6 @@
 package com.matching.ezgg.domain.recentTwentyMatch.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.domain.matchInfo.entity.MatchInfo;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionBasicInfo;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionRole;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.analysis.Analysis;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.GlobalKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.JugKeyword;
@@ -103,6 +106,11 @@ public class RecentTwentyMatchBuilderService {
 		Map<String, Integer> midKeywordCount = new LinkedHashMap<>();
 		Map<String, Integer> adKeywordCount = new LinkedHashMap<>();
 		Map<String, Integer> supKeywordCount = new LinkedHashMap<>();
+		Map<ChampionRole, Integer> topRoleCount = new LinkedHashMap<>();
+		Map<ChampionRole, Integer> jugRoleCount = new LinkedHashMap<>();
+		Map<ChampionRole, Integer> midRoleCount = new LinkedHashMap<>();
+		Map<ChampionRole, Integer> adRoleCount = new LinkedHashMap<>();
+		Map<ChampionRole, Integer> supRoleCount = new LinkedHashMap<>();
 		Map<String, ChampionStat> allChampionStats = new HashMap<>();
 	}
 
@@ -148,14 +156,45 @@ public class RecentTwentyMatchBuilderService {
 
 			// 라인별 키워드 횟수 카운트
 			Map<Lane, Map<String, Integer>> laneKeywordMap = createLaneKeywordMap(result);
+
+			//특정 라인의 키워드 카운트 맵 꺼냄
 			Map<String, Integer> keywordCountMap = laneKeywordMap.get(lane);
 
 			for (String keyword : matchInfo.getMatchKeywords()) {
 				keywordCountMap.put(keyword, keywordCountMap.getOrDefault(keyword, 0) + 1);
 			}
+
+			// 라인별 챔피언 역할 횟수 카운트
+			Map<Lane, Map<ChampionRole, Integer>> laneChampionRoleMap = createChampionRoleMap(result);
+
+			//특정 라인의 챔피언 롤 카운트 맵 꺼냄
+			Map<ChampionRole, Integer> championRoleCountMap = laneChampionRoleMap.get(lane);
+
+			String championName = cleanedName(matchInfo.getChampionName());
+			List<ChampionRole> championRoles = new ArrayList<>();
+			try {
+				championRoles = ChampionBasicInfo.valueOf(championName).getChampionRoles();
+			} catch (IllegalArgumentException | NullPointerException e) {
+				throw new IllegalArgumentException("유효하지 않은 챔피언명 입니다.", e);
+			}
+
+			for (ChampionRole championRole : championRoles) {
+				championRoleCountMap.put(championRole, championRoleCountMap.getOrDefault(championRole, 0) + 1);
+			}
 		}
 
 		return result;
+	}
+
+	/**
+	 * 챔피언명에서 특수문자 및 공백 제거하는 메서드
+	 * @param championName
+	 * @return 챔피언명 String
+	 */
+	private String cleanedName(String championName) {
+		return championName
+			.replaceAll("[^a-zA-Z0-9]", "")
+			.toUpperCase();
 	}
 
 	/**
@@ -197,6 +236,22 @@ public class RecentTwentyMatchBuilderService {
 	}
 
 	/**
+	 * 라인과 championRole 키워드 횟수를 묶은 Map을 생성하는 메서드
+	 * @param result
+	 * @return Map<Lane, Map<String(챔피언 역할명), Integer(횟수)>>
+	 */
+
+	private Map<Lane, Map<ChampionRole, Integer>> createChampionRoleMap(AggregateResult result) {
+		return Map.of(
+			Lane.TOP, result.topRoleCount,
+			Lane.JUNGLE, result.jugRoleCount,
+			Lane.MIDDLE, result.midRoleCount,
+			Lane.BOTTOM, result.adRoleCount,
+			Lane.UTILITY, result.supRoleCount
+		);
+	}
+
+	/**
 	 * evaluateKeyword를 통해 키워드 등급을 계산하고
 	 * 해당 등급들을 Analysis 클래스를 이용해 JSON 형태로 만드는 메서드
 	 * @param result
@@ -211,6 +266,9 @@ public class RecentTwentyMatchBuilderService {
 
 		//라인과 라인별 키워드 횟수를 묶은 Map 생성
 		Map<Lane, Map<String, Integer>> laneKeywordMap = createLaneKeywordMap(result);
+
+		//라인과 챔피언 롤 횟수를 묶은 Map 생성
+		Map<Lane, Map<ChampionRole, Integer>> championRoleMap = createChampionRoleMap(result);
 
 		//laneKeywordMap 돌며 반복
 		for (Map.Entry<Lane, Map<String, Integer>> entry : laneKeywordMap.entrySet()) {
@@ -241,6 +299,30 @@ public class RecentTwentyMatchBuilderService {
 				}
 			}
 		}
+
+		//championRoleMap 돌며 반복
+		for (Map.Entry<Lane, Map<ChampionRole, Integer>> entry : championRoleMap.entrySet()) {
+
+			Lane lane = entry.getKey();
+			Map<ChampionRole, Integer> championRoleCounts = entry.getValue();
+			int lanePlayCount = laneCounts.getOrDefault(lane.name(), 0);
+
+			//라인에 따라 사용할 Analysis 변경
+			Analysis<? extends Enum<?>> analysis = switch (lane) {
+				case TOP -> keywordAnalysisResult.topKeywordAnalysis;
+				case JUNGLE -> keywordAnalysisResult.jugKeywordAnalysis;
+				case MIDDLE -> keywordAnalysisResult.midKeywordAnalysis;
+				case BOTTOM -> keywordAnalysisResult.adKeywordAnalysis;
+				case UTILITY -> keywordAnalysisResult.supKeywordAnalysis;
+			};
+
+			//챔피언 롤 개수만큼 반복
+			for (Map.Entry<ChampionRole, Integer> championRoleEntry : championRoleCounts.entrySet()) {
+				ChampionRole championRole = championRoleEntry.getKey();
+				int count = championRoleEntry.getValue();
+				analysis.getChampionRole().put(championRole.name(), evaluateChampionRole(count, lanePlayCount));
+			}
+		}
 		return keywordAnalysisResult;
 	}
 
@@ -267,6 +349,23 @@ public class RecentTwentyMatchBuilderService {
 		if (ratio >= 0.5) return "좋음";
 		if (ratio >= 0.25) return "평범";
 		return "없음";
+	}
+
+	/**
+	 * 챔피언 역할 등급을 계산하는 메서드
+	 * @param championRoleCount
+	 * @return 챔피언 역할 등급 String
+	 */
+
+	private String evaluateChampionRole(int championRoleCount, int lanePlayCount) {
+		if (championRoleCount == 0) {
+			return "없음";
+		}
+		if (lanePlayCount <= 3) { //해당 라인을 3회 이하로 플레이한 경우
+			return "보통";
+		}
+		double ratio = (double) championRoleCount / lanePlayCount;
+		return ratio >= 0.4 ? "좋음" : "보통";
 	}
 
 	// 20경기 승률 계산 메서드
