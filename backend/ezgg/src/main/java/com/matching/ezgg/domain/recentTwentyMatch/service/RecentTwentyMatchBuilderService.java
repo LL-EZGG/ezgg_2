@@ -1,5 +1,6 @@
 package com.matching.ezgg.domain.recentTwentyMatch.service;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -10,7 +11,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.domain.matchInfo.entity.MatchInfo;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.analysis.Analysis;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.GlobalKeyword;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.JugKeyword;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.LanerKeyword;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.SupKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.matchInfo.service.MatchInfoService;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
@@ -42,6 +50,9 @@ public class RecentTwentyMatchBuilderService {
 		// recentTwentyMatch에 들어갈 값 계산(sumKills, sumDeaths, sumAssists, wins, losses, allChampionStat)
 		AggregateResult result = calculateAggregateStatsFromMatches(matchIds, memberId);
 
+		// 라인별 keywordAnalysis에 들어갈 값 계산
+		KeywordAnalysisResult keywordAnalysisResult = makeKeywordJson(result);
+
 		// 20경기 승률 계산
 		int winRate = calculateWinRate(result.wins, result.losses);
 
@@ -55,16 +66,29 @@ public class RecentTwentyMatchBuilderService {
 			.sumAssists(result.sumAssists)
 			.winRate(winRate)
 			.championStats(most3ChampionStats)
-			.topAnalysis(result.topAnalysisBuilder.toString())
-			.jugAnalysis(result.jugAnalysisBuilder.toString())
-			.midAnalysis(result.midAnalysisBuilder.toString())
-			.adAnalysis(result.adAnalysisBuilder.toString())
-			.supAnalysis(result.supAnalysisBuilder.toString())
+			.topAnalysis(convertToJson(keywordAnalysisResult.topKeywordAnalysis))
+			.jugAnalysis(convertToJson(keywordAnalysisResult.jugKeywordAnalysis))
+			.midAnalysis(convertToJson(keywordAnalysisResult.midKeywordAnalysis))
+			.adAnalysis(convertToJson(keywordAnalysisResult.adKeywordAnalysis))
+			.supAnalysis(convertToJson(keywordAnalysisResult.supKeywordAnalysis))
 			.build();
 
 		log.info("recentTwentyMatch 계산 종료");
 		return recentTwentyMatchDto;
 	}
+
+	public String convertToJson(Analysis<? extends Enum<?>> analysis) {
+		ObjectMapper mapper = new ObjectMapper();
+		String json = "";
+		try {
+			json = mapper.writeValueAsString(analysis);
+			log.info("[INFO] Analysis : {}", json);
+		} catch (JsonProcessingException e) {
+			log.error("[ERROR] Analysis : {}", e.getMessage());
+		}
+		return json;
+	}
+
 
 	// 계산 결과값 보관하기 위한 내부 클래스
 	private static class AggregateResult {
@@ -73,12 +97,13 @@ public class RecentTwentyMatchBuilderService {
 		int sumAssists = 0;
 		int wins = 0;
 		int losses = 0;
+		Map<String, Integer> laneCount = new LinkedHashMap<>();
+		Map<String, Integer> topKeywordCount = new LinkedHashMap<>();
+		Map<String, Integer> jugKeywordCount = new LinkedHashMap<>();
+		Map<String, Integer> midKeywordCount = new LinkedHashMap<>();
+		Map<String, Integer> adKeywordCount = new LinkedHashMap<>();
+		Map<String, Integer> supKeywordCount = new LinkedHashMap<>();
 		Map<String, ChampionStat> allChampionStats = new HashMap<>();
-		StringBuilder topAnalysisBuilder = new StringBuilder();
-		StringBuilder jugAnalysisBuilder = new StringBuilder();
-		StringBuilder midAnalysisBuilder = new StringBuilder();
-		StringBuilder adAnalysisBuilder = new StringBuilder();
-		StringBuilder supAnalysisBuilder = new StringBuilder();
 	}
 
 	// recentTwentyMatch 계산 메서드
@@ -109,7 +134,7 @@ public class RecentTwentyMatchBuilderService {
 						.build())// 해당 챔피언이 처음으로 기록될때만 ChampionStat 객체 생성. 있을 시에는 해당 championStat 객체에 updateByMatch메서드 바로 적용
 				.updateByMatch(matchInfo);
 
-			// 라인별 analysis 업데이트
+			// 라인별 KeywordAnalysis에 사용할 요소들 업데이트
 			Lane lane = null;
 
 			try {
@@ -118,22 +143,130 @@ public class RecentTwentyMatchBuilderService {
 				throw new IllegalArgumentException("유효하지 않은 Lane명 입니다.", e);
 			}
 
-			if (matchInfo.getMatchAnalysis() != null) {
-				if (Lane.TOP == lane) {
-					result.topAnalysisBuilder.append(matchInfo.getMatchAnalysis());
-				} else if (Lane.JUNGLE == lane) {
-					result.jugAnalysisBuilder.append(matchInfo.getMatchAnalysis());
-				} else if (Lane.MIDDLE == lane) {
-					result.midAnalysisBuilder.append(matchInfo.getMatchAnalysis());
-				} else if (Lane.BOTTOM == lane) {
-					result.adAnalysisBuilder.append(matchInfo.getMatchAnalysis());
-				} else if (Lane.UTILITY == lane) {
-					result.supAnalysisBuilder.append(matchInfo.getMatchAnalysis());
-				}
+			// 라인 횟수 카운트
+			result.laneCount.put(lane.name(), result.laneCount.getOrDefault(lane.name(), 0) + 1);
+
+			// 라인별 키워드 횟수 카운트
+			Map<Lane, Map<String, Integer>> laneKeywordMap = createLaneKeywordMap(result);
+			Map<String, Integer> keywordCountMap = laneKeywordMap.get(lane);
+
+			for (String keyword : matchInfo.getMatchKeywords()) {
+				keywordCountMap.put(keyword, keywordCountMap.getOrDefault(keyword, 0) + 1);
 			}
 		}
 
 		return result;
+	}
+
+	/**
+	 * 각 라인별 KeywordAnalysis 보관용 내부 클래스
+	 */
+
+	private static class KeywordAnalysisResult {
+		Analysis<LanerKeyword> topKeywordAnalysis = Analysis.<LanerKeyword>builder()
+			.enumClass(LanerKeyword.class)
+			.build();
+		Analysis<JugKeyword> jugKeywordAnalysis = Analysis.<JugKeyword>builder()
+			.enumClass(JugKeyword.class)
+			.build();
+		Analysis<LanerKeyword> midKeywordAnalysis = Analysis.<LanerKeyword>builder()
+			.enumClass(LanerKeyword.class)
+			.build();
+		Analysis<LanerKeyword> adKeywordAnalysis = Analysis.<LanerKeyword>builder()
+			.enumClass(LanerKeyword.class)
+			.build();
+		Analysis<SupKeyword> supKeywordAnalysis = Analysis.<SupKeyword>builder()
+			.enumClass(SupKeyword.class)
+			.build();
+	}
+
+	/**
+	 * 라인과 라인별 키워드 횟수를 묶은 Map을 생성하는 메서드
+	 * @param result
+	 * @return Map<Lane, Map<String(키워드명), Integer(횟수)>>
+	 */
+
+	private Map<Lane, Map<String, Integer>> createLaneKeywordMap(AggregateResult result) {
+		return Map.of(
+			Lane.TOP, result.topKeywordCount,
+			Lane.JUNGLE, result.jugKeywordCount,
+			Lane.MIDDLE, result.midKeywordCount,
+			Lane.BOTTOM, result.adKeywordCount,
+			Lane.UTILITY, result.supKeywordCount
+		);
+	}
+
+	/**
+	 * evaluateKeyword를 통해 키워드 등급을 계산하고
+	 * 해당 등급들을 Analysis 클래스를 이용해 JSON 형태로 만드는 메서드
+	 * @param result
+	 * @return 각 라인별 키워드 분석 Analysis가 들어있는 keywordAnalysisResult
+	 */
+
+	private KeywordAnalysisResult makeKeywordJson(AggregateResult result) {
+		Map<String, Integer> laneCounts = result.laneCount;
+
+		//기본 Analysis 생성
+		KeywordAnalysisResult keywordAnalysisResult = new KeywordAnalysisResult();
+
+		//라인과 라인별 키워드 횟수를 묶은 Map 생성
+		Map<Lane, Map<String, Integer>> laneKeywordMap = createLaneKeywordMap(result);
+
+		//laneKeywordMap 돌며 반복
+		for (Map.Entry<Lane, Map<String, Integer>> entry : laneKeywordMap.entrySet()) {
+
+			Lane lane = entry.getKey();
+			Map<String, Integer> keywordCounts = entry.getValue();
+			int lanePlayCount = laneCounts.getOrDefault(lane.name(), 0);
+
+			//라인에 따라 사용할 Analysis 변경
+			Analysis<? extends Enum<?>> analysis = switch (lane) {
+				case TOP -> keywordAnalysisResult.topKeywordAnalysis;
+				case JUNGLE -> keywordAnalysisResult.jugKeywordAnalysis;
+				case MIDDLE -> keywordAnalysisResult.midKeywordAnalysis;
+				case BOTTOM -> keywordAnalysisResult.adKeywordAnalysis;
+				case UTILITY -> keywordAnalysisResult.supKeywordAnalysis;
+			};
+
+			//키워드 개수만큼 반복
+			for (Map.Entry<String, Integer> keywordEntry : keywordCounts.entrySet()) {
+				String keyword = keywordEntry.getKey();
+				int count = keywordEntry.getValue();
+
+				//Global 키워드이면 키워드 등급 계산해서 globalAnalysis 수정
+				if (Arrays.stream(GlobalKeyword.values()).anyMatch(k -> k.name().equalsIgnoreCase(keyword))) {
+					analysis.getGlobal().put(keyword, evaluateKeyword(count, lanePlayCount));
+				} else { //아니면 LaneAnalysis 수정
+					analysis.getLaner().put(keyword, evaluateKeyword(count, lanePlayCount));
+				}
+			}
+		}
+		return keywordAnalysisResult;
+	}
+
+
+	/**
+	 * 경기 수 대비 키워드 수로 키워드 등급 계산하는 메서드
+	 * @param keywordCount
+	 * @param lanePlayCount
+	 * @return 키워드 등급 String
+	 */
+
+	private String evaluateKeyword(int keywordCount, int lanePlayCount) {
+		if (lanePlayCount <= 3) { //해당 라인을 3회 이하로 플레이한 경우
+			return (keywordCount >= 1) ? "평범" : "없음"; //평범 아니면 없음만 리턴
+		}
+
+		if (keywordCount == 0) {
+			return "없음";
+		}
+
+		double ratio = (double) keywordCount / lanePlayCount;
+
+		if (ratio >= 0.75) return "매우 좋음";
+		if (ratio >= 0.5) return "좋음";
+		if (ratio >= 0.25) return "평범";
+		return "없음";
 	}
 
 	// 20경기 승률 계산 메서드
