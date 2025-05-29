@@ -38,9 +38,15 @@ public class ReviewService {
 	public void findDuoGame(Long memberId1, Long memberId2, Map<String, String> updateMatchedUser) {
 		MemberInfo memberInfoByMember1 = memberInfoService.getMemberInfoByMemberId(memberId1);
 		MemberInfo memberInfoByMember2 = memberInfoService.getMemberInfoByMemberId(memberId2);
-
 		List<String> findMember1MatchIds = apiService.getMemberMatchIds(memberInfoByMember1.getPuuid());
 		List<String> findMember2MatchIds = apiService.getMemberMatchIds(memberInfoByMember2.getPuuid());
+
+		List<String> matchIds1 = memberInfoByMember1.getMatchIds();
+		List<String> matchIds2 = memberInfoByMember2.getMatchIds();
+
+		if(isSameMatchIds(matchIds1, findMember1MatchIds) || isSameMatchIds(matchIds2, findMember2MatchIds)) {
+			return;
+		}
 
 		List<String> commonElements = getCommonElements(findMember1MatchIds, findMember2MatchIds);
 
