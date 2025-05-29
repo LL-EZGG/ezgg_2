@@ -308,16 +308,12 @@ const App = () => {
                             isLoggedIn={isLoggedIn}
                         />
                     }/>
-                    <Route
-                      path="/timeline"
-                      element={
-                          <ProtectedRoute
+                    <Route path="/timeline" element={
+                        <ProtectedRoute
                             isLoggedIn={isLoggedIn}
                             element={<DuoTimeline memberData={memberDataBundle} />}
-                          />
-                      }
-                    />
-
+                        />
+                    }/>
                     <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
                     <Route path="/join" element={<Join/>}/>
                     <Route path="*" element={<Navigate to="/" replace />} />

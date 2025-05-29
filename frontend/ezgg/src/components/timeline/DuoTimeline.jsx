@@ -34,9 +34,9 @@ const DuoTimeline = ({ memberData }) => {
   if (matchTimelines.length === 0) {
     return (
       <Wrapper>
-        <h2 style={{ color: 'white', fontSize: '28px', fontWeight: 'bold', marginBottom: '24px' }}>
+        <WrapperText>
           유저 데이터가 없습니다.
-        </h2>
+        </WrapperText>
         <Link to="/">
           <span style={{ color: 'white' }}>듀오 진행을 해주세요.</span>
         </Link>
@@ -45,9 +45,9 @@ const DuoTimeline = ({ memberData }) => {
   } else {
     return (
       <Wrapper>
-        <h2 style={{ color: 'white', fontSize: '28px', fontWeight: 'bold', marginBottom: '24px' }}>
+        <WrapperText>
           🎮 듀오 매치 타임라인
-        </h2>
+        </WrapperText>
         <TimelineContainer>
           {matchTimelines.map((match, idx) => {
             const userMatchInfos = match.userMatchInfos;
@@ -91,6 +91,12 @@ const Wrapper = styled.div`
     overscroll-behavior: contain; // 내부 스크롤이 끝난 후 외부 스크롤로 전환
 `;
 
+const WrapperText = styled.h2`
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: '24px';
+`;
 const TimelineContainer = styled.div`
   width: 100%;
   max-width: 720px;
