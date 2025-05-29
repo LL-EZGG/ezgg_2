@@ -39,6 +39,7 @@ public class ChampionInfoService {
 	 */
 
 	public String cleanedName(String championName) {
+		log.info("[INFO] 챔피언 이름: {}", championName);
 		return championName
 			.replaceAll("[^a-zA-Z0-9]", "")
 			.toUpperCase();
