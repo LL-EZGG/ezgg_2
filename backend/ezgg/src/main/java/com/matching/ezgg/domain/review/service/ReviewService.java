@@ -4,6 +4,7 @@ import static com.matching.ezgg.domain.review.util.ReviewUtil.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.review.dto.CreateReviewDto;
+import com.matching.ezgg.domain.review.dto.ReviewTimelineResponseDto;
 import com.matching.ezgg.domain.review.entity.Review;
 import com.matching.ezgg.domain.review.repository.ReviewRepository;
 import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
@@ -76,6 +78,21 @@ public class ReviewService {
 				break;
 			}
 		}
+	}
+
+	public List<ReviewTimelineResponseDto> getRecentReviews(Long memberId) {
+		List<Review> reviews = reviewRepository.findTop10ByMemberIdOrderByIdDesc(memberId);
+		return reviews.stream()
+			.map(this::toDto)
+			.collect(Collectors.toList());
+	}
+
+	private ReviewTimelineResponseDto toDto(Review review) {
+		return ReviewTimelineResponseDto.builder()
+			.memberId(review.getMemberId())
+			.partnerMemberId(review.getPartnerMemberId())
+			.matchId(review.getMatchId())
+			.build();
 	}
 
 	@Transactional
