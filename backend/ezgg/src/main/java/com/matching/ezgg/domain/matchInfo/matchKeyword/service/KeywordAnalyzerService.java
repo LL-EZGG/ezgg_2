@@ -73,23 +73,4 @@ public class KeywordAnalyzerService {
 		};
 		return new ArrayList<>(Stream.concat(globalKeywords.stream(), positionKeywords.stream()).toList());
 	}
-
-	/**
-	 * 한 매치의 챔피언 역할과 자연어 평가를 합쳐 한 줄 평가를 만드는 메서드
-	 * @param matchDto
-	 * @param rawJson
-	 * @param puuid
-	 * @param matchId
-	 * @param memberId
-	 * @return 한 줄 평가 String
-	 */
-
-	// @Transactional
-	// public String buildMatchKeywordAnalysis(MatchDto matchDto, String rawJson, String puuid, String matchId,
-	// 	Long memberId) {
-	// 	StringBuilder analysis = new StringBuilder();
-	// 	analysis.append(keywordService.extractChampionRole(matchDto.getChampionName()));
-	// 	analysis.append(giveMatchKeyword(rawJson, matchDto.getTeamPosition(), puuid, matchId, memberId));
-	// 	return analysis.toString();
-	// }
 }
