@@ -1,4 +1,4 @@
-package com.matching.ezgg.domain.matchInfo.matchKeyword.dto;
+package com.matching.ezgg.domain.matchInfo.matchKeyword.dto.parsingDto;
 
 import lombok.Builder;
 import lombok.Getter;

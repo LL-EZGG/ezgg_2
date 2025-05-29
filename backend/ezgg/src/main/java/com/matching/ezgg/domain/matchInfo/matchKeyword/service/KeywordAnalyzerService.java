@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.domain.matchInfo.matchKeyword.analyzer.KeywordAnalyzer;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.GlobalMatchParsingDto;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.JugMatchParsingDto;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.LanerMatchParsingDto;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.SupMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.parsingDto.GlobalMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.parsingDto.JugMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.parsingDto.LanerMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.parsingDto.SupMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.GlobalKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.JugKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.LanerKeyword;
