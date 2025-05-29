@@ -22,45 +22,18 @@ const MatchingCriteriaInfo = ({ matchingCriteria }) => {
     
     if (!userPreferenceText) return '없음';
     
-    // TOP, MID, AD, JUG, SUP 라인일 때 (JSON 형식)
+    // 모든 라인의 키워드가 global과 laner로 통일됨
     if (['TOP', 'MID', 'AD', 'JUG', 'SUP'].includes(wantLine.partnerLine)) {
       try {
         const preferences = JSON.parse(userPreferenceText);
-        let selectedKeywords = [];
-
-        // global 키워드는 모든 라인에 공통
-        if (preferences.global) {
-          selectedKeywords = [
-            ...selectedKeywords,
-            ...Object.entries(preferences.global)
-              .filter(([, value]) => value === "매우 좋음")
-              .map(([key]) => getKeywordText(key))
-          ];
-        }
-
-        // 라인별 특수 키워드
-        if (['TOP', 'MID', 'AD'].includes(wantLine.partnerLine) && preferences.laner) {
-          selectedKeywords = [
-            ...selectedKeywords,
-            ...Object.entries(preferences.laner)
-              .filter(([, value]) => value === "매우 좋음")
-              .map(([key]) => getKeywordText(key))
-          ];
-        } else if (wantLine.partnerLine === 'JUG' && preferences.jungle) {
-          selectedKeywords = [
-            ...selectedKeywords,
-            ...Object.entries(preferences.jungle)
-              .filter(([, value]) => value === "매우 좋음")
-              .map(([key]) => getKeywordText(key))
-          ];
-        } else if (wantLine.partnerLine === 'SUP' && preferences.support) {
-          selectedKeywords = [
-            ...selectedKeywords,
-            ...Object.entries(preferences.support)
-              .filter(([, value]) => value === "매우 좋음")
-              .map(([key]) => getKeywordText(key))
-          ];
-        }
+        const selectedKeywords = [
+          ...Object.entries(preferences.global || {})
+            .filter(([, value]) => value === "매우 좋음")
+            .map(([key]) => getKeywordText(key)),
+          ...Object.entries(preferences.laner || {})
+            .filter(([, value]) => value === "매우 좋음")
+            .map(([key]) => getKeywordText(key))
+        ];
         
         return selectedKeywords.length > 0 ? selectedKeywords.join(', ') : '없음';
       } catch (e) {
