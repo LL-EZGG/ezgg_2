@@ -18,9 +18,9 @@ public class ChampionStatUtils {
 		}
 
 		return statMap.values().stream()
-			// ① 총 경기 수 내림차순
+			// 1. 총 경기 수 내림차순
 			.sorted(Comparator.comparingInt(ChampionStat::getTotal).reversed()
-				// ② 경기 수가 같으면 KDA 내림차순
+				// 2. 경기 수가 같으면 KDA 내림차순
 				.thenComparingDouble(ChampionStat::calculateKda).reversed())
 			.limit(3)
 			.map(ChampionStat::getChampionName)

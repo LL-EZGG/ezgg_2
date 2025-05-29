@@ -27,7 +27,7 @@ public class UserProfile {
 	@Field(type = FieldType.Object)
 	private RecentTwentyMatchStats recentTwentyMatchStats;
 
-	//Scaled_Float = 내부에서 정수값으로 저장하 검색.조회시 자동으로 실수로 변환
+	//Scaled_Float = 내부에서 정수값으로 저장하고 검색.조회시 자동으로 실수로 변환
 	//scalingFactor = 10 이면 소숫점 1자리를 기준으로 10배로 곱해서 저장하는 것
 	// ex) 4.3 -> es내부 저장값 = 43 -> 검색/조회시 다시 받는 값 = 4.3
 	@Field(type = FieldType.Scaled_Float, scalingFactor = 10)

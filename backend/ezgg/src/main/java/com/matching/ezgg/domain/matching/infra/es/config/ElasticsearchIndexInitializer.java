@@ -25,15 +25,16 @@ public class ElasticsearchIndexInitializer implements ApplicationListener<Contex
 	@PostConstruct
 	public void createIndex() {
 		IndexOperations indexOps = elasticsearchOperations.indexOps(MatchingUserDocument.class);
+		log.info("인덱스 존재 여부: {}", indexOps.exists());
 		if (!indexOps.exists()) {
 			indexOps.create(); // 빈 인덱스 생성
 
 			Map<String, Object> mapping = Map.of(
 				"properties", Map.of(
-					/* ---------- userProfile ---------- */
+					// userProfile
 					"userProfile", Map.of(
 						"properties", Map.of(
-							/* tier ⇒ keyword */
+							// tier ⇒ keyword 타입으로 매핑
 							"tier", Map.of("type", "keyword"),
 
 							"recentTwentyMatchStats", Map.of(
@@ -46,12 +47,12 @@ public class ElasticsearchIndexInitializer implements ApplicationListener<Contex
 									"supAnalysisVector", Map.of("type", "dense_vector", "dims", 1536)
 								)
 							),
-							/* reviewScore ⇒ scaled_float */
+							// reviewScore ⇒ scaled_float 타입으로 매핑
 							"reviewScore", Map.of("type", "scaled_float", "scaling_factor", 10)
 						)
 					),
 
-					/* ---------- partnerPreference ---------- */
+					// partnerPreference
 					"partnerPreference", Map.of(
 						"properties", Map.of(
 							"userPreferenceTextVector", Map.of(
@@ -59,14 +60,14 @@ public class ElasticsearchIndexInitializer implements ApplicationListener<Contex
 							),
 							"lineRequirements", Map.of(
 								"properties", Map.of(
-									/* myLine / partnerLine ⇒ keyword */
+									// myLine / partnerLine ⇒ keyword 타입으로 매핑
 									"myLine",      Map.of("type", "keyword"),
 									"partnerLine", Map.of("type", "keyword")
 								)
 							),
 							"championsPreference", Map.of(
 								"properties", Map.of(
-									/* 선호/비선호 챔피언 배열 ⇒ keyword */
+									// 선호/비선호 챔피언 배열 ⇒ keyword 타입으로 매핑
 									"preferredChampions",   Map.of("type", "keyword"),
 									"unpreferredChampions", Map.of("type", "keyword")
 								)
