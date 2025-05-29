@@ -22,15 +22,15 @@ const MatchingCriteriaInfo = ({ matchingCriteria }) => {
     
     if (!userPreferenceText) return '없음';
     
-    // TOP, MID, AD, JUG, SUP 라인일 때 (JSON 형식)
+    // 모든 라인의 키워드가 global과 laner로 통일됨
     if (['TOP', 'MID', 'AD', 'JUG', 'SUP'].includes(wantLine.partnerLine)) {
       try {
         const preferences = JSON.parse(userPreferenceText);
         const selectedKeywords = [
-          ...Object.entries(preferences.global)
+          ...Object.entries(preferences.global || {})
             .filter(([, value]) => value === "매우 좋음")
             .map(([key]) => getKeywordText(key)),
-          ...Object.entries(preferences.laner)
+          ...Object.entries(preferences.laner || {})
             .filter(([, value]) => value === "매우 좋음")
             .map(([key]) => getKeywordText(key))
         ];
@@ -41,10 +41,7 @@ const MatchingCriteriaInfo = ({ matchingCriteria }) => {
       }
     }
     
-    // JUG, SUP 라인일 때 (콤마로 구분된 문자열)
-    return userPreferenceText.split(',')
-      .map(getKeywordText)
-      .join(', ') || '없음';
+    return '없음';
   };
 
   return (
