@@ -26,14 +26,41 @@ const MatchingCriteriaInfo = ({ matchingCriteria }) => {
     if (['TOP', 'MID', 'AD', 'JUG', 'SUP'].includes(wantLine.partnerLine)) {
       try {
         const preferences = JSON.parse(userPreferenceText);
-        const selectedKeywords = [
-          ...Object.entries(preferences.global)
-            .filter(([, value]) => value === "매우 좋음")
-            .map(([key]) => getKeywordText(key)),
-          ...Object.entries(preferences.laner)
-            .filter(([, value]) => value === "매우 좋음")
-            .map(([key]) => getKeywordText(key))
-        ];
+        let selectedKeywords = [];
+
+        // global 키워드는 모든 라인에 공통
+        if (preferences.global) {
+          selectedKeywords = [
+            ...selectedKeywords,
+            ...Object.entries(preferences.global)
+              .filter(([, value]) => value === "매우 좋음")
+              .map(([key]) => getKeywordText(key))
+          ];
+        }
+
+        // 라인별 특수 키워드
+        if (['TOP', 'MID', 'AD'].includes(wantLine.partnerLine) && preferences.laner) {
+          selectedKeywords = [
+            ...selectedKeywords,
+            ...Object.entries(preferences.laner)
+              .filter(([, value]) => value === "매우 좋음")
+              .map(([key]) => getKeywordText(key))
+          ];
+        } else if (wantLine.partnerLine === 'JUG' && preferences.jungle) {
+          selectedKeywords = [
+            ...selectedKeywords,
+            ...Object.entries(preferences.jungle)
+              .filter(([, value]) => value === "매우 좋음")
+              .map(([key]) => getKeywordText(key))
+          ];
+        } else if (wantLine.partnerLine === 'SUP' && preferences.support) {
+          selectedKeywords = [
+            ...selectedKeywords,
+            ...Object.entries(preferences.support)
+              .filter(([, value]) => value === "매우 좋음")
+              .map(([key]) => getKeywordText(key))
+          ];
+        }
         
         return selectedKeywords.length > 0 ? selectedKeywords.join(', ') : '없음';
       } catch (e) {
@@ -41,10 +68,7 @@ const MatchingCriteriaInfo = ({ matchingCriteria }) => {
       }
     }
     
-    // JUG, SUP 라인일 때 (콤마로 구분된 문자열)
-    return userPreferenceText.split(',')
-      .map(getKeywordText)
-      .join(', ') || '없음';
+    return '없음';
   };
 
   return (

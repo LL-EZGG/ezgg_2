@@ -50,7 +50,7 @@ public class MatchingService {
 	 */
 	public void startMatching(Long memberId, PreferredPartnerParsingDto preferredPartnerParsingDto) {
 		log.info("[INFO] 매칭 시작! memberId = {}", memberId);
-
+		log.info("[INFO] 선호 파트너 조건: {}", preferredPartnerParsingDto.getUserPreferenceText());
 		// 모든 데이터 riot api로 저장 후 리턴
 		MemberDataBundleDto memberDataBundleDto = updateAllAttributesOfMember(memberId);
 
