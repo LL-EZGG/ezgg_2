@@ -38,7 +38,6 @@ public class KeywordService {
 	public void saveMatchKeyword(MatchKeyword matchKeyword) {
 		MatchKeyword savedMatchKeyword = matchKeywordRepository.save(matchKeyword);
 		MatchKeywordDto matchKeywordDto = MatchKeywordDto.toDto(savedMatchKeyword);
-		log.info("[INFO] MatchKeyword 저장 완료: {}", matchKeywordDto.toString());
 	}
 
 	/**
