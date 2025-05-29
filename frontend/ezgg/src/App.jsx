@@ -70,6 +70,7 @@ const App = () => {
                 data: message.data // 전체 데이터도 포함
             };
 
+            fetchUserInfo();
             setMatchResult(matchResult);
             setIsMatching(false);
             alert(`🎉 매칭 성공!\n상대방: ${message.data.memberInfoDto.riotUsername}#${message.data.memberInfoDto.riotTag}\n티어: ${message.data.memberInfoDto.tier} ${message.data.memberInfoDto.tierNum}`);
@@ -308,10 +309,10 @@ const App = () => {
                         />
                     }/>
                     <Route path="/login"
-                        element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
+                           element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
                     <Route path="/join" element={<Join/>}/>
                 </Routes>
-                <ReviewModal 
+                <ReviewModal
                     visible={reviewModalVisible}
                     onClose={() => setReviewModalVisible(false)}
                     targetUsername={reviewTargetUsername}
