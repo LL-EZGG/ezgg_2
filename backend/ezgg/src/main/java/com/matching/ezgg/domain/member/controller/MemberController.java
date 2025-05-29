@@ -8,13 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.matching.ezgg.domain.matching.dto.MemberDataBundleDto;
+import com.matching.ezgg.domain.matching.service.MemberDataBundleService;
 import com.matching.ezgg.domain.member.dto.SignupRequest;
 import com.matching.ezgg.domain.member.dto.SignupResponse;
-import com.matching.ezgg.domain.member.jwt.filter.JWTUtil;
-import com.matching.ezgg.domain.member.jwt.repository.RedisRefreshTokenRepository;
 import com.matching.ezgg.domain.member.service.MemberService;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
-import com.matching.ezgg.domain.matching.service.MemberDataBundleService;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.global.annotation.LoginUser;
 import com.matching.ezgg.global.response.SuccessResponse;
@@ -53,7 +51,7 @@ public class MemberController {
 	// 로그아웃
 	@PostMapping("/logout")
 	public ResponseEntity<SuccessResponse<Void>> logout(HttpServletRequest request, HttpServletResponse response) {
-		log.info(">>>>> 로그아웃 요청 들어옴");
+		log.info("[INFO]>>>>> 로그아웃 요청 들어옴");
 
 		memberService.addBlackList(request);
 		memberService.deleteRefreshToken(request);
@@ -65,7 +63,7 @@ public class MemberController {
 		refreshCookie.setPath("/"); // 모든 경로에서 쿠키 삭제
 		response.addCookie(refreshCookie);
 
-		log.info(">>>>> 로그아웃 성공");
+		log.info("[INFO]>>>>> 로그아웃 성공");
 
 		return ResponseEntity.ok(SuccessResponse.<Void>builder()
 			.code("200")
@@ -75,7 +73,7 @@ public class MemberController {
 
 	@PostMapping("/validateToken")
 	public ResponseEntity<SuccessResponse<Void>> validateToken(HttpServletRequest request) {
-		log.info(">>>>> 토큰 검증 요청 들어옴");
+		log.info("[INFO]>>>>> 토큰 검증 요청 들어옴");
 		memberService.validateToken(request);
 
 		return ResponseEntity.ok(SuccessResponse.<Void>builder()
@@ -87,7 +85,7 @@ public class MemberController {
 	@GetMapping("/memberinfo")
 	public ResponseEntity<SuccessResponse<MemberInfo>> getMemberInfo(@LoginUser Long memberId) {
 		// 로그인한 사용자의 ID를 사용하여 회원 정보를 조회
-		log.info(">>>>> 로그인한 사용자의 ID: {}", memberId);
+		log.info("[INFO]>>>>> 로그인한 사용자의 ID: {}", memberId);
 		MemberInfo loggedMemberInfo = memberInfoService.getMemberInfoByMemberId(memberId);
 
 		return ResponseEntity.ok(SuccessResponse.<MemberInfo>builder()

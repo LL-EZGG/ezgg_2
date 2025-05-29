@@ -11,6 +11,14 @@ import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
  * 리뷰 관련 유틸리티 클래스
  */
 public final class ReviewUtil {
+	public static boolean isSameMatchIds(List<String> matchIds1, List<String> matchIds2) {
+		if (matchIds1.size() != matchIds2.size()) {
+			return false;
+		}
+		Set<String> set1 = new HashSet<>(matchIds1);
+		Set<String> set2 = new HashSet<>(matchIds2);
+		return set1.equals(set2);
+	}
 	/**
 	 * 리스트1과 리스트2의 교집합을 구하는 메서드
 	 * @param list1

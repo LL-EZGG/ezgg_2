@@ -405,24 +405,23 @@ const SectionSelector = ({
     const availableKeywords = getKeywordsByLine(selectedLine);
     let selectedKeywords = [];
 
-    // TOP, MID, AD, JUG, SUP 라인일 때 JSON에서 "매우 좋음" 값을 가진 키워드들을 추출
-    if (['TOP', 'MID', 'AD', 'JUG', 'SUP'].includes(selectedLine) && matchingCriteria.userPreferenceText) {
+    // 선택된 키워드 파싱
+    if (matchingCriteria.userPreferenceText) {
       try {
         const preferences = JSON.parse(matchingCriteria.userPreferenceText);
         selectedKeywords = [
-          ...Object.entries(preferences.global)
-            .filter(([, value]) => value === "매우 좋음")
+          ...Object.entries(preferences.global || {})
+            .filter(([key, value]) => value === "매우 좋음")
             .map(([key]) => key),
-          ...Object.entries(preferences.laner)
-            .filter(([, value]) => value === "매우 좋음")
+          ...Object.entries(preferences.laner || {})
+            .filter(([key, value]) => value === "매우 좋음")
             .map(([key]) => key)
         ];
       } catch (e) {
         selectedKeywords = [];
       }
     } else {
-      // JUG, SUP 라인일 때는 기존 방식대로 콤마로 구분된 문자열을 배열로 변환
-      selectedKeywords = matchingCriteria.userPreferenceText ? matchingCriteria.userPreferenceText.split(',') : [];
+      selectedKeywords = [];
     }
 
     const handleKeywordClick = (value) => {
@@ -434,43 +433,42 @@ const SectionSelector = ({
         if (selectedKeywords.length >= 5) return;
         newKeywords = [...selectedKeywords, value];
       } else {
-        newKeywords = selectedKeywords.filter((k, i) => i !== keywordIndex);
+        newKeywords = selectedKeywords.filter((k) => k !== value);
       }
 
-      // TOP, MID, AD 라인일 때의 처리
-      if (['TOP', 'MID', 'AD', 'JUG', 'SUP'].includes(selectedLine)) {
-        const globalKeywords = keyword.global;
-        const lanerKeywords = keyword.laner;
-        
-        // JSON 객체 생성
-        const preferenceObject = {
-          global: {},
-          laner: {}
-        };
-
-        // global 키워드 처리
-        Object.keys(globalKeywords).forEach(key => {
-          const val = globalKeywords[key];
-          preferenceObject.global[val] = newKeywords.includes(val) ? "매우 좋음" : "없음";
-        });
-
-        // laner 키워드 처리
-        Object.keys(lanerKeywords).forEach(key => {
-          const val = lanerKeywords[key];
-          preferenceObject.laner[val] = newKeywords.includes(val) ? "매우 좋음" : "없음";
-        });
-
-        setMatchingCriteria({
-          ...matchingCriteria,
-          userPreferenceText: JSON.stringify(preferenceObject)
-        });
+      // 모든 라인의 키워드를 global과 laner로 통일
+      const globalKeywords = keyword.global;
+      let lanerKeywords;
+      
+      // 라인별로 적절한 키워드 세트 선택
+      if (selectedLine === 'JUG') {
+        lanerKeywords = keyword.jungle;
+      } else if (selectedLine === 'SUP') {
+        lanerKeywords = keyword.support;
       } else {
-        // JUG, SUP 라인일 때는 기존 방식 유지
-        setMatchingCriteria({
-          ...matchingCriteria,
-          userPreferenceText: newKeywords.join(',')
-        });
+        lanerKeywords = keyword.laner;
       }
+      
+      // JSON 객체 생성 (모든 라인이 global과 laner로 통일)
+      const preferenceObject = {
+        global: {},
+        laner: {}
+      };
+
+      // global 키워드 처리
+      Object.entries(globalKeywords).forEach(([text, val]) => {
+        preferenceObject.global[val] = newKeywords.includes(val) ? "매우 좋음" : "없음";
+      });
+
+      // laner 키워드 처리 (jungle이나 support 키워드도 laner로 저장)
+      Object.entries(lanerKeywords).forEach(([text, val]) => {
+        preferenceObject.laner[val] = newKeywords.includes(val) ? "매우 좋음" : "없음";
+      });
+
+      setMatchingCriteria({
+        ...matchingCriteria,
+        userPreferenceText: JSON.stringify(preferenceObject)
+      });
     };
 
     return (
