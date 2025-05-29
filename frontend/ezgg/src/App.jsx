@@ -10,7 +10,6 @@ import {MatchingButtonPanel} from "./components/duoFinder/matching/MatchingButto
 import {useWebSocket} from './hooks/useWebSocket';
 import DuoTimeline from "./components/timeline/DuoTimeline.jsx";
 import ReviewModal from './components/review/ReviewModal';
-import {LoadingSpinner} from "./components/layout/LoadingSpinner.jsx";
 
 // 로그인 상태에 따라 리다이렉트하는 보호된 라우트 컴포넌트
 const ProtectedRoute = ({element, isLoggedIn}) => {
@@ -309,7 +308,16 @@ const App = () => {
                             isLoggedIn={isLoggedIn}
                         />
                     }/>
-                    <Route path="/timeline" element={<DuoTimeline memberData={memberDataBundle} />}/>
+                    <Route
+                      path="/timeline"
+                      element={
+                          <ProtectedRoute
+                            isLoggedIn={isLoggedIn}
+                            element={<DuoTimeline memberData={memberDataBundle} />}
+                          />
+                      }
+                    />
+
                     <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
                     <Route path="/join" element={<Join/>}/>
                     <Route path="*" element={<Navigate to="/" replace />} />
