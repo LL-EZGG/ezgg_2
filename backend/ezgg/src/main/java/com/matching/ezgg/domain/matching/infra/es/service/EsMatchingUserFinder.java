@@ -223,7 +223,6 @@ public class EsMatchingUserFinder {
 			.size(10) // 상위 10명
 			.query(scriptScoreQuery)
 		);
-		log.info(request.toString());
 
 		// 5. 실행 및 매핑
 		try {
@@ -253,7 +252,7 @@ public class EsMatchingUserFinder {
 		}catch (co.elastic.clients.elasticsearch._types.ElasticsearchException e) {
 			var err = e.error();// === ErrorResponse( JSON 전체 )
 
-			log.error("full error={}", err);
+			log.error("ES에 쿼리 실행 중 에러 발생={}", err);
 			throw new EsQueryException();
 		} catch (IOException e) {
 			log.error("[ERROR] Elasticsearch 조건 조회 중 오류 발생: " + e.getMessage());

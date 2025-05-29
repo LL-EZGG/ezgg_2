@@ -25,7 +25,7 @@ public class ElasticsearchIndexInitializer implements ApplicationListener<Contex
 	@PostConstruct
 	public void createIndex() {
 		IndexOperations indexOps = elasticsearchOperations.indexOps(MatchingUserDocument.class);
-		log.info("인덱스 존재 여부: {}", indexOps.exists());
+		// log.info("인덱스 존재 여부: {}", indexOps.exists()); // 서버 부팅 과부화 시 확인 필요
 		if (!indexOps.exists()) {
 			indexOps.create(); // 빈 인덱스 생성
 
