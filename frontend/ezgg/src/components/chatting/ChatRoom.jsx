@@ -141,7 +141,7 @@ export default ChatRoom;
 
 // 스타일 컴포넌트
 const ChatContainer = styled.div`
-    width: 100%;
+    width: 75%;
     max-width: 600px;
     height: 400px;
     margin: 1rem auto;
