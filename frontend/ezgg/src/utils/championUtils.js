@@ -14,7 +14,8 @@ export const getChampionImageSrc = (championName) => {
         'xinzhao': 'XinZhao',
         'aurelionsol': 'AurelionSol',
         'kogmaw': 'KogMaw',
-        'reksai': 'RekSai'
+        'reksai': 'RekSai',
+        'ksante': 'KSante'
     };
 
     // 소문자 변환 후 특수 케이스 확인
