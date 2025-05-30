@@ -1,14 +1,18 @@
 package com.matching.ezgg.domain.matchInfo.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.matching.ezgg.global.entity.BaseEntity;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -49,8 +53,8 @@ public class MatchInfo extends BaseEntity {
 	@Column(name = "win", unique = false, nullable = false)
 	private Boolean win;
 
-	@Column(name = "match_analysis", unique = false)
-	private List<String> matchKeywords;
+	@Column(name = "match_keywords", unique = false)
+	private List<String> matchKeywords = new ArrayList<>();
 
 	@Builder
 	public MatchInfo(Long memberId, String riotMatchId, Integer kills, Integer deaths, Integer assists,
