@@ -1,5 +1,8 @@
 package com.matching.ezgg.domain.matchInfo.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.matching.ezgg.domain.matchInfo.entity.MatchInfo;
 
 import lombok.Builder;
@@ -16,7 +19,7 @@ public class MatchInfoDto {
 	private String teamPosition;
 	private String championName;
 	private Boolean win;
-	private String matchAnalysis = "";
+	private List<String> matchKeywords = new ArrayList<>();
 
 	public static MatchInfoDto toMatchInfoDto(MatchInfo matchInfo) {
 		return MatchInfoDto.builder()
@@ -28,7 +31,7 @@ public class MatchInfoDto {
 			.teamPosition(matchInfo.getTeamPosition())
 			.championName(matchInfo.getChampionName())
 			.win(matchInfo.getWin())
-			.matchAnalysis(matchInfo.getMatchAnalysis())
+			.matchKeywords(matchInfo.getMatchKeywords())
 			.build();
 	}
 }
