@@ -159,7 +159,7 @@ public class RecentTwentyMatchBuilderService {
 			//특정 라인의 키워드 카운트 맵 꺼냄
 			Map<String, Integer> keywordCountMap = laneKeywordMap.get(lane);
 
-			for (String keyword : matchInfo.getMatchKeywords()) {
+			for (String keyword : matchInfoDto.getMatchKeywords()) {
 				keywordCountMap.put(keyword, keywordCountMap.getOrDefault(keyword, 0) + 1);
 			}
 
@@ -169,7 +169,7 @@ public class RecentTwentyMatchBuilderService {
 			//특정 라인의 챔피언 롤 카운트 맵 꺼냄
 			Map<ChampionRole, Integer> championRoleCountMap = laneChampionRoleMap.get(lane);
 
-			String championName = championInfoService.cleanedName(matchInfo.getChampionName());
+			String championName = championInfoService.cleanedName(matchInfoDto.getChampionName());
 			List<ChampionRole> championRoles = new ArrayList<>();
 			try {
 				championRoles = ChampionBasicInfo.valueOf(championName).getChampionRoles();
