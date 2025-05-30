@@ -27,7 +27,7 @@ public class ChampionInfoService {
 	 * return 임베딩 모델에 넣을 매칭 옵션 정보가 담긴 JSON 문자열
 	 */
 
-	public String mergeChampionPreferenceWithPlaystyleJson(PreferredPartnerParsingDto preferredPartnerParsingDto) {
+	public PreferredPartnerParsingDto mergeChampionPreferenceWithPlayStyleJson(PreferredPartnerParsingDto preferredPartnerParsingDto) {
 		List<String> preferredChampions = preferredPartnerParsingDto.getChampionInfo().getPreferredChampions();
 		List<String> unpreferredChampions = preferredPartnerParsingDto.getChampionInfo().getUnpreferredChampions();
 		String playstyle = preferredPartnerParsingDto.getUserPreferenceText();
@@ -43,7 +43,10 @@ public class ChampionInfoService {
 		updateRoleScore(unpreferredChampions,championRoleScore,-1);
 
 		ObjectNode result = buildChampionPreferenceJson(championRoleScore, playstyle);
-		return toJsonString(result);
+		String newUserPreferenceText = toJsonString(result);
+		preferredPartnerParsingDto.setUserPreferenceText(newUserPreferenceText);
+
+		return preferredPartnerParsingDto;
 	}
 
 	/**
@@ -98,7 +101,7 @@ public class ChampionInfoService {
 		ObjectMapper objectMapper = new ObjectMapper();
 		try {
 			String jsonString = objectMapper.writeValueAsString(objectNode);
-			log.info("[INFO] championPreferenceWithPlaystyle: {}", jsonString);
+			// log.info("[INFO] championPreferenceWithPlaystyle: {}", jsonString);
 			return jsonString;
 		} catch (JsonProcessingException e) {
 			log.error("[ERROR] JSON 문자열로 변환 중 JsonProcessingException 발생: {}", e.getMessage());

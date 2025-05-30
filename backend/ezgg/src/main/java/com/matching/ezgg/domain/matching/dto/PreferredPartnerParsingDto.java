@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Getter
@@ -21,6 +22,7 @@ public class PreferredPartnerParsingDto {
 	private WantLine wantLine;
 	@JsonProperty("selectedChampions")
 	private ChampionInfo championInfo;
+	@Setter
 	private String userPreferenceText;
 
 	@Getter
