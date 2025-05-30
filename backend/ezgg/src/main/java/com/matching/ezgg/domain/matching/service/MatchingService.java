@@ -2,22 +2,22 @@ package com.matching.ezgg.domain.matching.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
 import com.matching.ezgg.domain.matching.dto.MemberDataBundleDto;
-import com.matching.ezgg.domain.matching.dto.MemberInfoParsingDto;
 import com.matching.ezgg.domain.matching.dto.PreferredPartnerParsingDto;
-import com.matching.ezgg.domain.matching.dto.RecentTwentyMatchParsingDto;
+import com.matching.ezgg.domain.matching.infra.embedding.service.EmbeddingService;
+import com.matching.ezgg.domain.matching.infra.es.index.MatchingUserDocument;
+import com.matching.ezgg.domain.matching.infra.es.index.PartnerPreference;
+import com.matching.ezgg.domain.matching.infra.es.index.UserProfile;
 import com.matching.ezgg.domain.matching.infra.es.service.ElasticSearchService;
 import com.matching.ezgg.domain.matching.infra.redis.service.RedisService;
 import com.matching.ezgg.domain.matching.infra.redis.state.MatchingStateManager;
 import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.recentTwentyMatch.dto.RecentTwentyMatchDto;
-import com.matching.ezgg.domain.recentTwentyMatch.entity.model.ChampionStat;
+import com.matching.ezgg.domain.recentTwentyMatch.util.ChampionStatUtils;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 import com.matching.ezgg.domain.riotApi.dto.WinRateNTierDto;
 import com.matching.ezgg.domain.riotApi.service.ApiService;
@@ -36,6 +36,7 @@ public class MatchingService {
 	private final MatchingDataBulkSaveService matchingDataBulkSaveService;
 	private final MatchingStateManager matchingStateManager;
 	private final RedisService redisService;
+	private final EmbeddingService embeddingService;
 
 	/**
 	 * 매칭을 시작할 때 호출되는 진입점 메서드
@@ -54,8 +55,8 @@ public class MatchingService {
 		// 모든 데이터 riot api로 저장 후 리턴
 		MemberDataBundleDto memberDataBundleDto = updateAllAttributesOfMember(memberId);
 
-		// memberDataBundle -> MatchingFilterDto 변환
-		MatchingFilterParsingDto matchingFilterParsingDto = convertToMatchingFilterDto(memberDataBundleDto, memberId,
+		// memberDataBundle -> MatchingUserDocument 변환
+		MatchingUserDocument matchingUserDocument = convertToMatchingUserDocument(memberDataBundleDto, memberId,
 			preferredPartnerParsingDto);
 
 		// 매칭 전 ES, Redis 사용자 정보 모두 제거
@@ -64,7 +65,7 @@ public class MatchingService {
 		redisService.removeUserFromRetrySet(memberId);
 
 		// 매칭 시작 - ES에 document 저장, redis에 memberId 저장
-		elasticSearchService.postDoc(matchingFilterParsingDto);
+		elasticSearchService.postDoc(matchingUserDocument);
 		matchingStateManager.addUserToMatchingState(memberId);
 	}
 
@@ -128,70 +129,55 @@ public class MatchingService {
 
 	/**
 	 * 회원 통합 데이터 번들을 Elasticsearch에 저장할 수 있는
-	 * {@link MatchingFilterParsingDto} 형식으로 변환하는 메서드
+	 * {@link MatchingUserDocument} 형식으로 변환하는 메서드
 	 *
 	 * @param memberDataBundleDto       통합 데이터 번들
 	 * @param memberId                  회원 ID
 	 * @param preferredPartnerParsingDto 선호 파트너 조건 DTO
-	 * @return ES 저장용 매칭 필터 DTO
+	 * @return ES 저장용 매칭 Document
 	 */
-	public MatchingFilterParsingDto convertToMatchingFilterDto(MemberDataBundleDto memberDataBundleDto, Long memberId,
-		PreferredPartnerParsingDto preferredPartnerParsingDto) {
-		MemberInfoParsingDto memberInfoParsingDto = MemberInfoParsingDto.builder()
+	public MatchingUserDocument convertToMatchingUserDocument(
+		MemberDataBundleDto memberDataBundleDto, Long memberId, PreferredPartnerParsingDto preferredPartnerParsingDto) {
+
+		// MatchingUserDocument.PartnerPreference 생성
+		PartnerPreference partnerPreference = PartnerPreference.builder()
+			.userPreferenceTextVector(embeddingService.embed(preferredPartnerParsingDto.getUserPreferenceText()))
+			.lineRequirements(
+				PartnerPreference.LineRequirements.builder()
+					.myLine(preferredPartnerParsingDto.getWantLine().getMyLine())
+					.partnerLine(preferredPartnerParsingDto.getWantLine().getPartnerLine())
+					.build()
+			)
+			.championsPreference(
+				PartnerPreference.ChampionsPreference.builder()
+					.preferredChampions(preferredPartnerParsingDto.getChampionInfo().getPreferredChampions())
+					.unpreferredChampions(preferredPartnerParsingDto.getChampionInfo().getUnpreferredChampions())
+				.build())
+			.build();
+
+		// MatchingUserDocument.UserProfile 생성
+		UserProfile userProfile = UserProfile.builder()
 			.riotUsername(memberDataBundleDto.getMemberInfoDto().getRiotUsername())
 			.riotTag(memberDataBundleDto.getMemberInfoDto().getRiotTag())
 			.tier(memberDataBundleDto.getMemberInfoDto().getTier())
-			.tierNum(memberDataBundleDto.getMemberInfoDto().getTierNum())
-			.wins(memberDataBundleDto.getMemberInfoDto().getWins())
-			.losses(memberDataBundleDto.getMemberInfoDto().getLosses())
+			.recentTwentyMatchStats(
+				UserProfile.RecentTwentyMatchStats.builder()
+					.most3Champions(
+						ChampionStatUtils.orderChampionsByTotalGamesAndKda(memberDataBundleDto.getRecentTwentyMatchDto().getChampionStats()))
+					.topAnalysisVector(embeddingService.embed(memberDataBundleDto.getRecentTwentyMatchDto().getTopAnalysis()))
+					.jugAnalysisVector(embeddingService.embed(memberDataBundleDto.getRecentTwentyMatchDto().getJugAnalysis()))
+					.midAnalysisVector(embeddingService.embed(memberDataBundleDto.getRecentTwentyMatchDto().getMidAnalysis()))
+					.adAnalysisVector(embeddingService.embed(memberDataBundleDto.getRecentTwentyMatchDto().getAdAnalysis()))
+					.supAnalysisVector(embeddingService.embed(memberDataBundleDto.getRecentTwentyMatchDto().getSupAnalysis()))
+					.build()
+			)
+			.reviewScore(0.0)//TODO 해당 멤버에 대한 모든 리뷰 점수를 db에서 불러와 평균을 계산하는 로직을 통해 입력해야함. 없으면 0.0적용
 			.build();
 
-		RecentTwentyMatchParsingDto recentTwentyMatchparsingDto;
-
-		if (memberDataBundleDto.getRecentTwentyMatchDto().getChampionStats() == null
-			|| memberDataBundleDto.getRecentTwentyMatchDto().getChampionStats().isEmpty()) {
-			recentTwentyMatchparsingDto = RecentTwentyMatchParsingDto.builder()
-				.kills(0)
-				.deaths(0)
-				.assists(0)
-				.mostChampions(null)
-				.build();
-		} else {
-			Map<String, ChampionStat> championStats = memberDataBundleDto.getRecentTwentyMatchDto().getChampionStats();
-			List<RecentTwentyMatchParsingDto.MostChampion> mostChampions = new ArrayList<>();
-
-			for (ChampionStat value : championStats.values()) {
-
-				mostChampions.add(RecentTwentyMatchParsingDto.MostChampion.builder()
-					.championName(value.getChampionName())
-					.kills(value.getKills())
-					.deaths(value.getDeaths())
-					.assists(value.getAssists())
-					.wins(value.getWins())
-					.losses(value.getLosses())
-					.totalMatches(value.getTotal())
-					.winRateOfChampion(value.getWinRateOfChampion())
-					.build());
-			}
-
-			recentTwentyMatchparsingDto = RecentTwentyMatchParsingDto.builder()
-				.kills(memberDataBundleDto.getRecentTwentyMatchDto().getSumKills())
-				.deaths(memberDataBundleDto.getRecentTwentyMatchDto().getSumDeaths())
-				.assists(memberDataBundleDto.getRecentTwentyMatchDto().getSumAssists())
-				.mostChampions(mostChampions)
-				.topAnalysis(memberDataBundleDto.getRecentTwentyMatchDto().getTopAnalysis())
-				.jugAnalysis(memberDataBundleDto.getRecentTwentyMatchDto().getJugAnalysis())
-				.midAnalysis(memberDataBundleDto.getRecentTwentyMatchDto().getMidAnalysis())
-				.adAnalysis(memberDataBundleDto.getRecentTwentyMatchDto().getAdAnalysis())
-				.supAnalysis(memberDataBundleDto.getRecentTwentyMatchDto().getSupAnalysis())
-				.build();
-		}
-
-		return MatchingFilterParsingDto.builder()
+		return MatchingUserDocument.builder()
 			.memberId(memberId)
-			.preferredPartnerParsing(preferredPartnerParsingDto)
-			.memberInfoParsing(memberInfoParsingDto)
-			.recentTwentyMatchParsing(recentTwentyMatchparsingDto)
+			.partnerPreference(partnerPreference)
+			.userProfile(userProfile)
 			.build();
 	}
 
@@ -218,4 +204,5 @@ public class MatchingService {
 			throw new RuntimeException("매칭 취소 처리 중 오류가 발생했습니다.", e);
 		}
 	}
+
 }

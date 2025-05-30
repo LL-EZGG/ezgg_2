@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
-import com.matching.ezgg.domain.matching.infra.es.service.EsMatchingFilter;
+import com.matching.ezgg.domain.matching.infra.es.index.MatchingUserDocument;
+import com.matching.ezgg.domain.matching.infra.es.service.EsMatchingUserFinder;
 import com.matching.ezgg.domain.matching.infra.es.service.ElasticSearchService;
 import com.matching.ezgg.domain.matching.infra.redis.service.RedisService;
 import com.matching.ezgg.domain.matching.infra.redis.state.MatchingStateManager;
@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MatchingProcessor {
 
-	private final EsMatchingFilter esMatchingFilter;
+	private final EsMatchingUserFinder esMatchingUserFinder;
 	private final ElasticSearchService elasticSearchService;
 	private final MatchingStateManager matchingStateManager;
 	private final RedisService redisService;
@@ -44,34 +44,22 @@ public class MatchingProcessor {
 	public void tryMatching(Long memberId) {
 		try {
 			//es에서 매칭을 시도할 유저의 document를 가져온다.
-			MatchingFilterParsingDto matchingUserDocument = elasticSearchService.getDocByMemberId(memberId);
-
-			List<String> preferredPartnerChampions = matchingUserDocument.getPreferredPartnerParsing()
-				.getChampionInfo().getPreferredChampions();
-			List<String> unpreferredPartnerChampions = matchingUserDocument.getPreferredPartnerParsing()
-				.getChampionInfo().getUnpreferredChampions();
+			MatchingUserDocument matchingUserDocument = elasticSearchService.getDocByMemberId(memberId);
 
 			// es에서 매칭 상대 리스트 조회
-			List<MatchingFilterParsingDto> matchingUsers = esMatchingFilter.findMatchingUsers(
-				matchingUserDocument.getPreferredPartnerParsing().getWantLine().getMyLine(),
-				matchingUserDocument.getPreferredPartnerParsing().getWantLine().getPartnerLine(),
-				matchingUserDocument.getMemberInfoParsing().getTier(),
-				memberId,
-				preferredPartnerChampions,
-				unpreferredPartnerChampions
-			);
+			List<MatchingUserDocument> matchedUsers = esMatchingUserFinder.findMatchingUsersByScriptScore(matchingUserDocument);
 
 			// 매칭 조건에 맞는 유저가 없을 시 retry Set으로 이동
-			if (matchingUsers.isEmpty()) {
+			if (matchedUsers.isEmpty()) {
 				log.info("[INFO] 매칭 상대 없음 : memberId={}", memberId);
 				matchingStateManager.removeUserFromMatchingState(memberId);
 				matchingStateManager.addUserToRetryState(memberId);
 				return;
 			}
 
-			MatchingFilterParsingDto bestMatchingUser = matchingUsers.getFirst(); // 매칭 점수가 가장 높은 유저
-			log.info("[INFO] 매칭 성공! (memberId={}) >>>>> (memberID={})", memberId, bestMatchingUser.getMemberId());
-
+			MatchingUserDocument bestMatchingUser = matchedUsers.getFirst(); // 매칭 점수가 가장 높은 유저
+			log.info("[INFO] 매칭 성공! (memberId={}) >>>>> (memberID={})", memberId, bestMatchingUser.getMemberId());//TODO 점수 프론트까지 보내주기
+			log.info("[INFO] 둘의 매칭 점수: {}", bestMatchingUser.getMatchingScore());
 			redisService.addToMatchedUsers(memberId, bestMatchingUser.getMemberId());
 
 			// ES에서 매칭된 유저들의 데이터 삭제

@@ -164,13 +164,14 @@ public class ApiService {
 			);
 			// Json 전체 수령
 			String rawJson = asiaRestTemplate.getForObject(url, String.class);
+
 			// MatchDto 형식으로 매핑
 			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
 			List<String> matchKeywords = keywordAnalyzerService.giveMatchKeyword(rawJson, matchDto.getTeamPosition(), puuid, matchId,
 				memberId);
+
 			// MemberId, MatchAnalysis를 MatchDto에 따로 지정
 			matchDto = matchDto.toBuilder()
-				.memberId(memberInfoService.getMemberIdByPuuid(puuid))
 				.matchKeywords(matchKeywords)
 				.build();
 
