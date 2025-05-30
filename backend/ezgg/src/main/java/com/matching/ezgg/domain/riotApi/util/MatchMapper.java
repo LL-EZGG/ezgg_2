@@ -1,20 +1,28 @@
 package com.matching.ezgg.domain.riotApi.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.matching.ezgg.domain.matchInfo.dto.TimelineMatchInfoDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.GlobalMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.JugMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.LanerMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.SupMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
+import com.matching.ezgg.domain.memberInfo.dto.TimelineMemberInfoDto;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
+import com.matching.ezgg.domain.timeline.dto.DuoTimelineDto;
+import com.matching.ezgg.domain.timeline.dto.DuoTimelineDto.*;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +43,6 @@ public class MatchMapper {
 			// 타겟 유저 정보 노드 검색
 			JsonNode targetMemberNode = findTargetMember(root.path("info").path("participants"), puuid);
 
-			// Dto 생성, memberId는 따로 추가해야된다!
 			return MatchDto.builder()
 				.memberId(memberId)
 				.riotMatchId(riotMatchId)
@@ -50,6 +57,121 @@ public class MatchMapper {
 		} catch (JsonProcessingException e) {
 			throw new IllegalArgumentException("JSON → MatchDto 변환 실패", e);
 		}
+	}
+
+	// DuoTimeline에 사용될 데이터 추출 메서드
+	public DuoTimelineDto extractDuoTimelineDto(
+		JsonNode timelineData, TimelineMemberInfoDto memberInfoDto, TimelineMemberInfoDto duoMemberInfoDto,
+		TimelineMatchInfoDto timelineMatchInfoDto, TimelineMatchInfoDto duoTimelineMatchInfoDto
+	) {
+		Map<Integer, UserMatchInfoDto> userMatchInfos = extractUserMatchInfos(
+			timelineData.path("participants"), memberInfoDto, duoMemberInfoDto, timelineMatchInfoDto,
+			duoTimelineMatchInfoDto
+		);
+		List<DuoTimelineDto.DuoFrameEventDto> timeline = extractDuoFrameEvents(
+			timelineData.path("frames"), userMatchInfos.keySet()
+		);
+
+		DuoTimelineDto dto = new DuoTimelineDto();
+		dto.setTimeline(timeline);
+		dto.setUserMatchInfos(userMatchInfos);
+		return dto;
+	}
+
+	private Map<Integer, UserMatchInfoDto> extractUserMatchInfos(
+		JsonNode participantsNode, TimelineMemberInfoDto memberInfo, TimelineMemberInfoDto duoMemberInfo,
+		TimelineMatchInfoDto memberMatchInfo, TimelineMatchInfoDto duoMemberMatchInfo
+	) {
+		Map<Integer, UserMatchInfoDto> map = new HashMap<>();
+
+		for (JsonNode participant : participantsNode) {
+			String puuid = participant.path("puuid").asText();
+			int participantId = participant.path("participantId").asInt();
+
+			if (puuid.equals(memberInfo.getPuuid())) {
+				DuoTimelineDto.UserMatchInfoDto info = new DuoTimelineDto.UserMatchInfoDto();
+				info.setTimelineMemberInfoDto(memberInfo);
+				info.setTimelineMatchInfoDto(memberMatchInfo);
+				map.put(participantId, info);
+			} else if (puuid.equals(duoMemberInfo.getPuuid())) {
+				DuoTimelineDto.UserMatchInfoDto info = new DuoTimelineDto.UserMatchInfoDto();
+				info.setTimelineMemberInfoDto(duoMemberInfo);
+				info.setTimelineMatchInfoDto(duoMemberMatchInfo);
+				map.put(participantId, info);
+			}
+		}
+
+		return map;
+	}
+
+	private List<DuoTimelineDto.DuoFrameEventDto> extractDuoFrameEvents(
+		JsonNode framesNode, Set<Integer> participantIds) {
+		List<DuoTimelineDto.DuoFrameEventDto> result = new ArrayList<>();
+
+		for (JsonNode frameNode : framesNode) {
+			List<DuoTimelineDto.TimelineEventDto> events = new ArrayList<>();
+
+			for (JsonNode eventNode : frameNode.path("events")) {
+				String type = eventNode.path("type").asText();
+				if (isTargetEvent(type) && isDuoRelated(eventNode, participantIds)) {
+					events.add(convertToTimelineEventDto(eventNode, type));
+				}
+			}
+
+			// todo participantStatus 추출 (현재는 빈 Map, 향후 구현 필요)
+			Map<Integer, DuoTimelineDto.ParticipantStatusDto> participantStatus = new HashMap<>();
+
+			if (events.isEmpty() && participantStatus.isEmpty()) {
+				continue;
+			}
+
+			DuoTimelineDto.DuoFrameEventDto frameEvent = new DuoTimelineDto.DuoFrameEventDto();
+			frameEvent.setTimestamp(frameNode.path("timestamp").asLong());
+			frameEvent.setEvents(events);
+			frameEvent.setParticipantStatus(participantStatus);
+
+			result.add(frameEvent);
+		}
+
+		return result;
+	}
+
+	private DuoTimelineDto.TimelineEventDto convertToTimelineEventDto(JsonNode eventNode, String type) {
+		DuoTimelineDto.TimelineEventDto dto = new DuoTimelineDto.TimelineEventDto();
+		dto.setType(type);
+		if (eventNode.has("killerId"))
+			dto.setKillerId(eventNode.get("killerId").asInt());
+		if (eventNode.has("victimId"))
+			dto.setVictimId(eventNode.get("victimId").asInt());
+		if (eventNode.has("assistingParticipantIds")) {
+			List<Integer> assists = new ArrayList<>();
+			eventNode.get("assistingParticipantIds").forEach(a -> assists.add(a.asInt()));
+			dto.setAssistingParticipantIds(assists);
+		}
+		if (type.equals("CHAMPION_SPECIAL_KILL") && eventNode.has("killType")) {
+			dto.setDetail(eventNode.get("killType").asText());
+		}
+		return dto;
+	}
+
+	private boolean isDuoRelated(JsonNode eventNode, Set<Integer> participantIdSet) {
+		return (eventNode.has("participantId") && participantIdSet.contains(eventNode.get("participantId").asInt())) ||
+			(eventNode.has("killerId") && participantIdSet.contains(eventNode.get("killerId").asInt())) ||
+			(eventNode.has("victimId") && participantIdSet.contains(eventNode.get("victimId").asInt())) ||
+			(eventNode.has("assistingParticipantIds") &&
+				StreamSupport.stream(eventNode.get("assistingParticipantIds").spliterator(), false)
+					.map(JsonNode::asInt)
+					.anyMatch(participantIdSet::contains));
+	}
+
+	private boolean isTargetEvent(String type) {
+		return Set.of(
+			"CHAMPION_KILL",
+			"CHAMPION_SPECIAL_KILL",
+			"ELITE_MONSTER_KILL",
+			"BUILDING_KILL",
+			"TURRET_PLATE_DESTROYED"
+		).contains(type);
 	}
 
 	// participant 배열에서 puuid가 일치하는 노드 리턴
@@ -182,16 +304,20 @@ public class MatchMapper {
 			JsonNode lanerChallengesNode = findChallenges(lanerNode);
 
 			//상대 라이너 정보 파싱
-			JsonNode opponentLanerNode = findOpponentMember(root.path("info").path("participants"), puuid,
-				teamPosition);
+			JsonNode opponentLanerNode = findOpponentMember(
+				root.path("info").path("participants"), puuid,
+				teamPosition
+			);
 			JsonNode opponentLanerChallengesNode = findChallenges(opponentLanerNode);
 
 			return LanerMatchParsingDto.builder()
 				.turretKills(lanerNode.path("turretKills").asInt())
 				.turretsLost(lanerNode.path("turretsLost").asInt())
 				.firstBloodKill(lanerNode.path("firstBloodKill").asBoolean())
-				.killsOnOtherLanesEarlyJungleAsLaner(lanerChallengesNode.path("killsOnOtherLanesEarlyJungleAsLaner").asInt())
-				.getTakedownsInAllLanesEarlyJungleAsLaner(lanerChallengesNode.path("getTakedownsInAllLanesEarlyJungleAsLaner").asInt())
+				.killsOnOtherLanesEarlyJungleAsLaner(
+					lanerChallengesNode.path("killsOnOtherLanesEarlyJungleAsLaner").asInt())
+				.getTakedownsInAllLanesEarlyJungleAsLaner(
+					lanerChallengesNode.path("getTakedownsInAllLanesEarlyJungleAsLaner").asInt())
 				.turretPlatesTaken(lanerChallengesNode.path("turretPlatesTaken").asInt())
 				.killsUnderOwnTurret(lanerChallengesNode.path("killsUnderOwnTurret").asInt())
 				.killsNearEnemyTurret(lanerChallengesNode.path("killsNearEnemyTurret").asInt())
@@ -213,12 +339,15 @@ public class MatchMapper {
 			JsonNode jugChallengesNode = findChallenges(jugNode);
 
 			//상대 정글 정보 파싱
-			JsonNode opponentJugNode = findOpponentMember(root.path("info").path("participants"), puuid,
-				Lane.JUNGLE.name());
+			JsonNode opponentJugNode = findOpponentMember(
+				root.path("info").path("participants"), puuid,
+				Lane.JUNGLE.name()
+			);
 			JsonNode opponentJugChallengesNode = findChallenges(opponentJugNode);
 
 			return JugMatchParsingDto.builder()
-				.visionScoreAdvantageLaneOpponent(jugChallengesNode.path("visionScoreAdvantageLaneOpponent").doubleValue())
+				.visionScoreAdvantageLaneOpponent(
+					jugChallengesNode.path("visionScoreAdvantageLaneOpponent").doubleValue())
 				.epicMonsterSteals(jugChallengesNode.path("epicMonsterSteals").asInt())
 				.enemyJungleMonsterKills(jugChallengesNode.path("enemyJungleMonsterKills").asInt())
 				.riftHeraldTakedowns(jugChallengesNode.path("riftHeraldTakedowns").asInt())
@@ -229,7 +358,8 @@ public class MatchMapper {
 				.opponentBaronTakedowns(opponentJugChallengesNode.path("baronTakedowns").asInt())
 				.firstBloodKill(jugNode.path("firstBloodKill").asBoolean())
 				.moreEnemyJungleThanOpponent(jugChallengesNode.path("moreEnemyJungleThanOpponent").asDouble())
-				.opponentMoreEnemyJungleThanOpponent(opponentJugChallengesNode.path("moreEnemyJungleThanOpponent").asDouble())
+				.opponentMoreEnemyJungleThanOpponent(
+					opponentJugChallengesNode.path("moreEnemyJungleThanOpponent").asDouble())
 				.multiTurretRiftHeraldCount(jugChallengesNode.path("multiTurretRiftHeraldCount").asInt())
 				.build();
 

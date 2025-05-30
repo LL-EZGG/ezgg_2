@@ -4,13 +4,15 @@ import static com.matching.ezgg.domain.review.util.ReviewUtil.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.domain.matching.infra.redis.service.RedisService;
-import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
+import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.review.dto.CreateReviewDto;
+import com.matching.ezgg.domain.review.dto.ReviewTimelineResponseDto;
 import com.matching.ezgg.domain.review.entity.Review;
 import com.matching.ezgg.domain.review.repository.ReviewRepository;
 import com.matching.ezgg.domain.riotApi.dto.MatchReviewDto;
@@ -36,11 +38,17 @@ public class ReviewService {
 
 	@Transactional
 	public void findDuoGame(Long memberId1, Long memberId2, Map<String, String> updateMatchedUser) {
-		MemberInfo memberInfoByMember1 = memberInfoService.getMemberInfoByMemberId(memberId1);
-		MemberInfo memberInfoByMember2 = memberInfoService.getMemberInfoByMemberId(memberId2);
-
+		MemberInfoDto memberInfoByMember1 = memberInfoService.getMemberInfoByMemberId(memberId1);
+		MemberInfoDto memberInfoByMember2 = memberInfoService.getMemberInfoByMemberId(memberId2);
 		List<String> findMember1MatchIds = apiService.getMemberMatchIds(memberInfoByMember1.getPuuid());
 		List<String> findMember2MatchIds = apiService.getMemberMatchIds(memberInfoByMember2.getPuuid());
+
+		List<String> matchIds1 = memberInfoByMember1.getMatchIds();
+		List<String> matchIds2 = memberInfoByMember2.getMatchIds();
+
+		if(isSameMatchIds(matchIds1, findMember1MatchIds) || isSameMatchIds(matchIds2, findMember2MatchIds)) {
+			return;
+		}
 
 		List<String> commonElements = getCommonElements(findMember1MatchIds, findMember2MatchIds);
 
@@ -75,6 +83,21 @@ public class ReviewService {
 				break;
 			}
 		}
+	}
+
+	public List<ReviewTimelineResponseDto> getRecentReviews(Long memberId) {
+		List<Review> reviews = reviewRepository.findTop10ByMemberIdOrderByIdDesc(memberId);
+		return reviews.stream()
+			.map(this::toDto)
+			.collect(Collectors.toList());
+	}
+
+	private ReviewTimelineResponseDto toDto(Review review) {
+		return ReviewTimelineResponseDto.builder()
+			.memberId(review.getMemberId())
+			.partnerMemberId(review.getPartnerMemberId())
+			.matchId(review.getMatchId())
+			.build();
 	}
 
 	@Transactional

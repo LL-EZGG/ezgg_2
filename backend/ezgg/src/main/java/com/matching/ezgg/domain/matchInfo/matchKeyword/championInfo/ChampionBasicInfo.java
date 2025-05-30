@@ -119,7 +119,7 @@ public enum ChampionBasicInfo {
 	WARWICK("워윅", "Warwick", ChampionRole.AD_BRUISER, ChampionRole.JUNGLE),
 	YUUMI("유미", "Yuumi", ChampionRole.SUPPORT),
 	IRELIA("이렐리아", "Irelia", ChampionRole.AD_BRUISER),
-	EVELYN("이블린", "Evelynn", ChampionRole.AP_ASSASSIN, ChampionRole.JUNGLE),
+	EVELYNN("이블린", "Evelynn", ChampionRole.AP_ASSASSIN, ChampionRole.JUNGLE),
 	EZREAL("이즈리얼", "Ezreal", ChampionRole.AD_CARRY),
 	ILLAOI("일라오이", "Illaoi", ChampionRole.AD_BRUISER),
 	JARVANIV("자르반 4세", "Jarvan IV", ChampionRole.AD_BRUISER, ChampionRole.JUNGLE),

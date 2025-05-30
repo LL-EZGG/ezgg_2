@@ -12,6 +12,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.service.KeywordAnalyzerService;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
@@ -50,7 +51,7 @@ public class ApiService {
 		this.keywordAnalyzerService = keywordAnalyzerService;
 	}
 
-	//riot/account/v1/accounts/by-riot-id/{riot-id}/{tag}?api_key=
+	// riot/account/v1/accounts/by-riot-id/{riot-id}/{tag}?api_key=
 	// 유저 id, tag -> Riot api -> puuid를 수령
 	public String getMemberPuuid(String riotId, String tag) {
 		log.info("puuid 조회 시작: {}#{}", riotId, tag);
@@ -77,7 +78,7 @@ public class ApiService {
 		}
 	}
 
-	// /lol/league/v4/entries/by-puuid/{encryptedPUUID}
+	// lol/league/v4/entries/by-puuid/{encryptedPUUID}
 	// puuid -> Riot api -> tier, rank, wins, losses 수령
 	public WinRateNTierDto getMemberWinRateNTier(String puuid) {
 		log.info("승률/티어 조회 시작: {}", puuid);
@@ -114,7 +115,7 @@ public class ApiService {
 		}
 	}
 
-	//lol/match/v5/matches/by-puuid/{puuid}/ids?type=ranked&start=0&count=20&api_key=apiKey
+	// lol/match/v5/matches/by-puuid/{puuid}/ids?type=ranked&start=0&count=20&api_key=apiKey
 	// puuid -> Riot api -> 최근 랭크 경기 20개의 matchIds 배열로 수령
 	public List<String> getMemberMatchIds(String puuid) {
 		log.info("MatchIds 조회 시작: {}", puuid);
@@ -152,7 +153,7 @@ public class ApiService {
 		}
 	}
 
-	//lol/match/v5/matches/{matchId}?api_key=
+	// lol/match/v5/matches/{matchId}?api_key=
 	public MatchDto getMemberMatch(Long memberId, String puuid, String matchId) {
 		log.info("matchInfo 조회 시작: puuid = {} / matchId = {}", puuid, matchId);
 
@@ -163,13 +164,14 @@ public class ApiService {
 			);
 			// Json 전체 수령
 			String rawJson = asiaRestTemplate.getForObject(url, String.class);
+
 			// MatchDto 형식으로 매핑
 			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
 			String matchAnalysis = keywordAnalyzerService.buildMatchKeywordAnalysis(matchDto, rawJson, puuid, matchId,
 				memberId);
-			// MemberId, MatchAnalysis를 MatchDto에 따로 지정
+
+			// MatchAnalysis를 MatchDto에 따로 지정
 			matchDto = matchDto.toBuilder()
-				.memberId(memberInfoService.getMemberIdByPuuid(puuid))
 				.matchAnalysis(matchAnalysis)
 				.build();
 
@@ -180,6 +182,22 @@ public class ApiService {
 			throw new RiotMatchNotFoundException(matchId);
 		} catch (RiotApiException e) {
 			throw new RiotApiException("Match 조회 Riot Api 실패");
+		}
+	}
+
+	// lol/match/v5/matches/{matchId}/timeline?api_key=
+	public JsonNode getDuoMatchTimeline(String matchId) {
+		try {
+			String url = String.format(
+				"/lol/match/v5/matches/%s/timeline?api_key=%s",
+				matchId, apiKey
+			);
+
+			return asiaRestTemplate.getForObject(url, JsonNode.class);
+		} catch (RiotMatchNotFoundException e) {
+			throw new RiotMatchNotFoundException(matchId);
+		} catch (RiotApiException e) {
+			throw new RiotApiException("Match timeline 조회 Riot Api 실패 : MatchId : " + matchId);
 		}
 	}
 
