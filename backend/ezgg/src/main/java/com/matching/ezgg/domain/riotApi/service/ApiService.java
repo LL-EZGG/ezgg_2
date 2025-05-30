@@ -14,7 +14,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.service.KeywordAnalyzerService;
-import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
 import com.matching.ezgg.domain.riotApi.dto.PuuidDto;
 import com.matching.ezgg.domain.riotApi.dto.WinRateNTierDto;
@@ -37,17 +36,14 @@ public class ApiService {
 	private final RestTemplate krRestTemplate;
 	private final String apiKey;
 	private final MatchMapper matchMapper;
-	private final MemberInfoService memberInfoService;
 	private final KeywordAnalyzerService keywordAnalyzerService;
 
 	public ApiService(@Qualifier("asia") RestTemplate asiaRestTemplate, @Qualifier("kr") RestTemplate krRestTemplate,
-		@Value("${api.key}") String apiKey, MatchMapper matchMapper, MemberInfoService memberInfoService,
-		KeywordAnalyzerService keywordAnalyzerService) {
+		@Value("${api.key}") String apiKey, MatchMapper matchMapper, KeywordAnalyzerService keywordAnalyzerService) {
 		this.asiaRestTemplate = asiaRestTemplate;
 		this.krRestTemplate = krRestTemplate;
 		this.apiKey = apiKey;
 		this.matchMapper = matchMapper;
-		this.memberInfoService = memberInfoService;
 		this.keywordAnalyzerService = keywordAnalyzerService;
 	}
 
@@ -167,10 +163,10 @@ public class ApiService {
 
 			// MatchDto 형식으로 매핑
 			MatchDto matchDto = matchMapper.toMatchDto(rawJson, memberId, puuid);
-			List<String> matchKeywords = keywordAnalyzerService.giveMatchKeyword(rawJson, matchDto.getTeamPosition(), puuid, matchId,
+			List<String> matchKeywords = keywordAnalyzerService.giveMatchKeyword(rawJson, matchDto.getTeamPosition(),
+				puuid, matchId,
 				memberId);
 
-			// MemberId, MatchAnalysis를 MatchDto에 따로 지정
 			matchDto = matchDto.toBuilder()
 				.matchKeywords(matchKeywords)
 				.build();
