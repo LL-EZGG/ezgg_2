@@ -1,4 +1,4 @@
-package com.matching.ezgg.domain.memberInfo.util;
+package com.matching.ezgg.global.util;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,7 +11,7 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter
-public class MatchIdConvert implements AttributeConverter<List<String>, String> {
+public class StringListConverter implements AttributeConverter<List<String>, String> {
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
