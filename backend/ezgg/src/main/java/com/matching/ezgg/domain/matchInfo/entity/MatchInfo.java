@@ -3,16 +3,15 @@ package com.matching.ezgg.domain.matchInfo.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.matching.ezgg.global.util.StringListConverter;
 import com.matching.ezgg.global.entity.BaseEntity;
 
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -54,6 +53,7 @@ public class MatchInfo extends BaseEntity {
 	private Boolean win;
 
 	@Column(name = "match_keywords", unique = false)
+	@Convert(converter = StringListConverter.class)
 	private List<String> matchKeywords = new ArrayList<>();
 
 	@Builder
