@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.springframework.stereotype.Component;
 
-import com.matching.ezgg.domain.matching.dto.MatchingFilterParsingDto;
+import com.matching.ezgg.domain.matching.infra.es.index.MatchingUserDocument;
 import com.matching.ezgg.global.exception.EsAccessFailException;
 import com.matching.ezgg.global.exception.EsDocDeleteFailException;
 import com.matching.ezgg.global.exception.EsDocNotFoundException;
@@ -32,11 +32,11 @@ public class ElasticSearchService {
 	 * 주어진 {@code memberId}로 Elasticsearch 문서를 조회하는 메서드
 	 *
 	 * @param memberId 조회하려는 회원 ID
-	 * @return 해당 회원의 {@link MatchingFilterParsingDto} 객체
+	 * @return 해당 회원의 {@link MatchingUserDocument} 객체
 	 * @throws EsDocNotFoundException   문서를 찾지 못한 경우
 	 * @throws EsAccessFailException    통신·직렬화 등 시스템 레벨 예외가 발생한 경우
 	 */
-	public MatchingFilterParsingDto getDocByMemberId(Long memberId) {
+	public MatchingUserDocument getDocByMemberId(Long memberId) {
 
 		GetRequest getRequest = GetRequest.of(g -> g
 			.index(indexName)
@@ -44,8 +44,8 @@ public class ElasticSearchService {
 		);
 
 		try {
-			GetResponse<MatchingFilterParsingDto> response =
-				esClient.get(getRequest, MatchingFilterParsingDto.class);
+			GetResponse<MatchingUserDocument> response =
+				esClient.get(getRequest, MatchingUserDocument.class);
 
 			if (response.found() && response.source() != null) {
 				log.info("[INFO] 매칭 시도중인 유저의 ES Document 조회 성공: memberId={}", memberId);
@@ -62,14 +62,14 @@ public class ElasticSearchService {
 	/**
 	 * 매칭 조건 정보를 Elasticsearch에 저장(혹은 업데이트)하는 메서드
 	 *
-	 * @param matchingFilterDto 저장할 매칭 조건 DTO
+	 * @param matchingUserDocument 저장할 매칭 조건 DTO
 	 * @throws EsPostFailException Elasticsearch에 문서 저장이 실패한 경우
 	 */
-	public void postDoc(MatchingFilterParsingDto matchingFilterDto) {
-		IndexRequest<MatchingFilterParsingDto> postRequest = IndexRequest.of(r -> r
+	public void postDoc(MatchingUserDocument matchingUserDocument) {
+		IndexRequest<MatchingUserDocument> postRequest = IndexRequest.of(r -> r
 			.index(indexName)
-			.id(String.valueOf(matchingFilterDto.getMemberId()))
-			.document(matchingFilterDto));
+			.id(String.valueOf(matchingUserDocument.getMemberId()))
+			.document(matchingUserDocument));
 		try {
 			IndexResponse response = esClient.index(postRequest);
 			log.info("[INFO] ES 저장: {}", response);
