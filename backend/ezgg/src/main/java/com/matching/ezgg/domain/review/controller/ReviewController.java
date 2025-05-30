@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.matching.ezgg.domain.member.dto.SignupResponse;
 import com.matching.ezgg.domain.review.dto.CreateReviewDto;
 import com.matching.ezgg.domain.review.service.ReviewService;
 import com.matching.ezgg.global.annotation.LoginUser;
