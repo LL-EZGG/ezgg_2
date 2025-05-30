@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
+import com.matching.ezgg.domain.memberInfo.dto.TimelineMemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.domain.memberInfo.repository.MemberInfoRepository;
 import com.matching.ezgg.domain.riotApi.dto.WinRateNTierDto;
@@ -38,13 +39,23 @@ public class MemberInfoService {
 	}
 
 	// puuid로 MemberInfo 조회
-	public MemberInfo getMemberInfoByPuuid(String puuid) {
-		return memberInfoRepository.findByPuuid(puuid).orElseThrow(MemberInfoNotFoundException::new);
+	public MemberInfoDto getMemberInfoByPuuid(String puuid) {
+		return MemberInfoDto.toDto(
+			memberInfoRepository.findByPuuid(puuid).orElseThrow(MemberInfoNotFoundException::new)
+		);
 	}
 
 	// memberId로 MemberInfo 조회
-	public MemberInfo getMemberInfoByMemberId(Long memberId) {
+	private MemberInfo getMemberInfoOrThrow(Long memberId) {
 		return memberInfoRepository.findByMemberId(memberId).orElseThrow(MemberInfoNotFoundException::new);
+	}
+
+	public MemberInfoDto getMemberInfoByMemberId(Long memberId) {
+		return MemberInfoDto.toDto(getMemberInfoOrThrow(memberId));
+	}
+
+	public TimelineMemberInfoDto getTimelineMemberInfoByMemberId(Long memberId) {
+		return TimelineMemberInfoDto.toDto(getMemberInfoOrThrow(memberId));
 	}
 
 	//member info 생성
@@ -83,7 +94,7 @@ public class MemberInfoService {
 	public MemberInfo updateMemberInfo(Long memberId, WinRateNTierDto winRateNTierDto, List<String> fetchedMatchIds,
 		boolean existsNewMatchIds) {
 		log.info("MemberInfo 업데이트 시작");
-		MemberInfo memberInfo = getMemberInfoByMemberId(memberId);
+		MemberInfo memberInfo = getMemberInfoOrThrow(memberId);
 		memberInfo.update(
 			winRateNTierDto.getTier(),
 			winRateNTierDto.getTierNum(),

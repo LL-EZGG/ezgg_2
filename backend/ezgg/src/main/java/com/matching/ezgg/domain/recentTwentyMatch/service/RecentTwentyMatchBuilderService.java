@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.matching.ezgg.domain.matchInfo.entity.MatchInfo;
+import com.matching.ezgg.domain.matchInfo.dto.MatchInfoDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionBasicInfo;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionRole;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.analysis.Analysis;
@@ -24,7 +24,7 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.service.ChampionInfoService;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.service.KeywordService;
 import com.matching.ezgg.domain.matchInfo.service.MatchInfoService;
-import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
+import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
 import com.matching.ezgg.domain.recentTwentyMatch.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.domain.recentTwentyMatch.entity.model.ChampionStat;
@@ -46,11 +46,9 @@ public class RecentTwentyMatchBuilderService {
 	public RecentTwentyMatchDto buildDto(String puuid) {
 		log.info("recentTwentyMatch 계산 시작");
 
-		MemberInfo memberInfo = memberInfoService.getMemberInfoByPuuid(puuid);
-		// matchIds 조회
-		List<String> matchIds = memberInfo.getMatchIds();
-		// member_Id 조회
-		Long memberId = memberInfo.getMemberId();
+		MemberInfoDto memberInfoDto = memberInfoService.getMemberInfoByPuuid(puuid);
+		List<String> matchIds = memberInfoDto.getMatchIds();
+		Long memberId = memberInfoDto.getMemberId();
 
 		// recentTwentyMatch에 들어갈 값 계산(sumKills, sumDeaths, sumAssists, wins, losses, allChampionStat)
 		AggregateResult result = calculateAggregateStatsFromMatches(matchIds, memberId);
@@ -94,7 +92,6 @@ public class RecentTwentyMatchBuilderService {
 		return json;
 	}
 
-
 	// 계산 결과값 보관하기 위한 내부 클래스
 	private static class AggregateResult {
 		int sumKills = 0;
@@ -124,13 +121,13 @@ public class RecentTwentyMatchBuilderService {
 
 		// 최근 20 경기의 matchId들로 RecentTwentyMatch 업데이트
 		for (String matchId : matchIds) {
-			MatchInfo matchInfo = matchInfoService.getMatchByMemberIdAndRiotMatchId(memberId, matchId);
+			MatchInfoDto matchInfoDto = matchInfoService.getMemberInfoByMemberIdAndRiotMatchId(memberId, matchId);
 
-			result.sumKills += matchInfo.getKills();
-			result.sumDeaths += matchInfo.getDeaths();
-			result.sumAssists += matchInfo.getAssists();
+			result.sumKills += matchInfoDto.getKills();
+			result.sumDeaths += matchInfoDto.getDeaths();
+			result.sumAssists += matchInfoDto.getAssists();
 
-			if (Boolean.TRUE.equals(matchInfo.getWin())) {
+			if (Boolean.TRUE.equals(matchInfoDto.getWin())) {
 				result.wins++;
 			} else {
 				result.losses++;
@@ -138,17 +135,17 @@ public class RecentTwentyMatchBuilderService {
 
 			// championStat 업데이트
 			result.allChampionStats
-				.computeIfAbsent(matchInfo.getChampionName().trim().toLowerCase(),
+				.computeIfAbsent(matchInfoDto.getChampionName().trim().toLowerCase(),
 					name -> ChampionStat.builder()
 						.championName(name)
 						.build())// 해당 챔피언이 처음으로 기록될때만 ChampionStat 객체 생성. 있을 시에는 해당 championStat 객체에 updateByMatch메서드 바로 적용
-				.updateByMatch(matchInfo);
+				.updateByMatch(matchInfoDto);
 
 			// 라인별 KeywordAnalysis에 사용할 요소들 업데이트
 			Lane lane = null;
 
 			try {
-				lane = Lane.valueOf(matchInfo.getTeamPosition());
+				lane = Lane.valueOf(matchInfoDto.getTeamPosition());
 			} catch (IllegalArgumentException | NullPointerException e) {
 				throw new IllegalArgumentException("유효하지 않은 Lane명 입니다.", e);
 			}

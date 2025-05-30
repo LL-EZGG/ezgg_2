@@ -8,6 +8,7 @@ import Join from './components/auth/Join';
 import {useMatchingSystem} from "./hooks/useMatchingSystem.js";
 import {MatchingButtonPanel} from "./components/duoFinder/matching/MatchingButtonPanel.jsx";
 import {useWebSocket} from './hooks/useWebSocket';
+import DuoTimeline from "./components/timeline/DuoTimeline.jsx";
 import ReviewModal from './components/review/ReviewModal';
 import {STORAGE_KEYS} from './utils/constants';
 import {useStateManager} from "./hooks/useStateManager.js";
@@ -313,9 +314,9 @@ const App = () => {
                     <UserSection>
                         {isLoggedIn ? (
                             <>
-                                <UserInfo>
-                                    {userInfo.riotUsername} #{userInfo.riotTag}
-                                </UserInfo>
+                                <Link to="/timeline">
+                                    <UserInfo>{userInfo.riotUsername} #{userInfo.riotTag}</UserInfo>
+                                </Link>
                                 <LogoutButton
                                     onClick={handleLogout}
                                     disabled={isLoggingOut}
@@ -360,9 +361,15 @@ const App = () => {
                             isLoggedIn={isLoggedIn}
                         />
                     }/>
-                    <Route path="/login"
-                           element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
+                    <Route path="/timeline" element={
+                        <ProtectedRoute
+                            isLoggedIn={isLoggedIn}
+                            element={<DuoTimeline memberData={memberDataBundle} />}
+                        />
+                    }/>
+                    <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
                     <Route path="/join" element={<Join/>}/>
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
                 <ReviewModal
                     visible={reviewModalVisible}

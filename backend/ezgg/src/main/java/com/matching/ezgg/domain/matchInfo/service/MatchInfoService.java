@@ -3,6 +3,8 @@ package com.matching.ezgg.domain.matchInfo.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.matching.ezgg.domain.matchInfo.dto.MatchInfoDto;
+import com.matching.ezgg.domain.matchInfo.dto.TimelineMatchInfoDto;
 import com.matching.ezgg.domain.matchInfo.entity.MatchInfo;
 import com.matching.ezgg.domain.matchInfo.repository.MatchInfoRepository;
 import com.matching.ezgg.domain.riotApi.dto.MatchDto;
@@ -36,8 +38,16 @@ public class MatchInfoService {
 		log.info("[INFO] match 저장 종료: {}", matchDto.getRiotMatchId());
 	}
 
-	public MatchInfo getMatchByMemberIdAndRiotMatchId(Long memberId, String matchId) {
+	private MatchInfo getMatchInfoOrThrow(Long memberId, String matchId) {
 		return matchInfoRepository.findByMemberIdAndRiotMatchId(memberId, matchId)
 			.orElseThrow(MatchNotFoundException::new);
+	}
+
+	public MatchInfoDto getMemberInfoByMemberIdAndRiotMatchId(Long memberId, String matchId) {
+		return MatchInfoDto.toMatchInfoDto(getMatchInfoOrThrow(memberId, matchId));
+	}
+
+	public TimelineMatchInfoDto getTimelineMemberInfoByMemberIdAndRiotMatchId(Long memberId, String matchId) {
+		return TimelineMatchInfoDto.toDto(getMatchInfoOrThrow(memberId, matchId));
 	}
 }
