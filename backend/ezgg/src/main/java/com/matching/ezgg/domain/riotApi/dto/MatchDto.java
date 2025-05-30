@@ -1,5 +1,7 @@
 package com.matching.ezgg.domain.riotApi.dto;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
@@ -21,5 +23,5 @@ public class MatchDto {
 	private String teamPosition;
 	private String championName;
 	private boolean win;
-	private String matchAnalysis;
+	private List<String> matchKeywords;
 }

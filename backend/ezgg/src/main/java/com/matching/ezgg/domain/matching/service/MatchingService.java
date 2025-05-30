@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.matching.ezgg.domain.matchInfo.matchKeyword.service.ChampionInfoService;
 import com.matching.ezgg.domain.matching.dto.MemberDataBundleDto;
 import com.matching.ezgg.domain.matching.dto.PreferredPartnerParsingDto;
 import com.matching.ezgg.domain.matching.infra.embedding.service.EmbeddingService;
@@ -37,6 +38,7 @@ public class MatchingService {
 	private final MatchingStateManager matchingStateManager;
 	private final RedisService redisService;
 	private final EmbeddingService embeddingService;
+	private final ChampionInfoService championInfoService;
 
 	/**
 	 * 매칭을 시작할 때 호출되는 진입점 메서드
@@ -51,13 +53,14 @@ public class MatchingService {
 	 */
 	public void startMatching(Long memberId, PreferredPartnerParsingDto preferredPartnerParsingDto) {
 		log.info("[INFO] 매칭 시작! memberId = {}", memberId);
-		log.info("[INFO] 선호 파트너 조건: {}", preferredPartnerParsingDto.getUserPreferenceText());
+		PreferredPartnerParsingDto updatedPreferredPartnerParsingDto = championInfoService.mergeChampionPreferenceWithPlayStyleJson(preferredPartnerParsingDto);
+		log.info("[INFO] 선호 파트너 조건: {}", updatedPreferredPartnerParsingDto.getUserPreferenceText());
 		// 모든 데이터 riot api로 저장 후 리턴
 		MemberDataBundleDto memberDataBundleDto = updateAllAttributesOfMember(memberId);
 
 		// memberDataBundle -> MatchingUserDocument 변환
 		MatchingUserDocument matchingUserDocument = convertToMatchingUserDocument(memberDataBundleDto, memberId,
-			preferredPartnerParsingDto);
+			updatedPreferredPartnerParsingDto);
 
 		// 매칭 전 ES, Redis 사용자 정보 모두 제거
 		elasticSearchService.deleteDocByMemberId(memberId);

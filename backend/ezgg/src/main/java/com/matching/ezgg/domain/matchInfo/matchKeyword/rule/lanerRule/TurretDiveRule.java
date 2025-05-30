@@ -1,6 +1,6 @@
 package com.matching.ezgg.domain.matchInfo.matchKeyword.rule.lanerRule;
 
-import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.LanerMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.parsingDto.LanerMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.LanerKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.KeywordRule;

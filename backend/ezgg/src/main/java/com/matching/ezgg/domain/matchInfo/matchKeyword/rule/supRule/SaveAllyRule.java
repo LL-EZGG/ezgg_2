@@ -1,6 +1,6 @@
 package com.matching.ezgg.domain.matchInfo.matchKeyword.rule.supRule;
 
-import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.SupMatchParsingDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.parsingDto.SupMatchParsingDto;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.SupKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.rule.KeywordRule;

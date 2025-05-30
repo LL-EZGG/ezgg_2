@@ -1,8 +1,13 @@
 package com.matching.ezgg.domain.matchInfo.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.matching.ezgg.global.util.StringListConverter;
 import com.matching.ezgg.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -47,12 +52,13 @@ public class MatchInfo extends BaseEntity {
 	@Column(name = "win", unique = false, nullable = false)
 	private Boolean win;
 
-	@Column(name = "match_analysis", unique = false)
-	private String matchAnalysis = "";
+	@Column(name = "match_keywords", unique = false)
+	@Convert(converter = StringListConverter.class)
+	private List<String> matchKeywords = new ArrayList<>();
 
 	@Builder
 	public MatchInfo(Long memberId, String riotMatchId, Integer kills, Integer deaths, Integer assists,
-		String teamPosition, String championName, Boolean win, String matchAnalysis) {
+		String teamPosition, String championName, Boolean win, List<String> matchKeywords) {
 		this.memberId = memberId;
 		this.riotMatchId = riotMatchId;
 		this.kills = kills;
@@ -61,6 +67,6 @@ public class MatchInfo extends BaseEntity {
 		this.teamPosition = teamPosition;
 		this.championName = championName;
 		this.win = win;
-		this.matchAnalysis = matchAnalysis;
+		this.matchKeywords = matchKeywords;
 	}
 }

@@ -2,7 +2,7 @@ package com.matching.ezgg.domain.memberInfo.entity;
 
 import java.util.List;
 
-import com.matching.ezgg.domain.memberInfo.util.MatchIdConvert;
+import com.matching.ezgg.global.util.StringListConverter;
 import com.matching.ezgg.global.entity.BaseEntity;
 
 import jakarta.persistence.Column;
@@ -40,7 +40,7 @@ public class MemberInfo extends BaseEntity {
 	private String puuid;
 
 	@Column(name = "match_ids", unique = false, nullable = true, length = 1000)//TODO 정규화 필요
-	@Convert(converter = MatchIdConvert.class)
+	@Convert(converter = StringListConverter.class)
 	private List<String> matchIds;
 
 	@Column(name = "tier", unique = false, nullable = true)

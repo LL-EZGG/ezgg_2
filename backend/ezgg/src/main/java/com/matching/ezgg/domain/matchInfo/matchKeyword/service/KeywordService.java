@@ -1,13 +1,14 @@
 package com.matching.ezgg.domain.matchInfo.matchKeyword.service;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionBasicInfo;
-import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionRole;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.MatchKeywordDto;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.analysis.Analysis;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.entity.MatchKeyword;
+import com.matching.ezgg.domain.matchInfo.matchKeyword.keyword.GlobalKeyword;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.lane.Lane;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.repository.MatchKeywordRepository;
 
@@ -37,24 +38,55 @@ public class KeywordService {
 	public void saveMatchKeyword(MatchKeyword matchKeyword) {
 		MatchKeyword savedMatchKeyword = matchKeywordRepository.save(matchKeyword);
 		MatchKeywordDto matchKeywordDto = MatchKeywordDto.toDto(savedMatchKeyword);
-		log.info("[INFO] MatchKeyword 저장 완료: {}", matchKeywordDto.toString());
 	}
 
 	/**
-	 * 챔피언별 역할을 ChampionBasicInfo enum에서 추출하는 메서드
-	 * @param championName
-	 * @return 챔피언별 역할 String
+	 * 경기 수 대비 키워드 수로 키워드 등급 계산하는 메서드
+	 * @param keywordCount
+	 * @param lanePlayCount
+	 * @return 키워드 등급 String
 	 */
 
-	public String extractChampionRole(String championName) {
-		StringBuilder analysis = new StringBuilder();
-		log.info("[INFO] 챔피언 이름: {}", championName);
-		List<ChampionRole> championRoles = ChampionBasicInfo.valueOf(
-			championName.replaceAll("[^a-zA-Z0-9]", "").trim().toUpperCase()).getChampionRoles();
-
-		for (ChampionRole role : championRoles) {
-			analysis.append(role.getKoreanRoleName()).append(",");
+	private String evaluateKeyword(int keywordCount, int lanePlayCount) {
+		if (lanePlayCount <= 3) { //해당 라인을 3회 이하로 플레이한 경우
+			return (keywordCount >= 1) ? "평범" : "없음"; //평범 아니면 없음만 리턴
 		}
-		return analysis.toString();
+
+		if (keywordCount == 0) {
+			return "없음";
+		}
+
+		double ratio = (double) keywordCount / lanePlayCount;
+
+		if (ratio >= 0.75) return "매우 좋음";
+		if (ratio >= 0.5) return "좋음";
+		if (ratio >= 0.25) return "평범";
+		return "없음";
+	}
+
+	private boolean isGlobalKeyword(String keyword) {
+		return Arrays.stream(GlobalKeyword.values()).anyMatch(k -> k.name().equalsIgnoreCase(keyword));
+	}
+
+	/**
+	 * 라인별로 키워드 등급을 계산하여 analysis에 저장
+	 * @param keywordCounts
+	 * @param lanePlayCount
+	 * @param analysis
+	 */
+
+	public void evaluateKeywordsForLane(Map<String, Integer> keywordCounts, int lanePlayCount, Analysis<? extends Enum<?>> analysis) {
+		if (keywordCounts == null) return;
+
+		for (Map.Entry<String, Integer> entry : keywordCounts.entrySet()) {
+			String keyword = entry.getKey();
+			int count = entry.getValue();
+
+			if (isGlobalKeyword(keyword)) {
+				analysis.getGlobal().put(keyword, evaluateKeyword(count, lanePlayCount));
+			} else {
+				analysis.getLaner().put(keyword, evaluateKeyword(count, lanePlayCount));
+			}
+		}
 	}
 }
