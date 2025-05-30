@@ -32,12 +32,8 @@ public class EsMatchingUserFinder {
 	public List<MatchingUserDocument> findMatchingUsersByScriptScore(MatchingUserDocument matchingUserDocument) {
 
 		Long myMemberId = matchingUserDocument.getMemberId();
-		float matchingScore = matchingUserDocument.getMatchingScore();
-
-		String riotUsername = matchingUserDocument.getUserProfile().getRiotUsername();
-		String riotTag = matchingUserDocument.getUserProfile().getRiotTag();
 		String tier = matchingUserDocument.getUserProfile().getTier();
-		Double reviewScore = matchingUserDocument.getUserProfile().getReviewScore();
+		// Double reviewScore = matchingUserDocument.getUserProfile().getReviewScore(); //TODO 리뷰 점수 추후 매칭 점수에 반영
 
 		List<String> most3Champions = matchingUserDocument.getUserProfile()
 			.getRecentTwentyMatchStats()
@@ -80,14 +76,14 @@ public class EsMatchingUserFinder {
 		Map<String, JsonData> params = new HashMap<>();
 
 		// 선호/비선호 챔피언
-		if (preferredChampions != null && !preferredChampions.isEmpty()) {
+		if (!preferredChampions.isEmpty()) {
 			params.put("preferredChampions", JsonData.of(preferredChampions));
 		}
-		if (unpreferredChampions != null && !unpreferredChampions.isEmpty()) {
+		if (!unpreferredChampions.isEmpty()) {
 			params.put("unpreferredChampions", JsonData.of(unpreferredChampions));
 		}
 		// 모스트 3 챔피언
-		if (most3Champions != null && !most3Champions.isEmpty()) {
+		if (!most3Champions.isEmpty()) {
 			params.put("most3Champions", JsonData.of(most3Champions));
 		}
 		// 키워드 벡터
