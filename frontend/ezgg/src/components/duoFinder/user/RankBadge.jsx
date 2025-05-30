@@ -1,17 +1,17 @@
 import styled from '@emotion/styled';
-import { getRankImageSrc, formatTierText } from '../../../utils/rankUtils.js';
+import {formatTierText, getRankImageSrc} from '../../../utils/rankUtils.js';
 
-export const RankBadge = ({ tier, tierNum }) => (
-  <RankBadgeContainer>
-    <img
-      src={getRankImageSrc(tier)}
-      alt={tier || "Unranked"}
-      aria-label={formatTierText(tier, tierNum)}
-    />
-    <span>{formatTierText(tier, tierNum)}</span>
-  </RankBadgeContainer>
+export const RankBadge = ({tier, tierNum}) => (
+    <RankBadgeContainer>
+        <img
+            src={getRankImageSrc(tier)}
+            alt={tier || "Unranked"}
+            aria-label={formatTierText(tier, tierNum)}
+        />
+        <span>{formatTierText(tier, tierNum)}</span>
+    </RankBadgeContainer>
 );
-
+// 티어 아이콘 및 텍스트 컴포넌트
 const RankBadgeContainer = styled.div`
     display: flex;
     align-items: center;
@@ -20,13 +20,13 @@ const RankBadgeContainer = styled.div`
     border-radius: 8px;
 
     img {
-        width: 60px;
-        height: 60px;
+        width: 75px;
+        height: 75px;
     }
 
     span {
         color: white;
-        font-size: 1.5rem;
-        font-weight: 500;
+        font-size: 2rem;
+        font-weight: 700;
     }
 `;

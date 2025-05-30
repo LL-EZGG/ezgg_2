@@ -70,6 +70,7 @@ const App = () => {
                 data: message.data
             };
 
+            fetchUserInfo();
             setMatchResult(matchResult);
             setCurrentChatRoomId(message.data.chattingRoomId);
             setIsMatching(false);

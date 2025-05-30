@@ -19,23 +19,32 @@ const DuoFinder = (
     }
 ) => {
     return (
-        <Container>
-            <UserProfileCard
-                userInfo={userInfo}
-                memberDataBundle={memberDataBundle}
-                isLoading={isLoading}
-            />
+        <>
+            <Container>
+                <UserProfileCard
+                    userInfo={userInfo}
+                    memberDataBundle={memberDataBundle}
+                    isLoading={isLoading}
+                />
 
-            {matchResult ? (
-                <MatchedContainer>
-                    {/* 상대방 카드 */}
+                {matchResult ? (
                     <UserProfileCard
                         memberDataBundle={matchResult.data}
                         isLoading={isLoading}
                         isOpponent={true}
                     />
+                ) : (
+                    <MatchingInterface
+                        matchResult={matchResult}
+                        matchingCriteria={matchingCriteria}
+                        isMatching={isMatching}
+                        setMatchingCriteria={setMatchingCriteria}
+                    />
+                )}
+            </Container>
 
-                    {/* 채팅방 */}
+            {matchResult && (
+                <Container>
                     <ChatRoom
                         userInfo={userInfo}
                         matchResult={matchResult}
@@ -43,16 +52,9 @@ const DuoFinder = (
                         sendChatMessage={sendChatMessage}
                         isConnected={isConnected}
                     />
-                </MatchedContainer>
-            ) : (
-                <MatchingInterface
-                    matchResult={matchResult}
-                    matchingCriteria={matchingCriteria}
-                    isMatching={isMatching}
-                    setMatchingCriteria={setMatchingCriteria}
-                />
+                </Container>
             )}
-        </Container>
+        </>
     )
 };
 
@@ -73,11 +75,4 @@ const Container = styled.div`
         flex-direction: column;
         align-items: center;
     }
-`;
-
-const MatchedContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    align-items: center;
 `;
