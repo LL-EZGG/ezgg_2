@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatMessageDto {
+	private String type;
 	private String chattingRoomId;
 	private String message;
 	private String sender;
