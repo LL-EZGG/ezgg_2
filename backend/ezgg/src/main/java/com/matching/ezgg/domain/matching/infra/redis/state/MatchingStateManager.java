@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import com.matching.ezgg.domain.chat.service.ChatRoomService;
 import com.matching.ezgg.domain.matching.infra.redis.service.RedisService;
 
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MatchingStateManager {
 
 	private final RedisService redisService;
+	private final ChatRoomService chatRoomService;
 
 	/**
 	 * 유저를 매칭 대기 상태로 등록하는 메서드
@@ -69,6 +71,9 @@ public class MatchingStateManager {
 
 		redisService.sendMatchingSuccessResponse(memberId1, memberId2, chattingRoomId);
 		redisService.sendMatchingSuccessResponse(memberId2, memberId1, chattingRoomId);
+		// 채팅방에 참여자 추가
+		chatRoomService.addParticipant(chattingRoomId, memberId1.toString());
+		chatRoomService.addParticipant(chattingRoomId, memberId2.toString());
 	}
 
 	/**
