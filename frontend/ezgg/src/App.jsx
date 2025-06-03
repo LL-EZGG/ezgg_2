@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {BrowserRouter as Router, Link, Navigate, Route, Routes, useLocation} from 'react-router-dom';
 import styled from '@emotion/styled';
 import api from './utils/api';
@@ -119,6 +119,18 @@ const App = () => {
         setReviewModalVisible(true);
     };
 
+    const handlePartnerLeft = useCallback((notification) => {
+        if (notification && notification.sender) {
+            alert(`${notification.sender}님이 채팅방을 나갔습니다.`);
+        }
+
+        // 상태 초기화
+        setMatchResult(null);
+        setIsMatching(false);
+        setChatMessages([]);
+        setCurrentChatRoomId(null);
+    }, []);
+
     // useWebSocket 훅 사용 - App에서만 연결 관리
     const {
         socket,
@@ -128,14 +140,16 @@ const App = () => {
         sendMatchingRequest,
         sendCancelRequest,
         subscribeToChatRoom,
-        isConnected
+        isConnected,
+        sendLeaveRequest
     } = useWebSocket({
         onMessage: handleSocketMessage,
         onConnect: handleSocketConnect,
         onDisconnect: handleSocketDisconnect,
         onError: handleSocketError,
         onChatMessage: handleChatMessage,
-        onReview: handleReviewRequest
+        onReview: handleReviewRequest,
+        onPartnerLeft: handlePartnerLeft
     });
 
     // useMatchingSystem에 소켓 전달
@@ -172,6 +186,49 @@ const App = () => {
             resetMatchingState,
             subscribeToChatRoom
         });
+
+    const handleLeaveChatRoom = useCallback(async () => {
+        if (!currentChatRoomId || !userInfo.riotUsername) {
+            console.log('채팅방 정보가 없습니다');
+            return;
+        }
+
+        try {
+            // sendLeaveRequest 사용
+            if (sendLeaveRequest) {
+                const success = await sendLeaveRequest(currentChatRoomId, userInfo.riotUsername);
+                if (success) {
+                    console.log('채팅방 나가기 요청 성공');
+                }
+            } else if (socket && socket.connected) {
+                // fallback: sendLeaveRequest가 없으면 직접 전송
+                socket.send('/app/chat/leave', {}, JSON.stringify({
+                    chattingRoomId: currentChatRoomId,
+                    userId: userInfo.riotUsername
+                }));
+            }
+        } catch (error) {
+            console.error('채팅방 나가기 처리 중 오류:', error);
+        }
+
+        // 로컬 상태 초기화
+        setMatchResult(null);
+        setIsMatching(false);
+        setChatMessages([]);
+        setCurrentChatRoomId(null);
+    }, [currentChatRoomId, userInfo.riotUsername, sendLeaveRequest, socket]);
+
+    const handleBackButton = useCallback(() => {
+        if (matchResult && currentChatRoomId) {
+            // 채팅방이 있는 경우 나가기 처리
+            if (window.confirm('채팅방을 나가시겠습니까?\n상대방에게 알림이 전송됩니다.')) {
+                handleLeaveChatRoom();
+            }
+        } else {
+            // 매칭 중인 경우 취소만
+            handleMatchCancel();
+        }
+    }, [matchResult, currentChatRoomId, handleLeaveChatRoom, handleMatchCancel]);
 
     // 앱 시작 시 로컬 스토리지에서 토큰을 확인하여 로그인 상태 유지 - 단순화
     useEffect(() => {
@@ -356,6 +413,7 @@ const App = () => {
                                         isMatching={isMatching}
                                         onStart={() => handleMatchStart(matchingCriteria)}
                                         onCancel={handleMatchCancel}
+                                        handleBackButton={handleBackButton}
                                     />
                                 </>
                             }
@@ -365,12 +423,13 @@ const App = () => {
                     <Route path="/timeline" element={
                         <ProtectedRoute
                             isLoggedIn={isLoggedIn}
-                            element={<DuoTimeline memberData={memberDataBundle} />}
+                            element={<DuoTimeline memberData={memberDataBundle}/>}
                         />
                     }/>
-                    <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
+                    <Route path="/login"
+                           element={<Login setIsLoggedIn={setIsLoggedIn} onLoginSuccess={fetchUserInfo}/>}/>
                     <Route path="/join" element={<Join/>}/>
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route path="*" element={<Navigate to="/" replace/>}/>
                 </Routes>
                 <ReviewModal
                     visible={reviewModalVisible}
