@@ -2,6 +2,10 @@ package com.matching.ezgg.global.config;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -28,6 +32,13 @@ public class WebSocketEventListener {
 	private final SimpMessagingTemplate messagingTemplate;
 	private final ChatRoomService chatRoomService;
 
+	// 연결 해제 후 대기 중인 사용자들 추적 (userId -> 스케줄된 작업)
+	private final ConcurrentHashMap<String, java.util.concurrent.ScheduledFuture<?>> pendingDisconnections = new ConcurrentHashMap<>();
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
+
+	// 대기 시간 (초)
+	private static final int DISCONNECT_WAIT_TIME = 3;
+
 	@EventListener
 	public void handleWebSocketConnectListener(SessionConnectedEvent event) {
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
@@ -35,8 +46,17 @@ public class WebSocketEventListener {
 
 		if (principal instanceof StompPrincipal) {
 			String userId = principal.getName();
+
+			// 재연결된 경우 대기 중인 연결 해제 작업 취소
+			java.util.concurrent.ScheduledFuture<?> pendingTask = pendingDisconnections.remove(userId);
+			if (pendingTask != null) {
+				pendingTask.cancel(false);
+				log.info("[INFO] {} 유저 재연결됨 - 연결 해제 작업 취소", userId);
+			} else {
+				log.info("[INFO] {} 유저 웹소켓 연결됨", userId);
+			}
+
 			sessionRegistry.register(userId);
-			log.info("[INFO] {} 유저 웹소켓 연결됨", userId);
 		}
 	}
 
@@ -86,24 +106,41 @@ public class WebSocketEventListener {
 			List<String> userChatRooms = chatRoomService.getChatRoomsForUser(userId);
 
 			if (!userChatRooms.isEmpty()) {
-				log.info("[INFO] {} 유저가 {} 개의 채팅방에서 연결 해제로 인해 자동 제거됨",
-					userId, userChatRooms.size());
+				log.info("[INFO] {} 유저가 {} 개의 채팅방에 참여 중 - {}초 후 제거 예정",
+					userId, userChatRooms.size(), DISCONNECT_WAIT_TIME);
 
-				// 각 채팅방에서 안전하게 제거 (DISCONNECT 이유로 처리)
-				for (String chattingRoomId : userChatRooms) {
-					try {
-						// 해당 채팅방에 실제로 참여 중인지 다시 한번 확인
-						if (chatRoomService.isUserInChatRoom(chattingRoomId, userId)) {
-							// DISCONNECT 이유로 처리하여 수동 leave와 구분
-							chatRoomService.handleUserLeave(chattingRoomId, userId, messagingTemplate, "DISCONNECT");
-						} else {
-							log.debug("[DEBUG] 유저 {}는 이미 채팅방 {}에서 제거됨", userId, chattingRoomId);
-						}
-					} catch (Exception e) {
-						log.error("[ERROR] 채팅방 {} 에서 유저 {} 제거 중 오류: {}",
-							chattingRoomId, userId, e.getMessage());
+				// 3초 후 실행될 작업 스케줄링
+				java.util.concurrent.ScheduledFuture<?> task = scheduler.schedule(() -> {
+					// 다시 연결되었는지 확인
+					if (sessionRegistry.isConnected(userId)) {
+						log.info("[INFO] {} 유저가 이미 재연결됨 - 제거 작업 취소", userId);
+						return;
 					}
-				}
+
+					log.info("[INFO] {} 유저 {}초 대기 후 채팅방에서 제거 시작", userId, DISCONNECT_WAIT_TIME);
+
+					// 채팅방에서 제거
+					List<String> currentChatRooms = chatRoomService.getChatRoomsForUser(userId);
+					for (String chattingRoomId : currentChatRooms) {
+						try {
+							if (chatRoomService.isUserInChatRoom(chattingRoomId, userId)) {
+								chatRoomService.handleUserLeave(chattingRoomId, userId, messagingTemplate,
+									"DISCONNECT");
+							}
+						} catch (Exception e) {
+							log.error("[ERROR] 채팅방 {} 에서 유저 {} 제거 중 오류: {}",
+								chattingRoomId, userId, e.getMessage());
+						}
+					}
+
+					// 완료 후 맵에서 제거
+					pendingDisconnections.remove(userId);
+
+				}, DISCONNECT_WAIT_TIME, TimeUnit.SECONDS);
+
+				// 스케줄된 작업 저장
+				pendingDisconnections.put(userId, task);
+
 			} else {
 				log.info("[INFO] {} 유저가 참여 중인 채팅방이 없어 추가 처리 없음", userId);
 			}
