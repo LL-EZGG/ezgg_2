@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.context.event.EventListener;
@@ -16,6 +17,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
 import com.matching.ezgg.domain.chat.service.ChatRoomService;
+import com.matching.ezgg.domain.chat.util.ChatRoomUtil;
 import com.matching.ezgg.domain.review.service.ReviewNotificationService;
 import com.matching.ezgg.global.common.StompPrincipal;
 
@@ -48,7 +50,7 @@ public class WebSocketEventListener {
 			String userId = principal.getName();
 
 			// 재연결된 경우 대기 중인 연결 해제 작업 취소
-			java.util.concurrent.ScheduledFuture<?> pendingTask = pendingDisconnections.remove(userId);
+			ScheduledFuture<?> pendingTask = pendingDisconnections.remove(userId);
 			if (pendingTask != null) {
 				pendingTask.cancel(false);
 				log.info("[INFO] {} 유저 재연결됨 - 연결 해제 작업 취소", userId);
@@ -103,14 +105,14 @@ public class WebSocketEventListener {
 			log.info("[INFO] {} 유저 웹소켓 연결 해제됨", userId);
 
 			// 사용자가 참여 중인 채팅방이 있는지 먼저 확인
-			List<String> userChatRooms = chatRoomService.getChatRoomsForUser(userId);
+			List<String> userChatRooms = ChatRoomUtil.getChatRoomsForUser(userId);
 
 			if (!userChatRooms.isEmpty()) {
 				log.info("[INFO] {} 유저가 {} 개의 채팅방에 참여 중 - {}초 후 제거 예정",
 					userId, userChatRooms.size(), DISCONNECT_WAIT_TIME);
 
 				// 3초 후 실행될 작업 스케줄링
-				java.util.concurrent.ScheduledFuture<?> task = scheduler.schedule(() -> {
+				ScheduledFuture<?> task = scheduler.schedule(() -> {
 					// 다시 연결되었는지 확인
 					if (sessionRegistry.isConnected(userId)) {
 						log.info("[INFO] {} 유저가 이미 재연결됨 - 제거 작업 취소", userId);
@@ -120,10 +122,10 @@ public class WebSocketEventListener {
 					log.info("[INFO] {} 유저 {}초 대기 후 채팅방에서 제거 시작", userId, DISCONNECT_WAIT_TIME);
 
 					// 채팅방에서 제거
-					List<String> currentChatRooms = chatRoomService.getChatRoomsForUser(userId);
+					List<String> currentChatRooms = ChatRoomUtil.getChatRoomsForUser(userId);
 					for (String chattingRoomId : currentChatRooms) {
 						try {
-							if (chatRoomService.isUserInChatRoom(chattingRoomId, userId)) {
+							if (ChatRoomUtil.isUserInChatRoom(chattingRoomId, userId)) {
 								chatRoomService.handleUserLeave(chattingRoomId, userId, messagingTemplate,
 									"DISCONNECT");
 							}
