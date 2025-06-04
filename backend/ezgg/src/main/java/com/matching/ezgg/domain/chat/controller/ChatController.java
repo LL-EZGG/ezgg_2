@@ -1,7 +1,7 @@
 package com.matching.ezgg.domain.chat.controller;
 
 import java.security.Principal;
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -23,56 +23,31 @@ public class ChatController {
 	private final ChatRoomService chatRoomService;
 
 	/**
-	 *
-	 * @param chatMessage
-	 * @param principal
+	 * 채팅 메시지 전송 처리
+	 * @param chatMessage 채팅 메시지
+	 * @param principal 인증 정보
 	 */
 	@MessageMapping("/chat/send")
 	public void sendChatMessage(@Payload ChatMessageDto chatMessage, Principal principal) {
 		log.info("[INFO] 채팅 메시지 수신 - 방ID: {}, 발신자: {}, 메시지: {}",
 			chatMessage.getChattingRoomId(), chatMessage.getSender(), chatMessage.getMessage());
 
-		List<String> participants = chatRoomService.getParticipants(chatMessage.getChattingRoomId());
+		chatRoomService.processChatMessage(chatMessage, principal, messagingTemplate);
+	}
 
-		if (participants.isEmpty()) {
-			log.warn("[WARN] 채팅방에 참가자가 없습니다. 발신자를 추가합니다");
-			chatRoomService.addParticipant(chatMessage.getChattingRoomId(), chatMessage.getSender());
+	/**
+	 * 채팅방 나가기 처리
+	 * @param payload 요청 데이터
+	 * @param principal 인증 정보
+	 */
+	@MessageMapping("/chat/leave")
+	public void leaveChatRoom(@Payload Map<String, String> payload, Principal principal) {
+		String chattingRoomId = payload.get("chattingRoomId");
+		String userId = payload.get("userId");
 
-			//Principal 이름도 추가 (백업)
-			if (principal != null && !principal.getName().equals(chatMessage.getSender())) {
-				log.info("[INFO] Principal 이름도 참가자로 추가: {}", principal.getName());
-				chatRoomService.addParticipant(chatMessage.getChattingRoomId(), principal.getName());
-			}
+		log.info("[INFO] 채팅방 나가기 요청 - 방ID: {}, 요청 사용자: {}", chattingRoomId, userId);
 
-			participants = chatRoomService.getParticipants(chatMessage.getChattingRoomId());
-		}
-
-		log.info("[INFO] 참가자 목록: {}", participants);
-
-		//Principal 이름으로도 전송 (백업)
-		if (principal != null) {
-			messagingTemplate.convertAndSendToUser(
-				principal.getName(),
-				"/queue/" + chatMessage.getChattingRoomId(),
-				chatMessage
-			);
-			log.info("[INFO] Principal로 메시지 전송됨 - 수신자: {}", principal.getName());
-		}
-
-		// 브로드캐스트는 확실히 작동해야 함
-		messagingTemplate.convertAndSend("/topic/chat/" + chatMessage.getChattingRoomId(), chatMessage);
-		log.info("[INFO] 브로드캐스트 메시지 전송됨");
-
-		for (String participantId : participants) {
-			messagingTemplate.convertAndSendToUser(
-				participantId,
-				"/queue/" + chatMessage.getChattingRoomId(),
-				chatMessage
-			);
-			log.info("[INFO] 개별 메시지 전송됨 - 수신자: {}", participantId);
-		}
+		chatRoomService.processUserLeave(chattingRoomId, userId, principal, messagingTemplate);
 	}
 }
-
-
 

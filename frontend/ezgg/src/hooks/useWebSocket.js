@@ -9,6 +9,7 @@ import SockJS from 'sockjs-client';
 import {Stomp} from '@stomp/stompjs';
 import api, {tokenUtils} from '../utils/api';
 import {storageService} from "../services/storageService.js";
+import {STORAGE_KEYS} from "../utils/constants.js";
 
 // ---------------- ViewModel → DTO 변환기 --------------------------------------
 /**
@@ -26,7 +27,7 @@ const criteriaToDTO = (vm) => ({
 });
 
 // ---------------- 커스텀 훅 -----------------------------------------------------
-export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onChatMessage, onReview}) => {
+export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onChatMessage, onReview, onPartnerLeft}) => {
     const stompClient = useRef(null);
     const [isConnected, setIsConnected] = useState(false);
     const subscriptionsRef = useRef(new Map());
@@ -158,6 +159,23 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
                     });
                     subscriptionsRef.current.set('review', reviewSub);
 
+                    // 파트너 퇴장 알림 구독
+                    const partnerLeftSub = stompClient.current.subscribe('/user/queue/partner-left', (message) => {
+                        try {
+                            const notification = JSON.parse(message.body);
+                            console.log('파트너 퇴장 알림 수신:', notification);
+
+                            if (onPartnerLeft) {
+                                onPartnerLeft(notification);
+                            }
+                        } catch (error) {
+                            console.error('파트너 퇴장 메시지 파싱 오류:', error);
+                            if (onPartnerLeft) {
+                                onPartnerLeft({sender: '상대방', message: '상대방이 채팅방을 떠났습니다.'});
+                            }
+                        }
+                    });
+                    subscriptionsRef.current.set('partner-left', partnerLeftSub);
                     // 새로고침 후 기존 채팅방이 있다면 구독
                     if (existingChatRoomId) {
                         subscribeToChatRoom(existingChatRoomId);
@@ -176,7 +194,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
                 if (onError) onError('웹소켓 연결에 실패했습니다.');
             }
         );
-    }, [onConnect, onMessage, onDisconnect, onError, onChatMessage, onReview, unsubscribeAll, subscribeToChatRoom]);
+    }, [onConnect, onMessage, onDisconnect, onError, onChatMessage, onReview, unsubscribeAll, subscribeToChatRoom, onPartnerLeft]);
 
     /** 연결 해제 함수 */
     const disconnect = useCallback(() => {
@@ -194,6 +212,8 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
         }
 
         setIsConnected(false);
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
+        localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES)
 
         if (onDisconnect) onDisconnect();
     }, [onDisconnect, unsubscribeAll]);
@@ -275,6 +295,28 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
         }
     }, [onError]);
 
+    const sendLeaveRequest = useCallback(async (chattingRoomId, userId) => {
+        if (!stompClient.current?.connected) {
+            console.log('연결되지 않음, 채팅방 나가기 실패');
+            return false;
+        }
+
+        try {
+            stompClient.current.send('/app/chat/leave', {}, JSON.stringify({
+                chattingRoomId: chattingRoomId,
+                userId: userId
+            }));
+            console.log('채팅방 나가기 요청 전송됨');
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
+            localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
+            return true;
+        } catch (error) {
+            console.error('채팅방 나가기 요청 실패:', error);
+            return false;
+        }
+    }, []);
+
+
     return {
         socket: stompClient.current,
         connect,
@@ -283,6 +325,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
         sendCancelRequest,
         sendChatMessage,
         subscribeToChatRoom,
-        isConnected
+        isConnected,
+        sendLeaveRequest
     };
 };
