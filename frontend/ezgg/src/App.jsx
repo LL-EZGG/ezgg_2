@@ -128,6 +128,8 @@ const App = () => {
         setIsMatching(false);
         setChatMessages([]);
         setCurrentChatRoomId(null);
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
+        localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
     }, []);
 
     // useWebSocket 훅 사용 - App에서만 연결 관리
@@ -215,6 +217,8 @@ const App = () => {
         setIsMatching(false);
         setChatMessages([]);
         setCurrentChatRoomId(null);
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
+        localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
     }, [currentChatRoomId, userInfo.riotUsername, sendLeaveRequest, socket]);
 
     const handleBackButton = useCallback(() => {

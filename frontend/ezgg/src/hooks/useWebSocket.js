@@ -9,6 +9,7 @@ import SockJS from 'sockjs-client';
 import {Stomp} from '@stomp/stompjs';
 import api, {tokenUtils} from '../utils/api';
 import {storageService} from "../services/storageService.js";
+import {STORAGE_KEYS} from "../utils/constants.js";
 
 // ---------------- ViewModel → DTO 변환기 --------------------------------------
 /**
@@ -211,6 +212,8 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
         }
 
         setIsConnected(false);
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
+        localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES)
 
         if (onDisconnect) onDisconnect();
     }, [onDisconnect, unsubscribeAll]);
@@ -304,6 +307,8 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
                 userId: userId
             }));
             console.log('채팅방 나가기 요청 전송됨');
+            localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
+            localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
             return true;
         } catch (error) {
             console.error('채팅방 나가기 요청 실패:', error);
