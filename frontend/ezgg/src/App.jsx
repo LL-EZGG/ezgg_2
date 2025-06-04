@@ -49,6 +49,27 @@ const App = () => {
     const [reviewTargetUsername, setReviewTargetUsername] = useState('');
     const [reviewMatchId, setReviewMatchId] = useState('');
 
+    const [penaltyTime, setPenaltyTime] = useState(0);
+    const [isPenaltyActive, setIsPenaltyActive] = useState(false);
+
+    // 페널티 타이머 작동
+    useEffect(() => {
+        if (!isPenaltyActive || penaltyTime <= 0) return;
+
+        const interval = setInterval(() => {
+            setPenaltyTime(prev => {
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    setIsPenaltyActive(false);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isPenaltyActive]);
+
     // WebSocket 관련 핸들러 정의
     const handleSocketMessage = (message) => {
 
@@ -197,6 +218,14 @@ const App = () => {
         }
 
         try {
+            const response = await api.get('/cancel/increase');
+            const count = response.data?.data ?? 0;
+
+            if (count >= 2) {
+                setIsPenaltyActive(true);
+                setPenaltyTime(10); // 5분 - 300
+            }
+
             // sendLeaveRequest 사용
             if (sendLeaveRequest) {
                 const success = await sendLeaveRequest(currentChatRoomId, userInfo.riotUsername);
@@ -379,7 +408,9 @@ const App = () => {
                         {isLoggedIn ? (
                             <>
                                 <Link to="/timeline">
-                                    <UserInfo>{userInfo.riotUsername} #{userInfo.riotTag}</UserInfo>
+                                    <UserInfo>
+                                        <span>{userInfo.riotUsername} #{userInfo.riotTag}</span>
+                                    </UserInfo>
                                 </Link>
                                 <LogoutButton
                                     onClick={handleLogout}
@@ -414,12 +445,14 @@ const App = () => {
                                         isConnected={isConnected}
                                     />
                                     <MatchingButtonPanel
-                                        matchingCriteria={matchingCriteria}
-                                        matchResult={matchResult}
-                                        isMatching={isMatching}
-                                        onStart={() => handleMatchStart(matchingCriteria)}
-                                        onCancel={handleMatchCancel}
-                                        handleBackButton={handleBackButton}
+                                      matchingCriteria={matchingCriteria}
+                                      matchResult={matchResult}
+                                      isMatching={isMatching}
+                                      penaltyTime={penaltyTime}
+                                      isPenaltyActive={isPenaltyActive}
+                                      onStart={() => handleMatchStart(matchingCriteria)}
+                                      onCancel={handleMatchCancel}
+                                      handleBackButton={handleBackButton}
                                     />
                                 </>
                             }
@@ -507,10 +540,34 @@ const UserInfo = styled.div`
     padding: 0.5rem 1rem;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.1);
-    transition: background 0.2s;
+    transition: all 0.2s;
+    position: relative;
 
     &:hover {
         background: rgba(255, 255, 255, 0.2);
+    }
+
+    &:after {
+        content: 'Timeline';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    &:hover:after {
+        opacity: 1;
+    }
+
+    span {
+        transition: opacity 0.3s ease;
+    }
+
+    &:hover > span {
+        opacity: 0;
     }
 `;
 

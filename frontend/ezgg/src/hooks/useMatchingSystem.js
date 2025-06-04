@@ -2,7 +2,13 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {isValidCriteria} from '../utils/validation.js';
 import {getInitialCriteria} from "../utils/initialStates.js";
 
-export const useMatchingSystem = ({socket, sendMatchingRequest, sendCancelRequest}) => {
+
+export const useMatchingSystem = ({
+    socket,
+    sendMatchingRequest,
+    sendCancelRequest,
+}) => {
+
     const [matchResult, setMatchResult] = useState(null);
     const [matchingCriteria, setMatchingCriteria] = useState(getInitialCriteria());
     const [isMatching, setIsMatching] = useState(false);
@@ -13,7 +19,7 @@ export const useMatchingSystem = ({socket, sendMatchingRequest, sendCancelReques
 
     const handleMatchStart = useCallback((criteria) => {
         if (!isValidCriteria(criteria)) {
-            alert('라인은 필수로 선택해주세요.');
+            alert('라인과 선호/비선호 챔피언은 필수로 선택해주세요.');
             return;
         }
 
@@ -45,7 +51,6 @@ export const useMatchingSystem = ({socket, sendMatchingRequest, sendCancelReques
 
     // 상태 완전 초기화 함수 (로그아웃 시 사용)
     const resetMatchingState = useCallback(() => {
-        userCancelledRef.current = true;
         setIsMatching(false);
         setMatchResult(null);
         setMatchingCriteria(getInitialCriteria());

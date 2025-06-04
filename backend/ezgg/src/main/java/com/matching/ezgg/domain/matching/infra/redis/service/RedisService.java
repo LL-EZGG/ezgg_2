@@ -27,10 +27,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.matching.ezgg.domain.matching.dto.MatchingSuccessResponse;
 import com.matching.ezgg.domain.matching.dto.MemberDataBundleDto;
+import com.matching.ezgg.domain.matching.infra.redis.state.CancelData;
 import com.matching.ezgg.domain.matching.service.MemberDataBundleService;
 import com.matching.ezgg.global.exception.RetrySetException;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -43,6 +48,61 @@ public class RedisService {
 	private final SimpMessagingTemplate messagingTemplate;
 	private final MemberDataBundleService memberDataBundleService;
 	private final ObjectMapper objectMapper;
+
+	private String getCancelValueFromKey(String memberId) {
+		return "matching:cancel:" + memberId;
+	}
+
+	public int getCancelCount(Long memberId) {
+		String memberIdStr = String.valueOf(memberId);
+		String raw = stringRedisTemplate.opsForValue().get(getCancelValueFromKey(memberIdStr));
+		if (raw == null) return 0;
+
+		try {
+			CancelData data = objectMapper.readValue(raw, CancelData.class);
+			long now = System.currentTimeMillis();
+			if (now - data.getTimestamp() > Duration.ofHours(24).toMillis()) {
+				stringRedisTemplate.delete(getCancelValueFromKey(memberIdStr));
+				return 0;
+			}
+			return data.getCount();
+		} catch (Exception e) {
+			stringRedisTemplate.delete(getCancelValueFromKey(memberIdStr));
+			return 0;
+		}
+	}
+
+	public int increaseCancelCount(Long memberId) {
+		String memberIdStr = String.valueOf(memberId);
+		String key = getCancelValueFromKey(memberIdStr);
+		String raw = stringRedisTemplate.opsForValue().get(key);
+		long now = System.currentTimeMillis();
+
+		CancelData data = new CancelData(1, now);
+		if (raw != null) {
+			try {
+				CancelData existing = objectMapper.readValue(raw, CancelData.class);
+				if (now - existing.getTimestamp() <= Duration.ofHours(24).toMillis()) {
+					data.setCount(existing.getCount() + 1);
+				}
+			} catch (Exception ignored) {
+				// 손상된 데이터 무시
+			}
+		}
+
+		try {
+			stringRedisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(data));
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException("Failed to save cancel count", e);
+		}
+
+		return data.getCount();
+	}
+
+	public void resetCancelCount(Long memberId) {
+		String memberIdStr = String.valueOf(memberId);
+		stringRedisTemplate.delete(getCancelValueFromKey(memberIdStr));
+	}
 
 	/**
 	 * 매칭 요청 유저를 Redis Stream 및 Hash에 등록하는 메서드
@@ -357,7 +417,7 @@ public class RedisService {
 
 	public List<Map<String, String>> getTwentyMatchedUsers() {
 		long now = System.currentTimeMillis();
-		long threshold = now - 1000 * 60 * 10; // 10분 전 시간
+		long threshold = now - 1000 * 60 * 5; // 10분 전 시간
 
 		Set<String> matchedUsers = redisTemplate.opsForZSet()
 			.rangeByScore(MATCHED_ZSET_KEY.getValue(), 0, threshold);
@@ -404,6 +464,6 @@ public class RedisService {
 			// 최초 실행일경우
 			redisTemplate.expire(key, Duration.ofHours(2)); // 2시간 후 만료
 		}
-		return count <= 5; // 5회까지 허용
+		return count <= 20; // 5회까지 허용
 	}
 }
