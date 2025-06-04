@@ -2,6 +2,7 @@
 import {useCallback} from 'react';
 import {storageService} from '../services/storageService.js';
 import {STORAGE_KEYS, TIMEOUTS} from '../utils/constants.js';
+import {getInitialCriteria} from "../utils/initialStates.js";
 
 export const useStateManager = ({
                                     setIsMatching,
@@ -121,13 +122,13 @@ export const useStateManager = ({
         setMatchResult(null);
         setCurrentChatRoomId(null);
         setChatMessages([]);
-
+        setMatchingCriteria(getInitialCriteria())
         //수정: STORAGE_KEYS 상수 사용
         localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
         localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
 
         console.log('로컬스토리지에서 채팅 데이터 제거 완료');
-    }, [setMatchResult, setCurrentChatRoomId, setChatMessages]);
+    }, [setMatchResult, setCurrentChatRoomId, setChatMessages, setMatchingCriteria]);
 
     // 로그아웃 시 단계별 정리 함수
     const performLogoutSteps = useCallback(async (isMatching, handleMatchCancel, isConnected, disconnect) => {

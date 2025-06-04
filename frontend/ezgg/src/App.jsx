@@ -12,6 +12,7 @@ import DuoTimeline from "./components/timeline/DuoTimeline.jsx";
 import ReviewModal from './components/review/ReviewModal';
 import {STORAGE_KEYS} from './utils/constants';
 import {useStateManager} from "./hooks/useStateManager.js";
+import {getInitialCriteria} from "./utils/initialStates.js";
 
 // 로그인 상태에 따라 리다이렉트하는 보호된 라우트 컴포넌트
 const ProtectedRoute = ({element, isLoggedIn}) => {
@@ -149,6 +150,7 @@ const App = () => {
         setIsMatching(false);
         setChatMessages([]);
         setCurrentChatRoomId(null);
+        setMatchingCriteria(getInitialCriteria());
         localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
         localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
     }, []);
@@ -246,9 +248,10 @@ const App = () => {
         setIsMatching(false);
         setChatMessages([]);
         setCurrentChatRoomId(null);
+        setMatchingCriteria(getInitialCriteria());
         localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
         localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
-    }, [currentChatRoomId, userInfo.riotUsername, sendLeaveRequest, socket]);
+    }, [currentChatRoomId, userInfo.riotUsername, sendLeaveRequest, socket, setMatchingCriteria]);
 
     const handleBackButton = useCallback(() => {
         if (matchResult && currentChatRoomId) {

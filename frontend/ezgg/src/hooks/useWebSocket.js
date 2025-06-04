@@ -213,7 +213,7 @@ export const useWebSocket = ({onMessage, onConnect, onDisconnect, onError, onCha
 
         setIsConnected(false);
         localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
-        localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES)
+        localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
 
         if (onDisconnect) onDisconnect();
     }, [onDisconnect, unsubscribeAll]);
