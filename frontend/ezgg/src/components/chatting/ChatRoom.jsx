@@ -64,6 +64,9 @@ const ChatRoom = ({userInfo, matchResult, chatMessages, sendChatMessage, isConne
     // Enter키로 메시지 보내기
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.nativeEvent.isComposing) {
+                return;
+            }
             e.preventDefault();
             sendMessage();
         }
