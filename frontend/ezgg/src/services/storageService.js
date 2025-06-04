@@ -25,9 +25,9 @@ export const storageService = {
                 timestamp: new Date().toISOString()
             };
             localStorage.setItem(STORAGE_KEYS.MATCHING_STATE, JSON.stringify(stateWithTimestamp));
-            console.log('[StorageService] 매칭 상태 저장:', stateWithTimestamp);
+            console.log('매칭 상태 저장:', stateWithTimestamp);
         } catch (error) {
-            console.error('[StorageService] 매칭 상태 저장 실패:', error);
+            console.error('매칭 상태 저장 실패:', error);
         }
     },
 
@@ -39,7 +39,7 @@ export const storageService = {
 
             const data = JSON.parse(saved);
             if (!validateMatchingState(data)) {
-                console.warn('[StorageService] 유효하지 않은 매칭 상태, 제거');
+                console.warn('유효하지 않은 매칭 상태, 제거');
                 localStorage.removeItem(STORAGE_KEYS.MATCHING_STATE);
                 return null;
             }
@@ -49,14 +49,14 @@ export const storageService = {
             const expiryTime = new Date(Date.now() - TIMEOUTS.MATCHING_STATE_EXPIRY);
 
             if (stateTime < expiryTime) {
-                console.log('[StorageService] 매칭 상태 만료, 제거');
+                console.log('매칭 상태 만료, 제거');
                 localStorage.removeItem(STORAGE_KEYS.MATCHING_STATE);
                 return null;
             }
 
             return data;
         } catch (error) {
-            console.error('[StorageService] 매칭 상태 가져오기 실패:', error);
+            console.error('매칭 상태 가져오기 실패:', error);
             localStorage.removeItem(STORAGE_KEYS.MATCHING_STATE);
             return null;
         }
@@ -84,14 +84,14 @@ export const storageService = {
 
             const data = JSON.parse(saved);
             if (!validateChatRoom(data)) {
-                console.warn('[StorageService] 유효하지 않은 채팅방 정보, 제거');
+                console.warn('유효하지 않은 채팅방 정보, 제거');
                 localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
                 return null;
             }
 
             return data;
         } catch (error) {
-            console.error('[StorageService] 채팅방 정보 가져오기 실패:', error);
+            console.error('채팅방 정보 가져오기 실패:', error);
             localStorage.removeItem(STORAGE_KEYS.CURRENT_CHAT_ROOM);
             return null;
         }
@@ -102,9 +102,9 @@ export const storageService = {
         try {
             const recentMessages = messages.slice(-LIMITS.MAX_CHAT_MESSAGES);
             localStorage.setItem(STORAGE_KEYS.CHAT_MESSAGES, JSON.stringify(recentMessages));
-            console.log('[StorageService] 채팅 메시지 저장:', recentMessages.length, '개');
+            console.log('채팅 메시지 저장:', recentMessages.length, '개');
         } catch (error) {
-            console.error('[StorageService] 채팅 메시지 저장 실패:', error);
+            console.error('채팅 메시지 저장 실패:', error);
         }
     },
 
@@ -117,7 +117,7 @@ export const storageService = {
             const messages = JSON.parse(saved);
             return Array.isArray(messages) ? messages : [];
         } catch (error) {
-            console.error('[StorageService] 채팅 메시지 가져오기 실패:', error);
+            console.error(' 채팅 메시지 가져오기 실패:', error);
             localStorage.removeItem(STORAGE_KEYS.CHAT_MESSAGES);
             return [];
         }
@@ -139,9 +139,9 @@ export const storageService = {
                 localStorage.removeItem(key);
             });
 
-            console.log('[StorageService] 모든 앱 상태 제거 완료');
+            console.log('모든 앱 상태 제거 완료');
         } catch (error) {
-            console.error('[StorageService] 상태 제거 실패:', error);
+            console.error('상태 제거 실패:', error);
         }
     }
 };
