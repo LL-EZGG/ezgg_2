@@ -2,7 +2,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {isValidCriteria} from '../utils/validation.js';
 import {getInitialCriteria} from "../utils/initialStates.js";
 
-export const useMatchingSystem = ({socket, sendMatchingRequest, sendCancelRequest, onMatchMessage}) => {
+export const useMatchingSystem = ({socket, sendMatchingRequest, sendCancelRequest}) => {
     const [matchResult, setMatchResult] = useState(null);
     const [matchingCriteria, setMatchingCriteria] = useState(getInitialCriteria());
     const [isMatching, setIsMatching] = useState(false);
