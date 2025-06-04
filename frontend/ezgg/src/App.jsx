@@ -74,7 +74,6 @@ const App = () => {
             setMatchResult(matchResult);
             setCurrentChatRoomId(message.data.chattingRoomId);
             setIsMatching(false);
-            alert(`🎉 매칭 성공!\n상대방: ${message.data.memberInfoDto.riotUsername}#${message.data.memberInfoDto.riotTag}\n티어: ${message.data.memberInfoDto.tier} ${message.data.memberInfoDto.tierNum}`);
         } else if (message.cancelled) {
             setIsMatching(false);
             console.log('매칭이 취소되었습니다.');
