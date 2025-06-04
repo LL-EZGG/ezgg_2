@@ -195,6 +195,7 @@ const SectionSelector = ({
 
     /** 키보드 입력(▲▼Enter)을 처리하는 함수. */
     const handleKeyDown = (e, type) => {
+        if (e.nativeEvent.isComposing) return;
         const suggestions = filterChampions(type === 'preferred' ? searchTerm : bannedSearchTerm);
         const currentIndex = type === 'preferred' ? selectedIndex : bannedSelectedIndex;
         const setIndex = type === 'preferred' ? setSelectedIndex : setBannedSelectedIndex;
