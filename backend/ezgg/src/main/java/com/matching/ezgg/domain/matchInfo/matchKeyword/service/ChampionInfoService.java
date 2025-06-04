@@ -13,6 +13,9 @@ import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionBasi
 import com.matching.ezgg.domain.matchInfo.matchKeyword.championInfo.ChampionRole;
 import com.matching.ezgg.domain.matchInfo.matchKeyword.dto.analysis.Analysis;
 import com.matching.ezgg.domain.matching.dto.PreferredPartnerParsingDto;
+import com.matching.ezgg.global.exception.NullChampionsException;
+import com.matching.ezgg.global.exception.PreferredChampionsException;
+import com.matching.ezgg.global.exception.UnpreferredChampionsException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +30,25 @@ public class ChampionInfoService {
 	 * return 임베딩 모델에 넣을 매칭 옵션 정보가 담긴 JSON 문자열
 	 */
 
-	public PreferredPartnerParsingDto mergeChampionPreferenceWithPlayStyleJson(PreferredPartnerParsingDto preferredPartnerParsingDto) {
+	public PreferredPartnerParsingDto mergeChampionPreferenceWithPlayStyleJson(
+		PreferredPartnerParsingDto preferredPartnerParsingDto) {
 		List<String> preferredChampions = preferredPartnerParsingDto.getChampionInfo().getPreferredChampions();
 		List<String> unpreferredChampions = preferredPartnerParsingDto.getChampionInfo().getUnpreferredChampions();
 		String playstyle = preferredPartnerParsingDto.getUserPreferenceText();
+
+		if (preferredChampions != null && preferredChampions.size() > 3) {
+			throw new PreferredChampionsException();
+		}
+		if (unpreferredChampions != null && unpreferredChampions.size() > 3) {
+			throw new UnpreferredChampionsException();
+		}
+
+		if (preferredChampions == null || preferredChampions.isEmpty()) {
+			throw new NullChampionsException();
+		}
+		if (unpreferredChampions == null || unpreferredChampions.isEmpty()) {
+			throw new NullChampionsException();
+		}
 
 		//챔피언 역할 점수를 저장할 championRoleScore
 		Map<String, Integer> championRoleScore = new LinkedHashMap<>();
@@ -39,8 +57,8 @@ public class ChampionInfoService {
 		}
 
 		//점수 업데이트. 선호 챔피언이면 +1, 비선호 챔피언이면 -1
-		updateRoleScore(preferredChampions,championRoleScore,1);
-		updateRoleScore(unpreferredChampions,championRoleScore,-1);
+		updateRoleScore(preferredChampions, championRoleScore, 1);
+		updateRoleScore(unpreferredChampions, championRoleScore, -1);
 
 		ObjectNode result = buildChampionPreferenceJson(championRoleScore, playstyle);
 		String newUserPreferenceText = toJsonString(result);
@@ -63,7 +81,7 @@ public class ChampionInfoService {
 			return "보통";
 		}
 		//20경기 동안 하나의 챔피언 역할을 8회 이상 플레이 했으면 "좋음",아니면 "보통"
-		double ratio = (double) championRoleCount / lanePlayCount;
+		double ratio = (double)championRoleCount / lanePlayCount;
 		return ratio >= 0.4 ? "좋음" : "보통";
 	}
 
@@ -87,8 +105,10 @@ public class ChampionInfoService {
 	 * @param analysis
 	 */
 
-	public void evaluateChampionRolesForLane(Map<ChampionRole, Integer> championRoleCounts, int lanePlayCount, Analysis<? extends Enum<?>> analysis) {
-		if (championRoleCounts == null) return;
+	public void evaluateChampionRolesForLane(Map<ChampionRole, Integer> championRoleCounts, int lanePlayCount,
+		Analysis<? extends Enum<?>> analysis) {
+		if (championRoleCounts == null)
+			return;
 
 		for (Map.Entry<ChampionRole, Integer> entry : championRoleCounts.entrySet()) {
 			ChampionRole role = entry.getKey();
@@ -161,7 +181,7 @@ public class ChampionInfoService {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode result = mapper.createObjectNode();
 		try {
-			ObjectNode playstyle = (ObjectNode) mapper.readTree(playstyleJson);
+			ObjectNode playstyle = (ObjectNode)mapper.readTree(playstyleJson);
 			result.set("championRole", mapper.valueToTree(rolePreference));
 			result.setAll(playstyle);
 		} catch (JsonProcessingException e) {

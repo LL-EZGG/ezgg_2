@@ -7,7 +7,7 @@
  *   콜백을 통해 상위 상태를 업데이트한다.
  * ---------------------------------------------------------------------------*/
 import styled from '@emotion/styled';
-import React, { useState } from "react";
+import React, {useState} from "react";
 import ReactDOM from 'react-dom';
 import {champions} from "../../data/champions.js";
 import {keyword} from "../../data/keyword.js";
@@ -73,11 +73,11 @@ const handleLineSelect = (type, line, matchingCriteria, setMatchingCriteria) => 
 
 /* ------------- 챔피언 모달 컴포넌트 ---------------------------------------------------- */
 
-const ChampionModal = ({ isOpen, onClose, onSelect, kind, term, setTerm }) => {
+const ChampionModal = ({isOpen, onClose, onSelect, kind, term, setTerm}) => {
     if (!isOpen) return null;
 
-    const filteredChampions = champions.filter(champion => 
-        !term || 
+    const filteredChampions = champions.filter(champion =>
+        !term ||
         champion.name.toLowerCase().includes(term.toLowerCase()) ||
         champion.id.toLowerCase().includes(term.toLowerCase())
     );
@@ -93,6 +93,7 @@ const ChampionModal = ({ isOpen, onClose, onSelect, kind, term, setTerm }) => {
                             placeholder="챔피언 검색..."
                             value={term}
                             onChange={e => setTerm(e.target.value)}
+
                             autoFocus
                         />
                     </SearchInput>
@@ -119,10 +120,10 @@ const ChampionModal = ({ isOpen, onClose, onSelect, kind, term, setTerm }) => {
 
 /* ------------- 챔피언 선택 컴포넌트 ---------------------------------------------------- */
 
-const ChampionSelector = ({ kind, matchingCriteria, setMatchingCriteria }) => {
+const ChampionSelector = ({kind, matchingCriteria, setMatchingCriteria}) => {
     const [showModal, setShowModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     const selectedChampions = kind === 'preferred'
         ? matchingCriteria.selectedChampions?.preferredChampions || []
         : matchingCriteria.selectedChampions?.bannedChampions || [];
@@ -132,6 +133,11 @@ const ChampionSelector = ({ kind, matchingCriteria, setMatchingCriteria }) => {
         const otherKey = kind === 'preferred' ? 'bannedChampions' : 'preferredChampions';
         const currentChampions = [...(matchingCriteria?.selectedChampions?.[key] || [])];
         const otherChampions = [...(matchingCriteria?.selectedChampions?.[otherKey] || [])];
+
+        if (currentChampions.length >= 3) {
+            alert('최대 3개까지만 선택할 수 있습니다.');
+            return;
+        }
 
         if (currentChampions.some(c => c.id === champion.id)) {
             alert('이미 선택한 챔피언입니다.');
@@ -175,10 +181,17 @@ const ChampionSelector = ({ kind, matchingCriteria, setMatchingCriteria }) => {
             <SearchInput>
                 <input
                     type="text"
-                    placeholder={selectedChampions.length > 0 
+                    placeholder={selectedChampions.length > 0
                         ? selectedChampions.map(c => c.name).join(', ')
                         : "챔피언을 선택하세요..."}
-                    onClick={() => setShowModal(true)}
+                    onClick={() => {
+                        // 3개 이상 선택된 경우 모달 열지 않음
+                        if (selectedChampions.length >= 3) {
+                            alert('최대 3개까지만 선택할 수 있습니다.');
+                            return;
+                        }
+                        setShowModal(true);
+                    }}
                     readOnly
                 />
             </SearchInput>
@@ -236,20 +249,20 @@ const ChampionSelector = ({ kind, matchingCriteria, setMatchingCriteria }) => {
  * @prop {string}   disabledValue             - (라인 모드) 클릭 불가능한 값(상대가 이미 선택한 라인)
  */
 const SectionSelector = ({
-    matchingCriteria,
-    setMatchingCriteria,
-    type,
-    kind,
-    selectedValue,
-    disabledValue
-}) => {
+                             matchingCriteria,
+                             setMatchingCriteria,
+                             type,
+                             kind,
+                             selectedValue,
+                             disabledValue
+                         }) => {
     /* ---------------- 렌더링: 라인 선택 모드 --------------------------------- */
     if (type === 'line') {
         return (
             <Section>
                 <Label>
                     {kind === 'my' ? '라인 선택' : '상대 라인 선택'}
-                    <span style={{ color: '#FF416C' }}>*</span>
+                    <span style={{color: '#FF416C'}}>*</span>
                 </Label>
                 <LaneGroup>
                     <LaneButtonGroup>
@@ -281,7 +294,7 @@ const SectionSelector = ({
     } else if (type === 'champion') {
         return (
             <Section>
-                <Label>{kind === 'preferred' ? '선호 챔피언' : '비선호 챔피언'} <span style={{ color: '#FF416C' }}>*</span></Label>
+                <Label>{kind === 'preferred' ? '선호 챔피언' : '비선호 챔피언'} <span style={{color: '#FF416C'}}>*</span></Label>
                 <ChampionSelector
                     kind={kind}
                     matchingCriteria={matchingCriteria}
@@ -543,12 +556,12 @@ const ChampionTagsHeader = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
+
     span.required {
         color: #FF416C;
         font-size: 0.8rem;
     }
-    
+
     span.warning {
         color: #FF416C;
         font-size: 0.8rem;
