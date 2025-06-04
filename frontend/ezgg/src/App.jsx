@@ -48,6 +48,27 @@ const App = () => {
     const [reviewTargetUsername, setReviewTargetUsername] = useState('');
     const [reviewMatchId, setReviewMatchId] = useState('');
 
+    const [penaltyTime, setPenaltyTime] = useState(0);
+    const [isPenaltyActive, setIsPenaltyActive] = useState(false);
+
+    // 페널티 타이머 작동
+    useEffect(() => {
+        if (!isPenaltyActive || penaltyTime <= 0) return;
+
+        const interval = setInterval(() => {
+            setPenaltyTime(prev => {
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    setIsPenaltyActive(false);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isPenaltyActive]);
+
     // WebSocket 관련 핸들러 정의
     const handleSocketMessage = (message) => {
 
@@ -195,6 +216,14 @@ const App = () => {
         }
 
         try {
+            const response = await api.get('/cancel/increase');
+            const count = response.data?.data ?? 0;
+
+            if (count >= 2) {
+                setIsPenaltyActive(true);
+                setPenaltyTime(10); // 5분 - 300
+            }
+
             // sendLeaveRequest 사용
             if (sendLeaveRequest) {
                 const success = await sendLeaveRequest(currentChatRoomId, userInfo.riotUsername);
@@ -411,12 +440,14 @@ const App = () => {
                                         isConnected={isConnected}
                                     />
                                     <MatchingButtonPanel
-                                        matchingCriteria={matchingCriteria}
-                                        matchResult={matchResult}
-                                        isMatching={isMatching}
-                                        onStart={() => handleMatchStart(matchingCriteria)}
-                                        onCancel={handleMatchCancel}
-                                        handleBackButton={handleBackButton}
+                                      matchingCriteria={matchingCriteria}
+                                      matchResult={matchResult}
+                                      isMatching={isMatching}
+                                      penaltyTime={penaltyTime}
+                                      isPenaltyActive={isPenaltyActive}
+                                      onStart={() => handleMatchStart(matchingCriteria)}
+                                      onCancel={handleMatchCancel}
+                                      handleBackButton={handleBackButton}
                                     />
                                 </>
                             }

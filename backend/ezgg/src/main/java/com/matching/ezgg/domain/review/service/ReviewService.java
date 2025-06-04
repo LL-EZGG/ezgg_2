@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.matching.ezgg.domain.cancelPenalty.CancelPenaltyService;
 import com.matching.ezgg.domain.matching.infra.redis.service.RedisService;
 import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.service.MemberInfoService;
@@ -35,6 +36,7 @@ public class ReviewService {
 	private final RedisService redisService;
 	private final ApiService apiService;
 	private final MatchMapper matchMapper;
+	private final CancelPenaltyService cancelPenaltyService;
 
 	@Transactional
 	public void findDuoGame(Long memberId1, Long memberId2, Map<String, String> updateMatchedUser) {
@@ -80,6 +82,9 @@ public class ReviewService {
 				);
 				// redis에서 실제 듀오게임 한 유저 삭제
 				redisService.deleteMatchedUser(updateMatchedUser);
+				cancelPenaltyService.resetCancelCount(memberId1);
+				cancelPenaltyService.resetCancelCount(memberId2);
+
 				// 리뷰 요청 전송
 				reviewNotificationService.sendOrQueueReview(memberId1, memberInfoByMember1.getRiotUsername(), memberId2, memberInfoByMember2.getRiotUsername(), matchId);
 				break;
