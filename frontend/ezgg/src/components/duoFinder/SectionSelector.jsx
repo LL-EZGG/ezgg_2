@@ -35,14 +35,26 @@ const handleLineSelect = (type, line, matchingCriteria, setMatchingCriteria) => 
     const currentPartnerLine = currentWantLine.partnerLine || '';
 
     // 중복 선택 상황 방지
-    if (type === 'partnerLine' && line === currentMyLine) return;
-    if (type === 'myLine' && line === currentPartnerLine) return;
+    if (type === 'partnerLine' && line === currentMyLine) {
+        alert('이미 내가 선택한 라인입니다.');
+        return;
+    }
+    if (type === 'myLine' && line === currentPartnerLine) {
+        alert('이미 상대방 라인으로 선택된 라인입니다.');
+        return;
+    }
 
     // 토글 로직
     const newWantLine = {
         ...currentWantLine,
         [type]: currentWantLine[type] === line ? '' : line
     };
+
+    // 선택 해제 시 알림
+    if (currentWantLine[type] === line) {
+        alert('라인은 필수로 선택해야 합니다.');
+        return;
+    }
 
     // 상대 라인이 변경될 때 userPreferenceText 초기화
     if (type === 'partnerLine') {
@@ -284,26 +296,34 @@ const SectionSelector = ({
     if (type === 'line') {
         return (
             <Section>
-                <Label>{kind === 'my' ? '라인 선택' : '상대 라인 선택'}</Label>
+                <Label>
+                    {kind === 'my' ? '라인 선택' : '상대 라인 선택'}
+                    <span style={{ color: '#FF416C' }}>*</span>
+                </Label>
                 <LaneGroup>
-                    {lines.map(line => (
-                        <LaneButton
-                            key={`${kind}-${line}`}
-                            type="button"
-                            selected={selectedValue === line}
-                            disabled={disabledValue === line}
-                            onClick={() => {
-                                handleLineSelect(
-                                    kind === 'my' ? 'myLine' : 'partnerLine',
-                                    line,
-                                    matchingCriteria,
-                                    setMatchingCriteria
-                                )
-                            }}
-                        >
-                            {line}
-                        </LaneButton>
-                    ))}
+                    <LaneButtonGroup>
+                        {lines.map(line => (
+                            <LaneButton
+                                key={`${kind}-${line}`}
+                                type="button"
+                                selected={selectedValue === line}
+                                disabled={disabledValue === line}
+                                onClick={() => {
+                                    handleLineSelect(
+                                        kind === 'my' ? 'myLine' : 'partnerLine',
+                                        line,
+                                        matchingCriteria,
+                                        setMatchingCriteria
+                                    )
+                                }}
+                            >
+                                {line}
+                            </LaneButton>
+                        ))}
+                    </LaneButtonGroup>
+                    {!selectedValue && (
+                        <RequiredMessage>필수 항목입니다</RequiredMessage>
+                    )}
                 </LaneGroup>
             </Section>
         );
@@ -313,7 +333,7 @@ const SectionSelector = ({
 
         return (
             <Section>
-                <Label>{kind === 'preferred' ? '선호 챔피언' : '비선호 챔피언'}</Label>
+                <Label>{kind === 'preferred' ? '선호 챔피언' : '비선호 챔피언'} <span style={{ color: '#FF416C' }}>*</span></Label>
                 <SearchContainer ref={kind === 'preferred' ? searchRef : bannedSearchRef}>
                     {/* 검색 입력 */}
                     <SearchInput>
@@ -336,7 +356,7 @@ const SectionSelector = ({
                             term,
                             index,
                             ref
-                        } = kind === 'preferred' // 'preferred' 또는 'banned'
+                        } = kind === 'preferred'
                             ? {
                                 show: showSuggestions,
                                 term: searchTerm,
@@ -368,21 +388,31 @@ const SectionSelector = ({
 
                     {/* 선택된 챔피언 태그 */}
                     <ChampionTags>
-                        {(kind === 'preferred'
-                                ? matchingCriteria.selectedChampions.preferredChampions
-                                : matchingCriteria.selectedChampions.bannedChampions
-                        ).map(champion => (
-                            <ChampionTag key={champion.id}>
-                                <img src={`/champions/${champion.image}`} alt={champion.name}/>
-                                {champion.name}
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveChampion(champion.id, kind)}
-                                >
-                                    ×
-                                </button>
-                            </ChampionTag>
-                        ))}
+                        <ChampionTagsHeader>
+                            <span className="required">최소 1개 이상 선택해주세요</span>
+                            {(kind === 'preferred'
+                                ? matchingCriteria.selectedChampions.preferredChampions.length === 0
+                                : matchingCriteria.selectedChampions.bannedChampions.length === 0) && (
+                                <span className="warning">필수 항목입니다</span>
+                            )}
+                        </ChampionTagsHeader>
+                        <ChampionTagsList>
+                            {(kind === 'preferred'
+                                    ? matchingCriteria.selectedChampions.preferredChampions
+                                    : matchingCriteria.selectedChampions.bannedChampions
+                            ).map(champion => (
+                                <ChampionTag key={champion.id}>
+                                    <img src={`/champions/${champion.image}`} alt={champion.name}/>
+                                    {champion.name}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveChampion(champion.id, kind)}
+                                    >
+                                        ×
+                                    </button>
+                                </ChampionTag>
+                            ))}
+                        </ChampionTagsList>
                     </ChampionTags>
                 </SearchContainer>
             </Section>
@@ -517,7 +547,20 @@ const Label = styled.div`
     font-size: 0.9rem;
 `;
 
+const RequiredMessage = styled.div`
+    color: #FF416C;
+    font-size: 0.8rem;
+    font-style: italic;
+    margin-top: 0.2rem;
+`;
+
 const LaneGroup = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+`;
+
+const LaneButtonGroup = styled.div`
     display: flex;
     gap: 0.5rem;
 `;
@@ -615,9 +658,32 @@ const SuggestionItem = styled.div`
 
 const ChampionTags = styled.div`
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 0.5rem;
     margin-top: 0.5rem;
+`;
+
+const ChampionTagsHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    span.required {
+        color: #FF416C;
+        font-size: 0.8rem;
+    }
+    
+    span.warning {
+        color: #FF416C;
+        font-size: 0.8rem;
+        font-style: italic;
+    }
+`;
+
+const ChampionTagsList = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 `;
 
 const ChampionTag = styled.div`
