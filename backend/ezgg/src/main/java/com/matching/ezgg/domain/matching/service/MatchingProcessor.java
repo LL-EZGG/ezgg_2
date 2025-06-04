@@ -50,7 +50,7 @@ public class MatchingProcessor {
 			List<MatchingUserDocument> matchedUsers = esMatchingUserFinder.findMatchingUsersByScriptScore(matchingUserDocument);
 
 			// 매칭 조건에 맞는 유저가 없을 시 retry Set으로 이동
-			if (matchedUsers.isEmpty() || matchedUsers.getFirst().getMatchingScore() < 50) {
+			if (matchedUsers.isEmpty() || matchedUsers.getFirst().getMatchingScore() < 40) {
 				log.info("[INFO] 매칭 상대 없음 : memberId={}", memberId);
 				matchingStateManager.removeUserFromMatchingState(memberId);
 				matchingStateManager.addUserToRetryState(memberId);

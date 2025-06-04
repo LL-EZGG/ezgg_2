@@ -13,7 +13,7 @@ export const useMatchingSystem = ({socket, sendMatchingRequest, sendCancelReques
 
     const handleMatchStart = useCallback((criteria) => {
         if (!isValidCriteria(criteria)) {
-            alert('라인은 필수로 선택해주세요.');
+            alert('라인과 선호/비선호 챔피언은 필수로 선택해주세요.');
             return;
         }
 

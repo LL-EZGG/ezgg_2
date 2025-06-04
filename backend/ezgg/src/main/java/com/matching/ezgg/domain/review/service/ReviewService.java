@@ -47,10 +47,12 @@ public class ReviewService {
 		List<String> matchIds2 = memberInfoByMember2.getMatchIds();
 
 		if(isSameMatchIds(matchIds1, findMember1MatchIds) || isSameMatchIds(matchIds2, findMember2MatchIds)) {
+			log.info("[INFO] {}와 {}은 새로운 게임이 존재하지 않음", memberInfoByMember1.getRiotUsername(), memberInfoByMember2.getRiotUsername());
 			return;
 		}
 
 		List<String> commonElements = getCommonElements(findMember1MatchIds, findMember2MatchIds);
+		log.info("[INFO] 공통된 게임 ID: {}", commonElements.toString());
 
 		for(String matchId : commonElements) {
 			String match = apiService.getMatch(matchId);

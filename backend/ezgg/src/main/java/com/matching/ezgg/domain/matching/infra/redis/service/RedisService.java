@@ -357,7 +357,7 @@ public class RedisService {
 
 	public List<Map<String, String>> getTwentyMatchedUsers() {
 		long now = System.currentTimeMillis();
-		long threshold = now - 1000 * 60 * 10; // 10분 전 시간
+		long threshold = now - 1000 * 60 * 5; // 10분 전 시간
 
 		Set<String> matchedUsers = redisTemplate.opsForZSet()
 			.rangeByScore(MATCHED_ZSET_KEY.getValue(), 0, threshold);
@@ -404,6 +404,6 @@ public class RedisService {
 			// 최초 실행일경우
 			redisTemplate.expire(key, Duration.ofHours(2)); // 2시간 후 만료
 		}
-		return count <= 5; // 5회까지 허용
+		return count <= 20; // 5회까지 허용
 	}
 }
