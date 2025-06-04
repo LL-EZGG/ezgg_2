@@ -32,7 +32,7 @@ public class DuoTimelineController {
 
 		return ResponseEntity.ok(SuccessResponse.<List<DuoTimelineDto>>builder()
 			.code("200")
-			.message("duo timeline")
+			.message("듀오 타임라인 정보 조회 성공")
 			.data(duoTimelineService.getDuoMatchTimeline(dtos))
 			.build()
 		);
