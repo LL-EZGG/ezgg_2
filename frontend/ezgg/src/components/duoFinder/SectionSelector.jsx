@@ -8,6 +8,7 @@
  * ---------------------------------------------------------------------------*/
 import styled from '@emotion/styled';
 import React, {useEffect, useRef, useState} from "react";
+import ReactDOM from 'react-dom';
 import {champions} from "../../data/champions.js";
 import {keyword} from "../../data/keyword.js";
 import {getKeywordWithEmoji} from "../../data/keywordEmojis.js";
@@ -49,12 +50,6 @@ const handleLineSelect = (type, line, matchingCriteria, setMatchingCriteria) => 
         ...currentWantLine,
         [type]: currentWantLine[type] === line ? '' : line
     };
-
-    // 선택 해제 시 알림
-    if (currentWantLine[type] === line) {
-        alert('라인은 필수로 선택해야 합니다.');
-        return;
-    }
 
     // 상대 라인이 변경될 때 userPreferenceText 초기화
     if (type === 'partnerLine') {
@@ -372,7 +367,11 @@ const SectionSelector = ({
                             };
 
                         return show && (
-                            <Suggestions ref={ref}>
+                            <SuggestionsList
+                                show={show}
+                                searchRef={kind === 'preferred' ? searchRef : bannedSearchRef}
+                                suggestionsRef={ref}
+                            >
                                 {filterChampions(term).map((champion, idx) => (
                                     <SuggestionItem
                                         key={champion.id}
@@ -383,7 +382,7 @@ const SectionSelector = ({
                                         {champion.name}
                                     </SuggestionItem>
                                 ))}
-                            </Suggestions>
+                            </SuggestionsList>
                         );
                     })()}
 
@@ -538,6 +537,7 @@ const Section = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    position: relative;
 `;
 
 const Label = styled.div`
@@ -622,19 +622,68 @@ const SearchInput = styled.div`
     }
 `;
 
-const Suggestions = styled.div`
-    position: absolute;
-    top: 100%;
+const Overlay = styled.div`
+    position: fixed;
+    top: 0;
     left: 0;
     right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+`;
+
+const Suggestions = styled.div`
+    position: fixed;
     background: #1a1a1a;
     border-radius: 4px;
     margin-top: 0.5rem;
-    max-height: 200px;
+    max-height: 300px;
     overflow-y: auto;
-    z-index: 10;
+    z-index: 1000;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
+
+const SuggestionsList = ({show, searchRef, suggestionsRef, children}) => {
+    const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+
+    useEffect(() => {
+        if (show && searchRef.current) {
+            const updatePosition = () => {
+                const rect = searchRef.current.getBoundingClientRect();
+                setPosition({
+                    top: rect.bottom + window.scrollY,
+                    left: rect.left + window.scrollX,
+                    width: rect.width
+                });
+            };
+
+            updatePosition();
+            window.addEventListener('scroll', updatePosition);
+            window.addEventListener('resize', updatePosition);
+
+            return () => {
+                window.removeEventListener('scroll', updatePosition);
+                window.removeEventListener('resize', updatePosition);
+            };
+        }
+    }, [show, searchRef]);
+
+    if (!show) return null;
+
+    return ReactDOM.createPortal(
+        <Suggestions
+            ref={suggestionsRef}
+            style={{
+                top: `${position.top}px`,
+                left: `${position.left}px`,
+                width: `${position.width}px`
+            }}
+        >
+            {children}
+        </Suggestions>,
+        document.body
+    );
+};
 
 const SuggestionItem = styled.div`
     display: flex;
