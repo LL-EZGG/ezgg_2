@@ -7,7 +7,7 @@
  *   콜백을 통해 상위 상태를 업데이트한다.
  * ---------------------------------------------------------------------------*/
 import styled from '@emotion/styled';
-import React, {useEffect, useRef, useState} from "react";
+import React, { useState } from "react";
 import ReactDOM from 'react-dom';
 import {champions} from "../../data/champions.js";
 import {keyword} from "../../data/keyword.js";
@@ -71,6 +71,154 @@ const handleLineSelect = (type, line, matchingCriteria, setMatchingCriteria) => 
     }
 };
 
+/* ------------- 챔피언 모달 컴포넌트 ---------------------------------------------------- */
+
+const ChampionModal = ({ isOpen, onClose, onSelect, kind, term, setTerm }) => {
+    if (!isOpen) return null;
+
+    const filteredChampions = champions.filter(champion => 
+        !term || 
+        champion.name.toLowerCase().includes(term.toLowerCase()) ||
+        champion.id.toLowerCase().includes(term.toLowerCase())
+    );
+
+    return ReactDOM.createPortal(
+        <ModalOverlay onClick={onClose}>
+            <ModalContent onClick={e => e.stopPropagation()}>
+                <ModalHeader>
+                    <h3>{kind === 'preferred' ? '선호 챔피언 선택' : '비선호 챔피언 선택'}</h3>
+                    <SearchInput>
+                        <input
+                            type="text"
+                            placeholder="챔피언 검색..."
+                            value={term}
+                            onChange={e => setTerm(e.target.value)}
+                            autoFocus
+                        />
+                    </SearchInput>
+                </ModalHeader>
+                <ChampionGrid>
+                    {filteredChampions.map(champion => (
+                        <ChampionCard
+                            key={champion.id}
+                            onClick={() => {
+                                onSelect(champion);
+                                onClose();
+                            }}
+                        >
+                            <img src={`/champions/${champion.image}`} alt={champion.name}/>
+                            <span>{champion.name}</span>
+                        </ChampionCard>
+                    ))}
+                </ChampionGrid>
+            </ModalContent>
+        </ModalOverlay>,
+        document.body
+    );
+};
+
+/* ------------- 챔피언 선택 컴포넌트 ---------------------------------------------------- */
+
+const ChampionSelector = ({ kind, matchingCriteria, setMatchingCriteria }) => {
+    const [showModal, setShowModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    
+    const selectedChampions = kind === 'preferred'
+        ? matchingCriteria.selectedChampions?.preferredChampions || []
+        : matchingCriteria.selectedChampions?.bannedChampions || [];
+
+    const handleChampionSelect = (champion) => {
+        const key = kind === 'preferred' ? 'preferredChampions' : 'bannedChampions';
+        const otherKey = kind === 'preferred' ? 'bannedChampions' : 'preferredChampions';
+        const currentChampions = [...(matchingCriteria?.selectedChampions?.[key] || [])];
+        const otherChampions = [...(matchingCriteria?.selectedChampions?.[otherKey] || [])];
+
+        if (currentChampions.some(c => c.id === champion.id)) {
+            alert('이미 선택한 챔피언입니다.');
+            return;
+        }
+
+        if (otherChampions.some(c => c.id === champion.id)) {
+            alert('동일한 챔피언이 선택되었습니다. 다시 확인해주세요.');
+            return;
+        }
+
+        const newCriteria = {
+            ...matchingCriteria,
+            selectedChampions: {
+                ...matchingCriteria?.selectedChampions,
+                [key]: [...currentChampions, champion]
+            }
+        };
+
+        setMatchingCriteria(newCriteria);
+        setShowModal(false);
+        setSearchTerm('');
+    };
+
+    const handleRemoveChampion = (championId) => {
+        const key = kind === 'preferred' ? 'preferredChampions' : 'bannedChampions';
+
+        const newCriteria = {
+            ...matchingCriteria,
+            selectedChampions: {
+                ...matchingCriteria.selectedChampions,
+                [key]: matchingCriteria.selectedChampions[key].filter(c => c.id !== championId)
+            }
+        };
+
+        setMatchingCriteria(newCriteria);
+    };
+
+    return (
+        <div>
+            <SearchInput>
+                <input
+                    type="text"
+                    placeholder={selectedChampions.length > 0 
+                        ? selectedChampions.map(c => c.name).join(', ')
+                        : "챔피언을 선택하세요..."}
+                    onClick={() => setShowModal(true)}
+                    readOnly
+                />
+            </SearchInput>
+            <ChampionModal
+                isOpen={showModal}
+                onClose={() => {
+                    setShowModal(false);
+                    setSearchTerm('');
+                }}
+                onSelect={handleChampionSelect}
+                kind={kind}
+                term={searchTerm}
+                setTerm={setSearchTerm}
+            />
+            <ChampionTags>
+                <ChampionTagsHeader>
+                    <span className="required">최소 1개 이상 선택해주세요</span>
+                    {selectedChampions.length === 0 && (
+                        <span className="warning">필수 항목입니다</span>
+                    )}
+                </ChampionTagsHeader>
+                <ChampionTagsList>
+                    {selectedChampions.map(champion => (
+                        <ChampionTag key={champion.id}>
+                            <img src={`/champions/${champion.image}`} alt={champion.name}/>
+                            {champion.name}
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveChampion(champion.id)}
+                            >
+                                ×
+                            </button>
+                        </ChampionTag>
+                    ))}
+                </ChampionTagsList>
+            </ChampionTags>
+        </div>
+    );
+};
+
 /* ------------- 메인 컴포넌트 ---------------------------------------------------------- */
 
 /**
@@ -88,207 +236,14 @@ const handleLineSelect = (type, line, matchingCriteria, setMatchingCriteria) => 
  * @prop {string}   disabledValue             - (라인 모드) 클릭 불가능한 값(상대가 이미 선택한 라인)
  */
 const SectionSelector = ({
-                             matchingCriteria,
-                             setMatchingCriteria,
-                             type,
-                             kind,
-                             selectedValue,
-                             disabledValue,
-                             children // 향후 확장용 (현재 미사용)
-                         }) => {
-
-    /* ----- 상태: 챔피언 검색어 및 UI 토글 ----------------------------------- */
-    const [searchTerm, setSearchTerm] = useState(''); // 선호 챔피언 검색어
-    const [bannedSearchTerm, setBannedSearchTerm] = useState(''); // 비선호 챔피언 검색어
-
-    const [showSuggestions, setShowSuggestions] = useState(false); // 선호 챔피언 추천박스
-    const [showBannedSuggestions, setShowBannedSuggestions] = useState(false);  // 비선호 챔피언 추천박스
-
-    const [selectedIndex, setSelectedIndex] = useState(0); // 선호 챔피언 추천박스 활성 인덱스
-    const [bannedSelectedIndex, setBannedSelectedIndex] = useState(0); // 비선호 챔피언 추천박스 활성 인덱스
-
-    /* ----- ref: DOM 요소 참조 ---------------------------------------------- */
-    const searchRef = useRef(null); // 선호 입력창 wrapper
-    const bannedSearchRef = useRef(null); // 비선호 입력창 wrapper
-    const preferredSuggestionsRef = useRef(null); // 선호 챔피언 추천 목록
-    const bannedSuggestionsRef = useRef(null); // 비선호 챔피언 추천 목록
-
-    /* ------------------ effect: 외부 클릭 시 추천 박스 닫기 ------------------ */
-    useEffect(() => {
-        /** 외부 클릭을 감지해 추천 박스를 닫는 함수. */
-        const handleClickOutside = (event) => {
-            if (searchRef.current && !searchRef.current.contains(event.target)) {
-                setShowSuggestions(false);
-            }
-            if (bannedSearchRef.current && !bannedSearchRef.current.contains(event.target)) {
-                setShowBannedSuggestions(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    /* ----- effect: 선택 인덱스 변경 시 스크롤 위치 맞추기 ------------------------ */
-    useEffect(() => {
-        scrollToSelected(selectedIndex, 'preferred');
-    }, [selectedIndex]);
-
-    useEffect(() => {
-        scrollToSelected(bannedSelectedIndex, 'banned');
-    }, [bannedSelectedIndex]);
-
-    /* ---------------- 입력/포커스 핸들러 ----------------------------------- */
-
-    /** 검색어가 변경될 때 상태를 업데이트하는 함수. */
-    const handleChange = (e, kind) => {
-        if (kind === 'preferred') {
-            setSearchTerm(e.target.value);
-            setShowSuggestions(true);
-            setSelectedIndex(0);
-        } else {
-            setBannedSearchTerm(e.target.value);
-            setShowBannedSuggestions(true);
-            setBannedSelectedIndex(0);
-        }
-    };
-
-    /** 입력창 포커스 시 추천 박스를 여는 함수. */
-    const handleShowSuggestions = (kind) => {
-        if (kind === 'preferred') {
-            setShowSuggestions(true);
-        } else {
-            setShowBannedSuggestions(true);
-        }
-    }
-
-    /** 선택된 추천 항목이 보이도록 스크롤을 이동하는 함수.*/
-    const scrollToSelected = (index, type) => {
-        const suggestionsElement = type === 'preferred' ?
-            preferredSuggestionsRef.current :
-            bannedSuggestionsRef.current;
-
-        if (!suggestionsElement) return;
-
-        const selectedElement = suggestionsElement.children[index];
-        if (!selectedElement) return;
-
-        const containerHeight = suggestionsElement.clientHeight;
-        const elementHeight = selectedElement.clientHeight;
-        const elementTop = selectedElement.offsetTop;
-        const currentScroll = suggestionsElement.scrollTop;
-
-        // 선택된 항목이 컨테이너 아래에 있을 때
-        if (elementTop + elementHeight > currentScroll + containerHeight) {
-            suggestionsElement.scrollTop = elementTop + elementHeight - containerHeight;
-        }
-        // 선택된 항목이 컨테이너 위에 있을 때
-        else if (elementTop < currentScroll) {
-            suggestionsElement.scrollTop = elementTop;
-        }
-    };
-
-    /** 키보드 입력(▲▼Enter)을 처리하는 함수. */
-    const handleKeyDown = (e, type) => {
-        if (e.nativeEvent.isComposing) return;
-        const suggestions = filterChampions(type === 'preferred' ? searchTerm : bannedSearchTerm);
-        const currentIndex = type === 'preferred' ? selectedIndex : bannedSelectedIndex;
-        const setIndex = type === 'preferred' ? setSelectedIndex : setBannedSelectedIndex;
-
-        switch (e.key) {
-            case 'ArrowDown':
-                e.preventDefault();
-                if (suggestions.length > 0) {
-                    setIndex((prevIndex) =>
-                        prevIndex < suggestions.length - 1 ? prevIndex + 1 : prevIndex
-                    );
-                }
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                if (suggestions.length > 0) {
-                    setIndex((prevIndex) =>
-                        prevIndex > 0 ? prevIndex - 1 : prevIndex
-                    );
-                }
-                break;
-            case 'Enter':
-                e.preventDefault();
-                if (suggestions.length > 0) {
-                    handleChampionSelect(suggestions[currentIndex], type);
-                }
-                break;
-            default:
-                break;
-        }
-    };
-
-    /** 검색어로 챔피언 배열을 필터링하는 함수. */
-    const filterChampions = (term) => {
-        if (!term) return champions;
-        const lowerTerm = term.toLowerCase();
-        return champions.filter(champion =>
-            champion.name.toLowerCase().includes(lowerTerm) ||
-            champion.id.toLowerCase().includes(lowerTerm)
-        );
-    };
-
-    /** 챔피언을 선택하여 상태에 반영하는 함수. */
-    const handleChampionSelect = (champion, type) => {
-        const key = type === 'preferred' ? 'preferredChampions' : 'bannedChampions';
-        const otherKey = type === 'preferred' ? 'bannedChampions' : 'preferredChampions';
-        const currentChampions = [...(matchingCriteria?.selectedChampions?.[key] || [])];
-        const otherChampions = [...(matchingCriteria?.selectedChampions?.[otherKey] || [])];
-
-        // 1. 이미 선택된 경우(같은 리스트) 중복 방지
-        if (currentChampions.some(c => c.id === champion.id)) {
-            alert('이미 선택한 챔피언입니다.');
-            return;
-        }
-
-        // 2. 다른 리스트에 이미 있으면 추가 불가
-        if (otherChampions.some(c => c.id === champion.id)) {
-            alert('동일한 챔피언이 선택되었습니다. 다시 확인해주세요.');
-            return;
-        }
-
-        const newCriteria = {
-            ...matchingCriteria,
-            selectedChampions: {
-                ...matchingCriteria?.selectedChampions,
-                [key]: [...currentChampions, champion]
-            }
-        };
-
-        setMatchingCriteria(newCriteria);
-
-        if (type === 'preferred') {
-            setSearchTerm('');
-            setShowSuggestions(false);
-        } else {
-            setBannedSearchTerm('');
-            setShowBannedSuggestions(false);
-        }
-    };
-
-    /** 선택된 챔피언 태그를 제거하는 함수. */
-    const handleRemoveChampion = (championId, type) => {
-        const key = type === 'preferred' ? 'preferredChampions' : 'bannedChampions';
-
-        const newCriteria = {
-            ...matchingCriteria,
-            selectedChampions: {
-                ...matchingCriteria.selectedChampions,
-                [key]: matchingCriteria.selectedChampions[key].filter(c => c.id !== championId)
-            }
-        };
-
-        setMatchingCriteria(newCriteria);
-    };
-
-
+    matchingCriteria,
+    setMatchingCriteria,
+    type,
+    kind,
+    selectedValue,
+    disabledValue
+}) => {
     /* ---------------- 렌더링: 라인 선택 모드 --------------------------------- */
-
     if (type === 'line') {
         return (
             <Section>
@@ -324,97 +279,14 @@ const SectionSelector = ({
             </Section>
         );
     } else if (type === 'champion') {
-
-        /* ---------------- 렌더링: 챔피언 선택 모드 ------------------------------- */
-
         return (
             <Section>
                 <Label>{kind === 'preferred' ? '선호 챔피언' : '비선호 챔피언'} <span style={{ color: '#FF416C' }}>*</span></Label>
-                <SearchContainer ref={kind === 'preferred' ? searchRef : bannedSearchRef}>
-                    {/* 검색 입력 */}
-                    <SearchInput>
-                        <input
-                            type="text"
-                            placeholder="챔피언 검색..."
-                            value={kind === 'preferred' ? searchTerm : bannedSearchTerm}
-                            onChange={(e) => {
-                                handleChange(e, kind);
-                            }}
-                            onFocus={() => handleShowSuggestions(kind)}
-                            onKeyDown={(e) => handleKeyDown(e, kind)}
-                        />
-                    </SearchInput>
-
-                    {/* 추천 목록 */}
-                    {(() => {
-                        const {
-                            show,
-                            term,
-                            index,
-                            ref
-                        } = kind === 'preferred'
-                            ? {
-                                show: showSuggestions,
-                                term: searchTerm,
-                                index: selectedIndex,
-                                ref: preferredSuggestionsRef
-                            }
-                            : {
-                                show: showBannedSuggestions,
-                                term: bannedSearchTerm,
-                                index: bannedSelectedIndex,
-                                ref: bannedSuggestionsRef
-                            };
-
-                        return show && (
-                            <SuggestionsList
-                                show={show}
-                                searchRef={kind === 'preferred' ? searchRef : bannedSearchRef}
-                                suggestionsRef={ref}
-                            >
-                                {filterChampions(term).map((champion, idx) => (
-                                    <SuggestionItem
-                                        key={champion.id}
-                                        onClick={() => handleChampionSelect(champion, kind)}
-                                        selected={idx === index}
-                                    >
-                                        <img src={`/champions/${champion.image}`} alt={champion.name}/>
-                                        {champion.name}
-                                    </SuggestionItem>
-                                ))}
-                            </SuggestionsList>
-                        );
-                    })()}
-
-                    {/* 선택된 챔피언 태그 */}
-                    <ChampionTags>
-                        <ChampionTagsHeader>
-                            <span className="required">최소 1개 이상 선택해주세요</span>
-                            {(kind === 'preferred'
-                                ? matchingCriteria.selectedChampions.preferredChampions.length === 0
-                                : matchingCriteria.selectedChampions.bannedChampions.length === 0) && (
-                                <span className="warning">필수 항목입니다</span>
-                            )}
-                        </ChampionTagsHeader>
-                        <ChampionTagsList>
-                            {(kind === 'preferred'
-                                    ? matchingCriteria.selectedChampions.preferredChampions
-                                    : matchingCriteria.selectedChampions.bannedChampions
-                            ).map(champion => (
-                                <ChampionTag key={champion.id}>
-                                    <img src={`/champions/${champion.image}`} alt={champion.name}/>
-                                    {champion.name}
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveChampion(champion.id, kind)}
-                                    >
-                                        ×
-                                    </button>
-                                </ChampionTag>
-                            ))}
-                        </ChampionTagsList>
-                    </ChampionTags>
-                </SearchContainer>
+                <ChampionSelector
+                    kind={kind}
+                    matchingCriteria={matchingCriteria}
+                    setMatchingCriteria={setMatchingCriteria}
+                />
             </Section>
         );
     } else if (type === 'userPreferenceText') {
@@ -446,17 +318,15 @@ const SectionSelector = ({
                 const preferences = JSON.parse(matchingCriteria.userPreferenceText);
                 selectedKeywords = [
                     ...Object.entries(preferences.global || {})
-                        .filter(([key, value]) => value === "매우 좋음")
+                        .filter(([, value]) => value === "매우 좋음")
                         .map(([key]) => key),
                     ...Object.entries(preferences.laner || {})
-                        .filter(([key, value]) => value === "매우 좋음")
+                        .filter(([, value]) => value === "매우 좋음")
                         .map(([key]) => key)
                 ];
             } catch (e) {
                 selectedKeywords = [];
             }
-        } else {
-            selectedKeywords = [];
         }
 
         const handleKeywordClick = (value) => {
@@ -491,12 +361,12 @@ const SectionSelector = ({
             };
 
             // global 키워드 처리
-            Object.entries(globalKeywords).forEach(([text, val]) => {
+            Object.entries(globalKeywords).forEach(([, val]) => {
                 preferenceObject.global[val] = newKeywords.includes(val) ? "매우 좋음" : "없음";
             });
 
             // laner 키워드 처리 (jungle이나 support 키워드도 laner로 저장)
-            Object.entries(lanerKeywords).forEach(([text, val]) => {
+            Object.entries(lanerKeywords).forEach(([, val]) => {
                 preferenceObject.laner[val] = newKeywords.includes(val) ? "매우 좋음" : "없음";
             });
 
@@ -529,7 +399,63 @@ const SectionSelector = ({
     return null;  // 방어 코드
 };
 
-export default SectionSelector;
+const ChampionListContainer = styled.div`
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: rgba(26, 26, 26, 0.95);
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 9999;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    outline: 1px solid rgba(255, 255, 255, 0.05);
+    outline-offset: -2px;
+
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+`;
+
+const ChampionListItem = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.2s;
+    background: ${props => props.selected ? 'rgba(255, 255, 255, 0.15)' : 'transparent'};
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    img {
+        width: 24px;
+        height: 24px;
+        border-radius: 12px;
+    }
+
+    span {
+        flex: 1;
+    }
+`;
 
 /* ------------- 스타일 컴포넌트 --------------------------------------------- */
 
@@ -582,12 +508,9 @@ const LaneButton = styled.button`
     }
 `;
 
-const SearchContainer = styled.div`
-    position: relative;
-`;
-
 const SearchInput = styled.div`
     position: relative;
+    z-index: 1;
 
     input {
         width: 100%;
@@ -604,105 +527,8 @@ const SearchInput = styled.div`
 
         &:focus {
             outline: none;
+            background: rgba(255, 255, 255, 0.15);
         }
-    }
-
-    &::after {
-        content: '';
-        position: absolute;
-        right: 0.8rem;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 14px;
-        height: 14px;
-        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>');
-        background-size: contain;
-        background-repeat: no-repeat;
-        opacity: 0.5;
-    }
-`;
-
-const Overlay = styled.div`
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-`;
-
-const Suggestions = styled.div`
-    position: fixed;
-    background: #1a1a1a;
-    border-radius: 4px;
-    margin-top: 0.5rem;
-    max-height: 300px;
-    overflow-y: auto;
-    z-index: 1000;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-`;
-
-const SuggestionsList = ({show, searchRef, suggestionsRef, children}) => {
-    const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
-
-    useEffect(() => {
-        if (show && searchRef.current) {
-            const updatePosition = () => {
-                const rect = searchRef.current.getBoundingClientRect();
-                setPosition({
-                    top: rect.bottom + window.scrollY,
-                    left: rect.left + window.scrollX,
-                    width: rect.width
-                });
-            };
-
-            updatePosition();
-            window.addEventListener('scroll', updatePosition);
-            window.addEventListener('resize', updatePosition);
-
-            return () => {
-                window.removeEventListener('scroll', updatePosition);
-                window.removeEventListener('resize', updatePosition);
-            };
-        }
-    }, [show, searchRef]);
-
-    if (!show) return null;
-
-    return ReactDOM.createPortal(
-        <Suggestions
-            ref={suggestionsRef}
-            style={{
-                top: `${position.top}px`,
-                left: `${position.left}px`,
-                width: `${position.width}px`
-            }}
-        >
-            {children}
-        </Suggestions>,
-        document.body
-    );
-};
-
-const SuggestionItem = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    cursor: pointer;
-    color: white;
-    transition: background-color 0.2s;
-    background: ${props => props.selected ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
-
-    &:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    img {
-        width: 24px;
-        height: 24px;
-        border-radius: 12px;
     }
 `;
 
@@ -788,3 +614,92 @@ const KeywordButton = styled.button`
         background: ${props => props.selected ? '#FF416C' : props.disabled ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)'};
     }
 `;
+
+const ModalOverlay = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+`;
+
+const ModalContent = styled.div`
+    background: #1a1a1a;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+`;
+
+const ModalHeader = styled.div`
+    margin-bottom: 1.5rem;
+
+    h3 {
+        color: white;
+        margin: 0 0 1rem 0;
+        font-size: 1.2rem;
+    }
+`;
+
+const ChampionGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1rem;
+    padding: 0.5rem;
+`;
+
+const ChampionCard = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    img {
+        width: 48px;
+        height: 48px;
+        border-radius: 24px;
+    }
+
+    span {
+        color: white;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+`;
+
+export default SectionSelector;
