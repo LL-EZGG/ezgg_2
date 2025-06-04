@@ -376,7 +376,9 @@ const App = () => {
                         {isLoggedIn ? (
                             <>
                                 <Link to="/timeline">
-                                    <UserInfo>{userInfo.riotUsername} #{userInfo.riotTag}</UserInfo>
+                                    <UserInfo>
+                                        <span>{userInfo.riotUsername} #{userInfo.riotTag}</span>
+                                    </UserInfo>
                                 </Link>
                                 <LogoutButton
                                     onClick={handleLogout}
@@ -504,10 +506,34 @@ const UserInfo = styled.div`
     padding: 0.5rem 1rem;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.1);
-    transition: background 0.2s;
+    transition: all 0.2s;
+    position: relative;
 
     &:hover {
         background: rgba(255, 255, 255, 0.2);
+    }
+
+    &:after {
+        content: 'Timeline';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    &:hover:after {
+        opacity: 1;
+    }
+
+    span {
+        transition: opacity 0.3s ease;
+    }
+
+    &:hover > span {
+        opacity: 0;
     }
 `;
 
