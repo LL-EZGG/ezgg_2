@@ -42,7 +42,6 @@ export const champions = [
     {id: 'Gwen', name: '그웬', image: 'Gwen.png'},
     {id: 'Hecarim', name: '헤카림', image: 'Hecarim.png'},
     {id: 'Heimerdinger', name: '하이머딩거', image: 'Heimerdinger.png'},
-    {id: 'Hwei', name: '휘', image: 'Hwei.png'},
     {id: 'Illaoi', name: '일라오이', image: 'Illaoi.png'},
     {id: 'Irelia', name: '이렐리아', image: 'Irelia.png'},
     {id: 'Ivern', name: '아이번', image: 'Ivern.png'},

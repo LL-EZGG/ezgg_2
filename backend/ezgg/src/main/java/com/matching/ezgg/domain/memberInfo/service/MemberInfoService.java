@@ -10,10 +10,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matching.ezgg.api.dto.WinRateNTierDto;
-import com.matching.ezgg.domain.member.repository.MemberRepository;
+import com.matching.ezgg.domain.memberInfo.dto.MemberInfoDto;
+import com.matching.ezgg.domain.memberInfo.dto.TimelineMemberInfoDto;
 import com.matching.ezgg.domain.memberInfo.entity.MemberInfo;
 import com.matching.ezgg.domain.memberInfo.repository.MemberInfoRepository;
+import com.matching.ezgg.domain.riotApi.dto.WinRateNTierDto;
 import com.matching.ezgg.global.exception.MemberInfoNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MemberInfoService {
 	private final MemberInfoRepository memberInfoRepository;
-	private final MemberRepository memberRepository;
 
 	// memberId로 puuid 조회
 	public String getMemberPuuidByMemberId(Long memberId) {
@@ -39,13 +39,23 @@ public class MemberInfoService {
 	}
 
 	// puuid로 MemberInfo 조회
-	public MemberInfo getMemberInfoByPuuid(String puuid) {
-		return memberInfoRepository.findByPuuid(puuid).orElseThrow(MemberInfoNotFoundException::new);
+	public MemberInfoDto getMemberInfoByPuuid(String puuid) {
+		return MemberInfoDto.toDto(
+			memberInfoRepository.findByPuuid(puuid).orElseThrow(MemberInfoNotFoundException::new)
+		);
 	}
 
 	// memberId로 MemberInfo 조회
-	public MemberInfo getMemberInfoByMemberId(Long memberId) {
+	private MemberInfo getMemberInfoOrThrow(Long memberId) {
 		return memberInfoRepository.findByMemberId(memberId).orElseThrow(MemberInfoNotFoundException::new);
+	}
+
+	public MemberInfoDto getMemberInfoByMemberId(Long memberId) {
+		return MemberInfoDto.toDto(getMemberInfoOrThrow(memberId));
+	}
+
+	public TimelineMemberInfoDto getTimelineMemberInfoByMemberId(Long memberId) {
+		return TimelineMemberInfoDto.toDto(getMemberInfoOrThrow(memberId));
 	}
 
 	//member info 생성
@@ -84,7 +94,7 @@ public class MemberInfoService {
 	public MemberInfo updateMemberInfo(Long memberId, WinRateNTierDto winRateNTierDto, List<String> fetchedMatchIds,
 		boolean existsNewMatchIds) {
 		log.info("MemberInfo 업데이트 시작");
-		MemberInfo memberInfo = getMemberInfoByMemberId(memberId);
+		MemberInfo memberInfo = getMemberInfoOrThrow(memberId);
 		memberInfo.update(
 			winRateNTierDto.getTier(),
 			winRateNTierDto.getTierNum(),
@@ -95,5 +105,11 @@ public class MemberInfoService {
 		); // 영속성 상태에서 Dirty Checking을 해 자동으로 db에 커밋됨
 		log.info("MemberInfo 업데이트 종료");
 		return memberInfo;
+	}
+
+	public MemberInfoDto findByMemberId(Long memberId) {
+		return MemberInfoDto.toDto(
+			memberInfoRepository.findByMemberId(memberId).
+				orElseThrow(MemberInfoNotFoundException::new));
 	}
 }

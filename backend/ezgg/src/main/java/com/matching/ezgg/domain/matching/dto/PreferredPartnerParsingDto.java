@@ -1,5 +1,9 @@
 package com.matching.ezgg.domain.matching.dto;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,18 +12,20 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @ToString
 public class PreferredPartnerParsingDto {
 
+	@JsonProperty("wantLine")
 	private WantLine wantLine;
+	@JsonProperty("selectedChampions")
 	private ChampionInfo championInfo;
+	@Setter
+	private String userPreferenceText;
 
 	@Getter
-	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Builder
@@ -30,13 +36,14 @@ public class PreferredPartnerParsingDto {
 	}
 
 	@Getter
-	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Builder
 	@ToString
 	public static class ChampionInfo {
-		private String preferredChampion;
-		private String unpreferredChampion;
+		@JsonProperty("preferredChampions")
+		private List<String> preferredChampions;
+		@JsonProperty("bannedChampions")
+		private List<String> unpreferredChampions;
 	}
 }

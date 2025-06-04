@@ -1,5 +1,5 @@
 import '../styles/Join.css';
-import Join from '../components/layout/Join';
+import Join from '../components/auth/Join';
 
 function JoinPage() {
   return <Join />;

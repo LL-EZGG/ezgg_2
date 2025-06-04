@@ -44,6 +44,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
+    // OpenAi
+    implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-RC1") // BOM
+    implementation "org.springframework.ai:spring-ai-starter-model-openai"
+
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'com.h2database:h2'
 

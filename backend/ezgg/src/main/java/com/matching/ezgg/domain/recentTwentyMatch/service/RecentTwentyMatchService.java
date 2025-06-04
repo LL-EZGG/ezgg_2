@@ -3,8 +3,8 @@ package com.matching.ezgg.domain.recentTwentyMatch.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.matching.ezgg.domain.recentTwentyMatch.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.domain.recentTwentyMatch.entity.RecentTwentyMatch;
+import com.matching.ezgg.domain.recentTwentyMatch.dto.RecentTwentyMatchDto;
 import com.matching.ezgg.domain.recentTwentyMatch.repository.RecentTwentyMatchRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,12 @@ public class RecentTwentyMatchService {
 			recentTwentyMatchDto.getSumDeaths(),
 			recentTwentyMatchDto.getSumAssists(),
 			recentTwentyMatchDto.getChampionStats(),
-			recentTwentyMatchDto.getWinRate()
+			recentTwentyMatchDto.getWinRate(),
+			recentTwentyMatchDto.getTopAnalysis(),
+			recentTwentyMatchDto.getJugAnalysis(),
+			recentTwentyMatchDto.getMidAnalysis(),
+			recentTwentyMatchDto.getAdAnalysis(),
+			recentTwentyMatchDto.getSupAnalysis()
 		);
 
 		// 새로 만든 경우에만 persist, 기존이면 dirty checking → UPDATE
