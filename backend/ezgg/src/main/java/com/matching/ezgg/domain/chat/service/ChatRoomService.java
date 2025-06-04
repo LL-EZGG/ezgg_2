@@ -1,9 +1,10 @@
 package com.matching.ezgg.domain.chat.service;
 
+import static com.matching.ezgg.domain.chat.util.ChatRoomUtil.*;
+
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -13,6 +14,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.matching.ezgg.domain.chat.dto.ChatMessageDto;
+import com.matching.ezgg.domain.chat.util.ChatRoomUtil;
 import com.matching.ezgg.global.config.SessionRegistry;
 
 import lombok.RequiredArgsConstructor;
@@ -24,9 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatRoomService {
 
 	private final SessionRegistry sessionRegistry;
-
-	// 채팅방 ID → 참여자 리스트 (유저 ID or username)
-	private final ConcurrentHashMap<String, CopyOnWriteArrayList<String>> chatRoomParticipants = new ConcurrentHashMap<>();
 
 	// 중복 떠남 처리 방지용 (10초 내 동일한 떠남 처리 무시)
 	private final ConcurrentHashMap<String, Long> recentlyLeftUsers = new ConcurrentHashMap<>();
@@ -75,24 +74,6 @@ public class ChatRoomService {
 				}
 			}
 		}
-	}
-
-	/**
-	 * 채팅방 참여자 목록 반환
-	 * @param chattingRoomId 채팅방 ID
-	 * @return 참여자 ID 리스트
-	 */
-	public List<String> getParticipants(String chattingRoomId) {
-		if (chattingRoomId == null) {
-			log.warn("[WARN] 채팅방 ID가 null입니다.");
-			return new CopyOnWriteArrayList<>();
-		}
-
-		List<String> participants = chatRoomParticipants.getOrDefault(chattingRoomId, new CopyOnWriteArrayList<>());
-		log.info("[INFO] 채팅방 참여자 조회 - 방ID: {}, 참여자 수: {}, 참여자 목록: {}",
-			chattingRoomId, participants.size(), participants);
-
-		return participants;
 	}
 
 	/**
@@ -165,36 +146,6 @@ public class ChatRoomService {
 	}
 
 	/**
-	 * 표시용 이름 가져오기 (숫자 ID면 "상대방"으로 표시)
-	 */
-	private String getDisplayName(String userId) {
-		return isNumericId(userId) ? "상대방" : userId;
-	}
-
-	private boolean isNumericId(String userId) {
-		return userId != null && userId.matches("\\d+");
-	}
-
-	/**
-	 * 특정 유저가 참여 중인 채팅방 목록 반환
-	 * @param memberId 유저 ID
-	 * @return 참여 중인 채팅방 ID 리스트
-	 */
-	public List<String> getChatRoomsForUser(String memberId) {
-		List<String> userChatRooms = new ArrayList<>();
-
-		for (Map.Entry<String, CopyOnWriteArrayList<String>> entry : chatRoomParticipants.entrySet()) {
-			String chattingRoomId = entry.getKey();
-			List<String> participants = entry.getValue();
-
-			if (participants.contains(memberId)) {
-				userChatRooms.add(chattingRoomId);
-			}
-		}
-		return userChatRooms;
-	}
-
-	/**
 	 * 유저가 참여 중인 모든 채팅방에서 제거 (연결 해제 시)
 	 * @param userId 유저 ID
 	 * @param messagingTemplate 메시지 전송용
@@ -236,7 +187,7 @@ public class ChatRoomService {
 
 		try {
 			// 떠나기 전 참가자 목록을 먼저 가져옴 (동기화된 복사본)
-			List<String> participantsBeforeLeave = new ArrayList<>(getParticipants(chattingRoomId));
+			List<String> participantsBeforeLeave = new ArrayList<>(ChatRoomUtil.getParticipants(chattingRoomId));
 
 			// 해당 유저가 실제로 채팅방에 참여 중인지 확인
 			if (!participantsBeforeLeave.contains(userId)) {
@@ -264,17 +215,6 @@ public class ChatRoomService {
 				recentlyLeftUsers.remove(key);
 			});
 		}
-	}
-
-	/**
-	 * 특정 유저가 특정 채팅방에 참여 중인지 확인
-	 * @param chattingRoomId 채팅방 ID
-	 * @param userId 유저 ID
-	 * @return 참여 여부
-	 */
-	public boolean isUserInChatRoom(String chattingRoomId, String userId) {
-		List<String> participants = getParticipants(chattingRoomId);
-		return participants.contains(userId);
 	}
 
 	/**
@@ -361,18 +301,6 @@ public class ChatRoomService {
 		} catch (Exception e) {
 			log.error("[ERROR] 채팅방 나가기 처리 중 오류: {}", e.getMessage());
 		}
-	}
-
-	/**
-	 * Principal에서 사용자 ID 추출
-	 * @param principal Principal 객체
-	 * @return 사용자 ID (숫자)
-	 */
-	private String extractUserIdFromPrincipal(Principal principal) {
-		if (principal != null) {
-			return principal.getName(); // 숫자 ID (예: "2", "3")
-		}
-		return null;
 	}
 
 	/**
