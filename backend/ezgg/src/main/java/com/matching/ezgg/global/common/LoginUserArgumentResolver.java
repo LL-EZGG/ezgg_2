@@ -10,7 +10,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.matching.ezgg.global.annotation.LoginUser;
-import com.matching.ezgg.global.jwt.dto.CustomUserDetails;
+import com.matching.ezgg.domain.member.jwt.dto.CustomUserDetails;
 import com.matching.ezgg.domain.member.entity.Member;
 
 @Component

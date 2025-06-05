@@ -16,13 +16,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
-import com.matching.ezgg.global.jwt.filter.JWTFilter;
-import com.matching.ezgg.global.jwt.filter.JWTUtil;
-import com.matching.ezgg.global.jwt.filter.LoginFilter;
-import com.matching.ezgg.global.jwt.repository.RedisRefreshTokenRepository;
+import com.matching.ezgg.domain.member.jwt.filter.JWTFilter;
+import com.matching.ezgg.domain.member.jwt.filter.JWTUtil;
+import com.matching.ezgg.domain.member.jwt.filter.LoginFilter;
+import com.matching.ezgg.domain.member.jwt.repository.RedisRefreshTokenRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -49,7 +49,8 @@ public class SecurityConfig {
 	public WebSecurityCustomizer webSecurityCustomizer() {
 		return web -> web.ignoring()
 			.requestMatchers("/favicon.ico")
-			.requestMatchers("/error");
+			.requestMatchers("/error")
+			.requestMatchers(toH2Console());
 	}
 
 	@Bean
@@ -57,13 +58,14 @@ public class SecurityConfig {
 
 		// 기본 설정 비활성화
 		http
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
 			.httpBasic(AbstractHttpConfigurer::disable);
 
 		// URL 접근 권한 설정
 		http.authorizeHttpRequests((auth) -> auth
-			.requestMatchers("/auth/**", "/login", "/refresh", "/riotapi/**", "/es/**", "/redis/**", "/matching/**", "/ws/**", "/ws").permitAll() // 해당 요청 은 인증 없이 접근 가능
+			.requestMatchers("/auth/signup", "/auth/logout", "/login", "/refresh", "/ws/**", "/ws").permitAll() // 해당 요청 은 인증 없이 접근 가능
 			.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 			.anyRequest().hasAnyAuthority("ROLE_USER")); // 나머지 요청은 ROLE_USER 권한이 있어야 접근 가능
 
@@ -82,8 +84,7 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public CorsFilter corsFilter() {
-		// CORS 설정
+	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 
 		configuration.addAllowedOrigin("http://3.37.41.3:3000");//nginx 예비용
@@ -99,7 +100,6 @@ public class SecurityConfig {
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
-
-		return new CorsFilter(source);
+		return source;
 	}
 }

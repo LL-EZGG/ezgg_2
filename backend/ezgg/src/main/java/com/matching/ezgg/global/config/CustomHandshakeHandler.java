@@ -8,7 +8,7 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
 import com.matching.ezgg.global.common.StompPrincipal;
-import com.matching.ezgg.global.jwt.filter.JWTUtil;
+import com.matching.ezgg.domain.member.jwt.filter.JWTUtil;
 
 import lombok.RequiredArgsConstructor;
 

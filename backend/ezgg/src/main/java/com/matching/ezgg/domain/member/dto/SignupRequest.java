@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 public class SignupRequest {
 
 	private String memberUsername;
-	@Pattern(regexp = "^(?=.*[A-Z])(?=.[a-z])(?=.*\\d)[A-Za-z\\d]{6,20}$", message = "패스워드 6~20자의 영문 대소문자와 숫자만 사용 가능합니다.")
+	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()-+=])[A-Za-z\\d!@#$%^&*()\\-+=]{6,20}$", message = "패스워드 6~20자의 영문 대소문자,숫자,특수문자 하나 이상 포함되어야합니다.")
 	private String password;
-	@Pattern(regexp = "^(?=.*[A-Z])(?=.[a-z])(?=.*\\d)[A-Za-z\\d]{6,20}$", message = "패스워드 6~20자의 영문 대소문자와 숫자만 사용 가능합니다.")
+	@Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()-+=])[A-Za-z\\d!@#$%^&*()\\-+=]{6,20}$", message = "패스워드 6~20자의 영문 대소문자,숫자,특수문자 하나 이상 포함되어야합니다.")
 	private String confirmPassword;
 	private String email;
 	private String riotUsername;
