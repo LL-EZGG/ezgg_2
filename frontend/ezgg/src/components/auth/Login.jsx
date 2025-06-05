@@ -53,7 +53,7 @@ const Login = ({setIsLoggedIn, onLoginSuccess}) => {
         console.log('로그인 시도:', formData);
 
         try {
-            const response = await axios.post('http://localhost:8888/login', {
+            const response = await axios.post('http://eezgg.kro.kr:8888/login', {
                 memberUsername: formData.username,
                 password: formData.password
             }, {
